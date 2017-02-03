@@ -29,6 +29,11 @@ int main(void) {
 	
 	while (1) {
 		usb_char = UARTCharGet(UART0_BASE);
-		UARTCharPut(UART0_BASE, usb_char);
+		if (usb_char == '\r') {
+			UARTCharPut(UART0_BASE, '\n');
+			UARTCharPut(UART0_BASE, '\r');
+		} else {
+			UARTCharPut(UART0_BASE, usb_char);
+		}
 	}
 }
