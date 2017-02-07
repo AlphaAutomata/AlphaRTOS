@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\driverlib;..\LaunchPad;.\include;.\inc</IncludePath>
+              <IncludePath>.\driverlib;..\LaunchPad;.\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
