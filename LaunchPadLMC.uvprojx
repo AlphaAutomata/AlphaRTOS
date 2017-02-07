@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\driverlib;..\LaunchPad</IncludePath>
+              <IncludePath>.\driverlib;..\LaunchPad;.\include;.\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -389,6 +389,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\LMCterminal.c</FilePath>
             </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>scheduler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\scheduler.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -423,6 +433,11 @@
               <FileName>pwm.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\driverlib\pwm.c</FilePath>
+            </File>
+            <File>
+              <FileName>systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\driverlib\systick.c</FilePath>
             </File>
           </Files>
         </Group>
