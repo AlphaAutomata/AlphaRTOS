@@ -399,6 +399,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\scheduler.c</FilePath>
             </File>
+            <File>
+              <FileName>circular_buffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\circular_buffer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

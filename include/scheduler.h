@@ -18,10 +18,11 @@ struct task {
 	bool (*callback)(uint32_t);
 };
 
-static struct task *currTask;
-
-static struct task taskTable[NUM_TASKS];
-static volatile uint32_t uptime;
+// These variables are declared in scheduler.c
+extern struct task *currTask;
+extern struct task taskTable[NUM_TASKS];
+extern volatile uint32_t uptime;
+extern volatile bool runScheduler;
 
 //*****************************************************************************
 //

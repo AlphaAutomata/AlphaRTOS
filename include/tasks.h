@@ -6,8 +6,11 @@
 #include "systick.h"
 #include "scheduler.h"
 
+extern volatile unsigned int currTasks;
+
 // SysTick interrupt service routine that calls the scheduler
 extern void SysTick_Handler(void);
+extern void schedule(void);
 
 //*****************************************************************************
 //

@@ -10,13 +10,15 @@ bool initTaskMaster(void) {
 	SysTickEnable();
 	
 	// Set SysTick to 1ms
-	SysTickPeriodSet(500000);
+	SysTickPeriodSet(50000);
 	
 	// Register our scheduler
 	SysTickIntRegister(&SysTick_Handler);
 	
 	// Enable SysTick interrupts
 	SysTickIntEnable();
+	
+	initScheduler();
 	
 	return true;
 }

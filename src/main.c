@@ -6,7 +6,7 @@ bool blinkyTaskInit(uint32_t arg) {
 	ledOn = false;
 	
 	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
-	GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0x0);
+	GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0xF);
 	
 	return true;
 }
@@ -21,13 +21,6 @@ bool blinkyTaskCallback(uint32_t arg) {
 	}
 	
 	return true;
-}
-
-void systickInit(uint32_t period) {
-	SysTickPeriodSet(period);
-	SysTickIntEnable();
-	SysTickIntRegister(&SysTick_Handler);
-	SysTickEnable();
 }
 
 int main(void) {
@@ -47,8 +40,13 @@ int main(void) {
 	HWREG(GPIOF_BASE + GPIO_O_CR) |= 0x08;
 	
 	initTaskMaster();
-	blinkyTaskID = addTask(100, &blinkyTaskInit, &blinkyTaskCallback);
+	blinkyTaskID = addTask(1000, blinkyTaskInit, blinkyTaskCallback);
 	initTask(blinkyTaskID);
 	
-	while(1);
+	while(1) {
+		if (runScheduler) {
+			schedule();
+			runScheduler = false;
+		}
+	}
 }
