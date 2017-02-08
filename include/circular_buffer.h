@@ -4,6 +4,8 @@
 struct circularBuffer {
 	unsigned int itemSize;
 	unsigned int numItems;
+	unsigned int rdCnt;
+	unsigned int wrCnt;
 	uint8_t *data;
 };
 
@@ -18,44 +20,47 @@ struct circularBuffer {
 //!
 //! \param numItems is the capacity of the buffer in number of items
 //!
+//! \param buffAddr is the address of the data buffer where the data will
+//! actually be stored
+//!
 //! \return false if any parameters are out of bounds, true otherwise
 //
 //*****************************************************************************
-bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsigned int numItems);
+bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr);
 
 //*****************************************************************************
 //
-//! These functions insert elements into a circular buffer. 
-//!
-//! \note The circular buffer pointed to by buffAddr need not have elements of
-//! size matched to the circularBufferAddXX() function. In other words, all of
-//! these functions will work properly on any circular buffer initialized by
-//! initCircularBuffer() regardless of the itemSize passed into
-//! initCircularBuffer(). When the buffer's item size is smaller than the chunk
-//! of data passed into circularBufferAddXX(), the data will be zero-padded in
-//! its most significant bits. When the buffer's item size is larger than the
-//! chunk of data passed into circularBufferAddXX(), it will be split into
-//! chunks matching the buffer's item size. For example, using
-//! circularBufferAdd32() to add to a buffer with item size of 2 bytes will add
-//! two items to the buffer. Using circularBufferAdd32() to add to a buffer
-//! with item size of 3 bytes with add the least significant three bytes as one
-//! item to the buffer, and the most significant byte will be zero-padded in
-//! its most significant bits to form a second 3-byte item. 
+//! This function inserts a single element into a circular buffer. 
 //!
 //! \param buff is a pointer to a circularBuffer struct
 //!
-//! \param item is the data to store into teh buffer or, in the case of
-//! circularBufferAddLarge(), a pointer to the chunk of data to add.
+//! \param item is the data to store into the buffer. It is treated as a packed
+//! array where each item is buff.itemSize bytes. For circularBufferAddItem(),
+//! this array is assumed to be a single element long.
 //!
 //! \return false if any parameters are invalid or the data cannot fit in the
 //! buffer, true otherwise. The buffer is not modified at all if the function
 //! returns false. 
 //
 //*****************************************************************************
-bool circularBufferAdd8(struct circularBuffer *buff, uint8_t item);
-bool circularBufferAdd16(struct circularBuffer *buff, uint16_t item);
-bool circularBufferAdd32(struct circularBuffer *buff, uint32_t item);
-bool circularBufferAddLarge(struct circularBuffer *buff, void *item);
+bool circularBufferAddItem(struct circularBuffer *buff, void *item);
+
+//*****************************************************************************
+//
+//! This insert multiple elements into a circular buffer. 
+//!
+//! \param buff is a pointer to a circularBuffer struct
+//!
+//! \param item is the data to store into the buffer. It is treated as a packed
+//! array where each item is buff.itemSize bytes. For circularBufferAddItem(),
+//! this array is assumed to be a single element long.
+//!
+//! \param numItems is the number of items to add to the buffer
+//!
+//! \return the number of items actually added to the buffer
+//
+//*****************************************************************************
+unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, unsigned int numItems);
 
 //*****************************************************************************
 //
@@ -81,7 +86,7 @@ bool circularBufferRemoveItem(struct circularBuffer *buff, void *data);
 //!
 //! \param data is a pointer to the memory location to store the data
 //!
-//! \return the number of items written
+//! \return the number of items removed
 //
 //*****************************************************************************
 unsigned int circularBufferRemoveMultiple(struct circularBuffer *buff, void *data, unsigned int numItems);
