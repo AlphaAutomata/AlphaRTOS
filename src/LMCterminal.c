@@ -14,7 +14,7 @@ int fgetc(FILE *stream)
 {
 	char c;
 	
-	// TODO: read a character from the USB UART controller and return it
+	// TODO: read a character from the USB UART controller, echo and return it
 	
 	return c;
 }
@@ -22,7 +22,7 @@ int fgetc(FILE *stream)
 //*****************************************************************************
 //
 //! MicroLIB's stdio library calls this function.  Implementing it allows
-//! MicroLIB's MicroLIB's putchar(), puts(), printf(), etc to work.
+//! MicroLIB's putchar(), puts(), printf(), etc to work.
 //!
 //! \param c is the character to write to USB UART
 //!
