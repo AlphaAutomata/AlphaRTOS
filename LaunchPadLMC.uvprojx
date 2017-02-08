@@ -404,6 +404,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\circular_buffer.c</FilePath>
             </File>
+            <File>
+              <FileName>launchPadUIO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\launchPadUIO.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
