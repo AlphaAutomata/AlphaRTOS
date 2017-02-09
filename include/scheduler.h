@@ -14,15 +14,16 @@ struct task {
 	uint32_t ticksInterval;
 	volatile uint32_t ticksRemaining;
 	volatile uint32_t status;
-	bool (*initCallback)(uint32_t);
-	bool (*callback)(uint32_t);
+	int (*taskEntry)(void *);
+	int (*callback)(void *);
 };
 
 // These variables are declared in scheduler.c
 extern struct task *currTask;
 extern struct task taskTable[NUM_TASKS];
-extern volatile uint32_t uptime;
+extern volatile uint64_t uptime;
 extern volatile bool runScheduler;
+extern volatile unsigned int currTasks;
 
 //*****************************************************************************
 //

@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\driverlib;..\LaunchPad;.\include</IncludePath>
+              <IncludePath>.\driverlib;..\LaunchPad;.\include;.\tasks</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,7 +377,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>kernel</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -448,6 +448,16 @@
               <FileName>systick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\driverlib\systick.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tasks</GroupName>
+          <Files>
+            <File>
+              <FileName>blinky.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\tasks\blinky\blinky.c</FilePath>
             </File>
           </Files>
         </Group>

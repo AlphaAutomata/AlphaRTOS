@@ -2,12 +2,11 @@
 
 #include "TM4C123.h"
 #include "scheduler.h"
-#include "main.h"
 
 struct task *currTask;
 
 struct task taskTable[NUM_TASKS];
-volatile uint32_t uptime;
+volatile uint64_t uptime;
 
 volatile bool runScheduler;
 
@@ -27,7 +26,7 @@ void initScheduler(void) {
 	}
 }
 
-void schedule(void) {
+void schedule(struct task *oldTask) {
 	unsigned int i;
 	
 	if (currTask != 0) {
@@ -36,12 +35,17 @@ void schedule(void) {
 	}
 	
 	// Round robin scheduler
-	for (i=1; i<=currTasks; i++) {
+	if (oldTask != 0) {
+		i = (oldTask - taskTable + 1) / sizeof(struct task);
+	} else {
+		i = 1;
+	}
+	while (i <= currTasks) {
 		// For each task, if it is ready, run its callback. If not, decrement its remaining ticks. 
 		if (taskTable[i].ticksRemaining == 0 && taskTable[i].status == TASK_STATUS_RUNNING) {
 			// Keep track of what the running task is
 			currTask = &(taskTable[i]);
-			if (!taskTable[i].callback(0)) {
+			if (taskTable[i].callback(0) < 0) {
 				// a task failed
 				while(1);
 			}
@@ -52,8 +56,9 @@ void schedule(void) {
 		} else {
 			taskTable[i].ticksRemaining--;
 		}
+		
+		i++;
 	}
-	//taskTable[1].callback(0);
 }
 
 void SysTick_Handler(void) {

@@ -8,9 +8,21 @@
 
 extern volatile unsigned int currTasks;
 
-// SysTick interrupt service routine that calls the scheduler
+// SysTick interrupt service routine that sets runScheduler to true
 extern void SysTick_Handler(void);
-extern void schedule(void);
+
+//*****************************************************************************
+//
+//! Run a single round of scheduling. Should be called every time runScheduer
+//! is set to true. 
+//!
+//! \param oldTask points to the task that yielded the processor, if any. 
+//! If schedule() is not called from taskYield(), oldTask should be zero/NULL.
+//!
+//! \return none
+//
+//*****************************************************************************
+extern void schedule(struct task *oldTask);
 
 //*****************************************************************************
 //
@@ -27,19 +39,13 @@ bool initTaskMaster(void);
 //
 //! Register a task
 //!
-//! \param interval specifies how many milliseconds between the task's
-//! taskCallBack() function being called
-//!
-//! \param taskInitCallBack pointer to a function to be called once when
-//! initializing the task
-//! 
-//! \param taskCallback is a pointer to a function to be called ever interval
-//! number of milliseconds
+//! \param taskEntry is a pointer to a function to be called to start running
+//! the task
 //!
 //! \return the task ID assigned to the task, or 0 if registration failed
 //
 //*****************************************************************************
-unsigned int addTask(uint32_t interval, bool (*taskInitCallback)(uint32_t), bool (*taskCallback)(uint32_t));
+unsigned int addTask(int (*taskEntry)(void *));
 
 //*****************************************************************************
 //
@@ -47,10 +53,10 @@ unsigned int addTask(uint32_t interval, bool (*taskInitCallback)(uint32_t), bool
 //!
 //! \param taskNum the ID returned by addTask
 //!
-//! \return true if initialization succeeded, false otherwise
+//! \return 0 on success
 //
 //*****************************************************************************
-bool initTask(unsigned int taskNum);
+int initTask(unsigned int taskNum);
 
 //*****************************************************************************
 //

@@ -23,30 +23,75 @@ bool initTaskMaster(void) {
 	return true;
 }
 
-unsigned int addTask(uint32_t interval, bool (*taskInitCallback)(uint32_t), bool (*taskCallback)(uint32_t)) {
-	if (taskInitCallback == 0 || taskCallback == 0) {
+unsigned int addTask(int (*taskEntry)(void *)) {
+	if (taskEntry == 0 || currTasks >= NUM_TASKS) {
 		return 0;
 	}
 	
 	currTasks++;
 	
-	taskTable[currTasks].ticksInterval = interval;
-	taskTable[currTasks].ticksRemaining = interval;
-	taskTable[currTasks].status = TASK_STATUS_SLEEPING;
-	taskTable[currTasks].initCallback = taskInitCallback;
-	taskTable[currTasks].callback = taskCallback;
+	taskTable[currTasks].status = TASK_STATUS_UNINITIALIZED;
+	taskTable[currTasks].taskEntry = taskEntry;
 	
 	return currTasks;
 }
 
-bool initTask(unsigned int taskNum) {
+int initTask(unsigned int taskNum) {
 	// check for invalid task IDs
 	if (taskNum > currTasks || taskNum == 0) {
 		return false;
 	}
 	
-	taskTable[taskNum].ticksRemaining = taskTable[taskNum].ticksInterval;
 	taskTable[taskNum].status = TASK_STATUS_RUNNING;
 	
-	return taskTable[taskNum].initCallback(0);
+	return taskTable[taskNum].taskEntry(0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////// Badger RMC RTOS API /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+int callbackRegister(uint32_t interval, int (*callback)(void *)) {
+	if (currTask == 0 || callback == 0 || interval == 0) {
+		return 0;
+	}
+	
+	if (currTask->callback == 0) {
+		return 0;
+	}
+	currTask->callback = callback;
+	
+	return 1;
+}
+
+int callbackUnregister(int callbackID) {
+	if (currTask == 0 || callbackID == 0) {
+		return -1;
+	}
+	
+	currTask->callback = 0;
+	
+	return callbackID;
+}
+
+int setCallbackInterval(int callbackID, uint32_t interval) {
+	if (currTask == 0 || callbackID != 1) return -1;
+	
+	currTask->ticksInterval = interval;
+	
+	return callbackID;
+}
+
+uint32_t getCallbackInterval(int callbackID) {
+	if (currTask == 0) return 0;
+	
+	return currTask->ticksInterval;
+}
+
+void taskYield(void) {
+	return;
+}
+
+uint64_t getUptime(void) {
+	return uptime;
 }

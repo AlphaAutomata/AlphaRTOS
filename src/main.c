@@ -1,27 +1,6 @@
 #include "main.h"
-
-volatile bool ledOn;
-
-bool blinkyTaskInit(uint32_t arg) {
-	ledOn = false;
-	
-	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
-	GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0xF);
-	
-	return true;
-}
-
-bool blinkyTaskCallback(uint32_t arg) {
-	if (ledOn) {
-		GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0x0);
-		ledOn = false;
-	} else {
-		GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_1);
-		ledOn = true;
-	}
-	
-	return true;
-}
+#include "userTasks.h"
+#include "launchPadUIO.h"
 
 int main(void) {
 	unsigned int blinkyTaskID;
@@ -39,13 +18,16 @@ int main(void) {
 	HWREG(GPIOF_BASE + GPIO_O_CR) |= 0x04;
 	HWREG(GPIOF_BASE + GPIO_O_CR) |= 0x08;
 	
+	// initialize LaunchPad RGB LED and push buttons
+	initUIO();
+	
 	initTaskMaster();
-	blinkyTaskID = addTask(1000, blinkyTaskInit, blinkyTaskCallback);
+	blinkyTaskID = addTask(blinkyTask);
 	initTask(blinkyTaskID);
 	
 	while(1) {
 		if (runScheduler) {
-			schedule();
+			schedule(0);
 			runScheduler = false;
 		}
 	}
