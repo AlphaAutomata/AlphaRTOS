@@ -4,6 +4,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef PART_TM4C123GH6PM
+#define PART_TM4C123GH6PM
+#endif
+
+#include "TM4C123GH6PM.h"
+#include "sysctl.h"
+#include "gpio.h"
+#include "pin_map.h"
+#include "uart.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////// General Purpose Input/Output Ports and Pins /////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,7 +56,7 @@ typedef enum {
 } eUartController;
 
 typedef struct {
-	unsigned int baud;
+	uint32_t baud;
 	uint8_t wlen;
 	bool parity;
 	bool twoStopBits;

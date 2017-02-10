@@ -4,6 +4,7 @@
 
 int main(void) {
 	unsigned int blinkyTaskID;
+	uartInfo usbUART;
 	
 	// Initialize GPIO Port A for UART over USB
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -18,6 +19,13 @@ int main(void) {
 	
 	// initialize LaunchPad RGB LED and push buttons
 	initUIO();
+	
+	// initialize USB UART
+	usbUART.baud = 115200;
+	usbUART.wlen = 8;
+	usbUART.parity = false;
+	usbUART.twoStopBits = false;
+	initUART(uart0, usbUART);
 	
 	// add all the existing tasks
 	// TODO: when booting in debug mode, delay initTask calls until a command
