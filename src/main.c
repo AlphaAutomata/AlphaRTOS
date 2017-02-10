@@ -14,13 +14,14 @@ int main(void) {
 	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
 	// Unlock pins 1, 2, and 3 for software control of LaunchPad RGB LED
 	HWREG(GPIOF_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY;
-	HWREG(GPIOF_BASE + GPIO_O_CR) = 0x02;
-	HWREG(GPIOF_BASE + GPIO_O_CR) |= 0x04;
-	HWREG(GPIOF_BASE + GPIO_O_CR) |= 0x08;
+	HWREG(GPIOF_BASE + GPIO_O_CR) = 0x02 | 0x04 | 0x08;
 	
 	// initialize LaunchPad RGB LED and push buttons
 	initUIO();
 	
+	// add all the existing tasks
+	// TODO: when booting in debug mode, delay initTask calls until a command
+	// is received over UART
 	initTaskMaster();
 	blinkyTaskID = addTask(blinkyTask);
 	currTask = &(taskTable[blinkyTaskID]);

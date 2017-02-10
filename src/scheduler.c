@@ -22,7 +22,7 @@ void initScheduler(void) {
 		taskTable[i].ticksInterval = 0;
 		taskTable[i].ticksRemaining = 0;
 		taskTable[i].status = TASK_STATUS_UNINITIALIZED;
-		taskTable[i].callback = 0;
+		taskTable[i].timerCallback = 0;
 	}
 }
 
@@ -45,7 +45,7 @@ void schedule(struct task *oldTask) {
 		if (taskTable[i].ticksRemaining == 0 && taskTable[i].status == TASK_STATUS_RUNNING) {
 			// Keep track of what the running task is
 			currTask = &(taskTable[i]);
-			if (taskTable[i].callback(0) < 0) {
+			if (taskTable[i].timerCallback(0) < 0) {
 				// a task failed
 				while(1);
 			}

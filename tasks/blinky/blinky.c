@@ -21,8 +21,8 @@ int blinkyTask(void *arg) {
 	
 	ledOn = false;
 	
-	callbackID = callbackRegister(100, taskCallback);
-	setCallbackInterval(callbackID, 1000);
+	callbackID = timerCallbackRegister(100, taskCallback);
+	setTimerCallbackInterval(callbackID, 1000);
 	
 	setLED(off);
 	
