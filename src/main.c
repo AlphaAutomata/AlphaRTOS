@@ -23,7 +23,9 @@ int main(void) {
 	
 	initTaskMaster();
 	blinkyTaskID = addTask(blinkyTask);
+	currTask = &(taskTable[blinkyTaskID]);
 	initTask(blinkyTaskID);
+	currTask = 0;
 	
 	while(1) {
 		if (runScheduler) {

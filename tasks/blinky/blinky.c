@@ -6,8 +6,10 @@ volatile bool ledOn;
 
 int taskCallback(void *arg) {
 	if (ledOn) {
+		ledOn = false;
 		setLED(off);
 	} else {
+		ledOn = true;
 		setLED(green);
 	}
 	

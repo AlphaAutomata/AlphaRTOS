@@ -56,9 +56,6 @@ int callbackRegister(uint32_t interval, int (*callback)(void *)) {
 		return 0;
 	}
 	
-	if (currTask->callback == 0) {
-		return 0;
-	}
 	currTask->callback = callback;
 	
 	return 1;

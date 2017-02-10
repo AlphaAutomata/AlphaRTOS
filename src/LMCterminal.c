@@ -1,4 +1,6 @@
 #include "LMCterminal.h"
+#include "uart.h"
+#include "TM4C123GH6PM.h"
 
 //*****************************************************************************
 //
@@ -10,13 +12,8 @@
 //! \return the character read from USB UART
 //
 // *****************************************************************************
-int fgetc(FILE *stream)
-{
-	char c;
-	
-	// TODO: read a character from the USB UART controller, echo and return it
-	
-	return c;
+int fgetc(FILE *stream) {
+	return UARTCharGet(UART0_BASE);
 }
 
 //*****************************************************************************
@@ -31,9 +28,8 @@ int fgetc(FILE *stream)
 //! \return the character written to USB UART
 //
 // *****************************************************************************
-int fputc(int c, FILE *stream)
-{
-	// TODO: write a character to the USB UART controller
+int fputc(int c, FILE *stream) {
+	UARTCharPut(UART0_BASE, c);
 	
 	return c;
 }
