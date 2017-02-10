@@ -1,4 +1,5 @@
 #include "tasks.h"
+#include "launchPadHwAbstraction.h"
 
 volatile unsigned int currTasks;
 
@@ -51,30 +52,30 @@ int initTask(unsigned int taskNum) {
 ///////////////////////////// Badger RMC RTOS API /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-int callbackRegister(uint32_t interval, int (*callback)(void *)) {
+int timerCallbackRegister(uint32_t interval, int (*callback)(void *)) {
 	if (currTask == 0 || callback == 0 || interval == 0) {
 		return 0;
 	}
 	
-	if (currTask->callback == 0) {
+	if (currTask->timerCallback == 0) {
 		return 0;
 	}
-	currTask->callback = callback;
+	currTask->timerCallback = callback;
 	
 	return 1;
 }
 
-int callbackUnregister(int callbackID) {
+int timerCallbackUnregister(int callbackID) {
 	if (currTask == 0 || callbackID == 0) {
 		return -1;
 	}
 	
-	currTask->callback = 0;
+	currTask->timerCallback = 0;
 	
 	return callbackID;
 }
 
-int setCallbackInterval(int callbackID, uint32_t interval) {
+int setTimerCallbackInterval(int callbackID, uint32_t interval) {
 	if (currTask == 0 || callbackID != 1) return -1;
 	
 	currTask->ticksInterval = interval;
@@ -82,10 +83,15 @@ int setCallbackInterval(int callbackID, uint32_t interval) {
 	return callbackID;
 }
 
-uint32_t getCallbackInterval(int callbackID) {
+uint32_t getTimerCallbackInterval(int callbackID) {
 	if (currTask == 0) return 0;
 	
 	return currTask->ticksInterval;
+}
+
+int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(void *)) {
+	
+	return -1;
 }
 
 void taskYield(void) {

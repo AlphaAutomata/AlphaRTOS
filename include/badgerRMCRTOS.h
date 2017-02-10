@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "launchPadHwAbstraction.h"
+
 //*****************************************************************************
 //
 //! Register a periodic callback. This function will be automatically called
@@ -18,7 +20,7 @@
 //! supports a single callback. Returns 0 on failure.
 //
 //*****************************************************************************
-int callbackRegister(uint32_t interval, int (*callback)(void *));
+int timerCallbackRegister(uint32_t interval, int (*callback)(void *));
 
 //*****************************************************************************
 //
@@ -30,7 +32,7 @@ int callbackRegister(uint32_t interval, int (*callback)(void *));
 //! \return the callback ID on success, -1 on failure
 //
 //*****************************************************************************
-int callbackUnregister(int callbackID);
+int timerCallbackUnregister(int callbackID);
 
 //*****************************************************************************
 //
@@ -42,10 +44,11 @@ int callbackUnregister(int callbackID);
 //! \param interval is the number of milliseconds to wait between calls to the
 //! callback
 //!
-//! \return the callback ID on success, -1 on failure
+//! \return the timer callback ID, which is allocated from a different pool
+//! from the interrupt callback ID, on success. Returns -1 on failure.
 //
 //*****************************************************************************
-int setCallbackInterval(int callbackID, uint32_t interval);
+int setTimerCallbackInterval(int callbackID, uint32_t interval);
 
 //*****************************************************************************
 //
@@ -57,7 +60,35 @@ int setCallbackInterval(int callbackID, uint32_t interval);
 //! \return the interval in milliseconds, or 0 on failure
 //
 //*****************************************************************************
-uint32_t getCallbackInterval(int callbackID);
+uint32_t getTimerCallbackInterval(int callbackID);
+
+//*****************************************************************************
+//
+//! Get the periodic interval between successive calls to a callback
+//!
+//! \param interrupt is the type of interrupt that should trigger the callback
+//!
+//! \param callback is a pointer to the interrupt callback
+//!
+//! \return the interrupt callback ID, which is allocated from a different ID
+//! pool than the timer callback ID, on success. Returns -1 on failure. 
+//
+//*****************************************************************************
+int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(void *));
+
+//*****************************************************************************
+//
+//! Get the periodic interval between successive calls to a callback
+//!
+//! \param interrupt is the type of interrupt that should trigger the callback
+//!
+//! \param callbackID is the ID of the callback returned by
+//! interruptCallbackRegister() when first registering the interrupt
+//!
+//! \return the interrupt callback ID on success, -1 on failure
+//
+//*****************************************************************************
+int interruptCallbackUnregister(eInterrupt interrupt, int callbackID);
 
 //*****************************************************************************
 //

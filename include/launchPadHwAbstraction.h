@@ -15,7 +15,7 @@ typedef enum {
 	portD,
 	portE,
 	portF
-} launchPadGPIOPort;
+} eLaunchPadGPIOPort;
 
 typedef enum {
 	PA0, PA1, PA2, PA3, PA4, PA5, PA6, PA7,
@@ -24,10 +24,10 @@ typedef enum {
 	PD0, PD1, PD2, PD3, PD4, PD5, PD6, PD7,
 	PE0, PE1, PE2, PE3, PE4, PE5, PE6, PE7,
 	PF0, PF1, PF2, PF3, PF4, PF5, PF6, PF7
-} launchPadPin;
+} eLaunchPadPin;
 
-void initPort(launchPadGPIOPort port);
-void resetPort(launchPadGPIOPort port);
+void initPort(eLaunchPadGPIOPort port);
+void resetPort(eLaunchPadGPIOPort port);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ typedef enum {
 	uart5,
 	uart6,
 	uart7
-} uartController;
+} eUartController;
 
 typedef struct {
 	unsigned int baud;
@@ -52,8 +52,8 @@ typedef struct {
 	bool twoStopBits;
 } uartInfo;
 
-bool initUART(uartController controller, uartInfo info);
-bool disableUART(uartController controller);
+bool initUART(eUartController controller, uartInfo info);
+bool disableUART(eUartController controller);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,10 +63,20 @@ bool disableUART(uartController controller);
 typedef enum {
 	pwm0,
 	pwm1
-} pwmController;
+} ePwmController;
 
-bool initPWM(pwmController controller);
-bool disablePWM(pwmController controller);
-bool setPWM(pwmController, unsigned int duty);
+bool initPWM(ePwmController controller);
+bool disablePWM(ePwmController controller);
+bool setPWM(ePwmController, unsigned int duty);
+
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// Interrupt Alert ///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+typedef enum {
+	gpTimer,
+	UART
+} eInterrupt;
 
 #endif

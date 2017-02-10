@@ -8,7 +8,16 @@
 
 extern volatile unsigned int currTasks;
 
-// SysTick interrupt service routine that sets runScheduler to true
+//*****************************************************************************
+//
+//! SysTick interrupt service routine that periodically runs a scheduling
+//! algorithm
+//!
+//! \param none
+//!
+//! \return none
+//
+//*****************************************************************************
 extern void SysTick_Handler(void);
 
 //*****************************************************************************

@@ -7,6 +7,7 @@
 #define TASK_STATUS_UNINITIALIZED 0x00000000
 #define TASK_STATUS_RUNNING       0x00000001
 #define TASK_STATUS_SLEEPING      0x00000002
+#define TASK_STATUS_RETURNED      0x00000004
 
 #define NUM_TASKS 32
 
@@ -15,7 +16,8 @@ struct task {
 	volatile uint32_t ticksRemaining;
 	volatile uint32_t status;
 	int (*taskEntry)(void *);
-	int (*callback)(void *);
+	int (*timerCallback)(void *);
+	int (*interruptCallback)(void *);
 };
 
 // These variables are declared in scheduler.c
@@ -35,17 +37,5 @@ extern volatile unsigned int currTasks;
 //
 //*****************************************************************************
 void initScheduler(void);
-
-//*****************************************************************************
-//
-//! SysTick interrupt service routine that periodically runs a scheduling
-//! algorithm
-//!
-//! \param none
-//!
-//! \return none
-//
-//*****************************************************************************
-void SysTick_Handler(void);
 
 #endif
