@@ -1,13 +1,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct circularBuffer {
+typedef struct {
 	unsigned int itemSize;
 	unsigned int numItems;
 	unsigned int rdCnt;
 	unsigned int wrCnt;
 	uint8_t *data;
-};
+} circularBuffer_t;
 
 //*****************************************************************************
 //
@@ -26,7 +26,18 @@ struct circularBuffer {
 //! \return false if any parameters are out of bounds, true otherwise
 //
 //*****************************************************************************
-bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr);
+bool initCircularBuffer(circularBuffer_t *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr);
+
+//*****************************************************************************
+//
+//! Check to see if a buffer is full
+//!
+//! \param buff is a pointer to a circularBuffer struct
+//!
+//! \return true if the buffer is full, false otherwise
+//
+//*****************************************************************************
+bool circularBufferFull(circularBuffer_t *buff);
 
 //*****************************************************************************
 //
@@ -43,7 +54,7 @@ bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsi
 //! returns false. 
 //
 //*****************************************************************************
-bool circularBufferAddItem(struct circularBuffer *buff, void *item);
+bool circularBufferAddItem(circularBuffer_t *buff, void *item);
 
 //*****************************************************************************
 //
@@ -60,7 +71,18 @@ bool circularBufferAddItem(struct circularBuffer *buff, void *item);
 //! \return the number of items actually added to the buffer
 //
 //*****************************************************************************
-unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, unsigned int numItems);
+unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems);
+
+//*****************************************************************************
+//
+//! Check to see if a buffer is empty
+//!
+//! \param buff is a pointer to a circularBuffer struct
+//!
+//! \return true if the buffer is empty, false otherwise
+//
+//*****************************************************************************
+bool circularBufferEmpty(circularBuffer_t *buff);
 
 //*****************************************************************************
 //
@@ -73,7 +95,7 @@ unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, 
 //! \return false if the buffer is empty, true otherwise
 //
 //*****************************************************************************
-bool circularBufferRemoveItem(struct circularBuffer *buff, void *data);
+bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
 
 //*****************************************************************************
 //
@@ -89,4 +111,4 @@ bool circularBufferRemoveItem(struct circularBuffer *buff, void *data);
 //! \return the number of items removed
 //
 //*****************************************************************************
-unsigned int circularBufferRemoveMultiple(struct circularBuffer *buff, void *data, unsigned int numItems);
+unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems);

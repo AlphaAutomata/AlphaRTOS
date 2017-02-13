@@ -8,7 +8,8 @@
 #define PART_TM4C123GH6PM
 #endif
 
-#include "TM4C123GH6PM.h"
+#include "inc/tm4c123gh6pm.h"
+#include "inc/hw_memmap.h"
 #include "sysctl.h"
 #include "gpio.h"
 #include "pin_map.h"

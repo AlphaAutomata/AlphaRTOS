@@ -1,6 +1,5 @@
 #include <stdbool.h>
 
-#include "TM4C123GH6PM.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_types.h"
 
@@ -11,5 +10,3 @@
 #include "sysctl.h"
 #include "uart.h"
 #include "gpio.h"
-
-#include <stdio.h>

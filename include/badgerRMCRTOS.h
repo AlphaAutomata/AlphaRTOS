@@ -74,7 +74,7 @@ uint32_t getTimerCallbackInterval(int callbackID);
 //! pool than the timer callback ID, on success. Returns -1 on failure. 
 //
 //*****************************************************************************
-int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(void *));
+int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint8_t deviceMask), int deviceNumber);
 
 //*****************************************************************************
 //

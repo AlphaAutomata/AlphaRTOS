@@ -1,6 +1,6 @@
 #include "circular_buffer.h"
 
-bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr) {
+bool initCircularBuffer(circularBuffer_t *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr) {
 	buff->itemSize = itemSize;
 	buff->numItems = numItems;
 	buff->rdCnt = 0;
@@ -8,6 +8,14 @@ bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsi
 	buff->data = buffAddr;
 	
 	return true;
+}
+
+bool circularBufferFull(circularBuffer_t *buff) {
+	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 //*****************************************************************************
@@ -23,7 +31,7 @@ bool initCircularBuffer(struct circularBuffer *buff, unsigned int itemSize, unsi
 //! \return none
 //
 //*****************************************************************************
-void addSingleItemUnsafe(struct circularBuffer *buff, void *item) {
+void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 	unsigned int index;
 	int bytesLeft;
 	uint8_t *dataPtr8;
@@ -63,9 +71,11 @@ void addSingleItemUnsafe(struct circularBuffer *buff, void *item) {
 			}
 			break;
 	}
+	
+	return;
 }
 
-bool circularBufferAddItem(struct circularBuffer *buff, void *item) {
+bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	// if the buffer doesn't have any more space, return false
 	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
 		return false;
@@ -80,7 +90,7 @@ bool circularBufferAddItem(struct circularBuffer *buff, void *item) {
 	return true;
 }
 
-unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, unsigned int numItems) {
+unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems) {
 	unsigned int itemsRemaining;
 	
 	// if the buffer doesn't have enough room, only add enough elements to fill
@@ -106,6 +116,14 @@ unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, 
 	return numItems;
 }
 
+bool circularBufferEmpty(circularBuffer_t *buff) {
+	if (buff->wrCnt - buff->rdCnt == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 //*****************************************************************************
 //
 //! Remove a single item from the buffer without performing any parameter
@@ -119,7 +137,7 @@ unsigned int circularBufferAddMultiple(struct circularBuffer *buff, void *item, 
 //! \return none
 //
 //*****************************************************************************
-void removeSingleItemUnsafe(struct circularBuffer *buff, void *data) {
+void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 	unsigned int index;
 	unsigned int bytesLeft;
 	uint64_t *dataPtr64;
@@ -160,9 +178,11 @@ void removeSingleItemUnsafe(struct circularBuffer *buff, void *data) {
 			}
 			break;
 	}
+	
+	return;
 }
 
-bool circularBufferRemoveItem(struct circularBuffer *buff, void *data) {
+bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 	// if the buffer is empty, return false
 	if (buff->rdCnt >= buff->wrCnt) {
 		return false;
@@ -185,7 +205,7 @@ bool circularBufferRemoveItem(struct circularBuffer *buff, void *data) {
 	return true;
 }
 
-unsigned int circularBufferRemoveMultiple(struct circularBuffer *buff, void *data, unsigned int numItems) {
+unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems) {
 	unsigned int itemsRemaining;
 	
 	// check if there are actually numItems items in the buffer. If not, only
@@ -207,6 +227,14 @@ unsigned int circularBufferRemoveMultiple(struct circularBuffer *buff, void *dat
 		data = (uint8_t *)data + buff->itemSize;
 		// update remaining items count
 		itemsRemaining--;
+	}
+	
+	// do a rollover check to avoid eventual overflows in the counters.
+	// presumably the write count is always larger than the read count, so it
+	// doesn't need to be checked.
+	if (buff->rdCnt >= buff->numItems) {
+		buff->rdCnt -= buff->numItems;
+		buff->wrCnt -= buff->numItems;
 	}
 	
 	return numItems;

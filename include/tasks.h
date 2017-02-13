@@ -1,12 +1,20 @@
 #ifndef __BADGERLMC_TASKS_H__
 #define __BADGERLMC_TASKS_H__
 
-#include "stdbool.h"
-#include "stdint.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "systick.h"
+
 #include "scheduler.h"
 
+#define NUM_INT_CALLBACKS NUM_TASKS
+
 extern volatile unsigned int currTasks;
+
+// vector of tasks to alert when certain interrupts happen
+extern int gpTimerIntVector[NUM_INT_CALLBACKS];
+extern int uartIntVector[NUM_INT_CALLBACKS];
 
 //*****************************************************************************
 //
@@ -62,10 +70,12 @@ unsigned int addTask(int (*taskEntry)(void *));
 //!
 //! \param taskNum the ID returned by addTask
 //!
+//! \param arg is an argument to pass to the tasks's initialization function
+//!
 //! \return 0 on success
 //
 //*****************************************************************************
-int initTask(unsigned int taskNum);
+int initTask(unsigned int taskNum, void *arg);
 
 //*****************************************************************************
 //

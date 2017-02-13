@@ -2,9 +2,9 @@
 
 void initUIO(void) {
 	// set LED pins as output
-	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
+	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
 	// set push button pins as input
-	GPIOPinTypeGPIOInput(GPIOF_BASE, GPIO_PIN_0|GPIO_PIN_4);
+	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_4);
 }
 
 void setLED(enum ledColor color) {
@@ -39,14 +39,14 @@ void setLED(enum ledColor color) {
 	}
 	
 	// do GPIO write to set LED color
-	GPIOPinWrite(GPIOF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, pinColorMap);
+	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, pinColorMap);
 }
 
 void buttonsPressed(bool *lPressed, bool *rPressed) {
 	uint32_t pinData;
 	
 	// read the button pins
-	GPIOPinRead(GPIOF_BASE, GPIO_PIN_0|GPIO_PIN_4);
+	GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_4);
 	
 	// convert the pin data to output booleans
 	if (pinData | GPIO_PIN_4) {
