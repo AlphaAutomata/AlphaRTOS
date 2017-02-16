@@ -49,14 +49,13 @@ void schedule(struct task *oldTask) {
 		} else if (taskTable[i].status == TASK_STATUS_YIELDING) {
 			// if the task had previously yielded the processor, let it run again
 			currTaskID = i;
+			currTask.status = TASK_STATUS_RUNNING;
 			switchContext(&(currTask.frame), &kframe);
 			currTaskID = 0;
 		} else {
 			taskTable[i].ticksRemaining--;
 		}
 	}
-	
-	return;
 }
 
 void SysTick_Handler(void) {

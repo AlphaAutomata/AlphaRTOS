@@ -8,7 +8,7 @@
 #define RW_MEM_BASE       0x20000000
 #define RW_MEM_SIZE       0x00008000
 #define STACK_SIZE        0x00000400
-#define NUM_FRAMES RW_MEM_SIZE/STACK_SIZE
+#define NUM_FRAMES (RW_MEM_SIZE)/(STACK_SIZE)
 
 #define KFRAMEBase __Vectors[0]
 #define frameBase(taskID) RW_MEM_BASE + STACK_SIZE * (taskID+1)
@@ -25,7 +25,7 @@ typedef struct {
 	uint32_t R8;
 	uint32_t R9;
 	uint32_t R10;
-	uint32_t R11; // stack frame base pointer?
+	uint32_t R11;
 	uint32_t R12;
 	uint32_t SP;
 	uint32_t LR;

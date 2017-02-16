@@ -24,7 +24,7 @@ int uartFlow(uint32_t arg) {
 		}
 	}
 	
-	while (UARTCharsAvail(UART0_BASE)) {
+	if (UARTCharsAvail(UART0_BASE)) {
 		uartChar = UARTCharGet(UART0_BASE);
 
 		if (uartChar == '\r') {
@@ -110,7 +110,7 @@ int putchar(int c) {
 	char in;
 	
 	in = c;
-	while (!circularBufferAddItem(&txBuff, &in));
+	while (!circularBufferAddItem(&txBuff, &in)) taskYield();
 	
 	return c;
 }

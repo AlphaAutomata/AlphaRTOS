@@ -4,18 +4,32 @@
 #include "LMCterminal.h"
 
 volatile bool ledOn;
+volatile bool lbpressed;
+volatile bool rbpressed;
+volatile bool print;
 
 int taskCallback(uint32_t arg) {
 	if (ledOn) {
 		ledOn = false;
-		printlit("LED off\n");
+		if (print) printlit("LED off\n");
 		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(off);
 	} else {
 		ledOn = true;
-		printlit("LED on\n");
+		if (print) printlit("LED on\n");
 		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(green);
+	}
+	
+	buttonsPressed(&lbpressed, &rbpressed);
+	if (lbpressed) {
+		if (print) {
+			printlit("Blinky: printing disabled\n");
+			print = false;
+		} else {
+			printlit("Blinky: printing enabled\n");
+			print = true;
+		}
 	}
 	
 	return 0;
@@ -23,6 +37,7 @@ int taskCallback(uint32_t arg) {
 
 int blinkyTask(uint32_t arg) {
 	ledOn = false;
+	print = true;
 	
 	timerCallbackRegister(1000, taskCallback);
 	

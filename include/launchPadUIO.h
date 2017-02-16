@@ -55,6 +55,6 @@ void setLED(enum ledColor color);
 //! \return none
 //
 //*****************************************************************************
-void buttonsPressed(bool *lPressed, bool *rPressed);
+void buttonsPressed(volatile bool *lPressed, volatile bool *rPressed);
 
 #endif
