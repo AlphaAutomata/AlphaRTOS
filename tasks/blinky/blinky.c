@@ -5,13 +5,15 @@
 
 volatile bool ledOn;
 
-int taskCallback(void *arg) {
+int taskCallback(uint32_t arg) {
 	if (ledOn) {
 		ledOn = false;
+		printlit("LED off\n");
 		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(off);
 	} else {
 		ledOn = true;
+		printlit("LED on\n");
 		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(green);
 	}
@@ -19,7 +21,7 @@ int taskCallback(void *arg) {
 	return 0;
 }
 
-int blinkyTask(void *arg) {
+int blinkyTask(uint32_t arg) {
 	ledOn = false;
 	
 	timerCallbackRegister(1000, taskCallback);

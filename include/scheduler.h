@@ -11,6 +11,7 @@
 #define TASK_STATUS_RUNNING       0x00000001
 #define TASK_STATUS_SLEEPING      0x00000002
 #define TASK_STATUS_RETURNED      0x00000004
+#define TASK_STATUS_YIELDING      0x00000008
 
 #define NUM_TASKS NUM_FRAMES
 
@@ -20,9 +21,9 @@ struct task {
 	uint32_t ticksInterval;
 	volatile uint32_t ticksRemaining;
 	volatile uint32_t status;
-	int (*taskEntry)(void *);
-	int (*timerCallback)(void *);
-	int (*interruptCallback)(eInterrupt interruptType, uint8_t deviceMask);
+	int (*taskEntry)(uint32_t);
+	int (*timerCallback)(uint32_t);
+	int (*interruptCallback)(eInterrupt interruptType, uint32_t deviceMask);
 	regframe_t frame;
 };
 

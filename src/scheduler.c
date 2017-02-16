@@ -35,17 +35,22 @@ void schedule(struct task *oldTask) {
 		// For each task, if it is ready, run its callback. If not, decrement its remaining ticks. 
 		if (taskTable[i].ticksRemaining == 0 && taskTable[i].status == TASK_STATUS_RUNNING) {
 			// Keep track of what the running task is
-			currTaskID = i;
 			// call the tasks's periodic timer callback
-			if (taskTable[i].timerCallback != 0 && taskTable[i].timerCallback(0) < 0) {
-				// Indicate task failure by setting LED to magenta
-				setLED(magenta);
-				while(1);
+			if (taskTable[i].timerCallback != 0) {
+				// perform context switch and run the task
+				currTaskID = i;
+				currTask.frame.LR = (uint32_t)userReturn;
+				currTask.frame.SP = (uint32_t)(frameBase(i));
+				runTask(&(currTask.frame), &kframe, currTask.timerCallback);
+				currTaskID = 0;
 			}
-			currTaskID = 0;
-			
 			// Reload the remaining ticks counter
 			taskTable[i].ticksRemaining = taskTable[i].ticksInterval;
+		} else if (taskTable[i].status == TASK_STATUS_YIELDING) {
+			// if the task had previously yielded the processor, let it run again
+			currTaskID = i;
+			switchContext(&(currTask.frame), &kframe);
+			currTaskID = 0;
 		} else {
 			taskTable[i].ticksRemaining--;
 		}

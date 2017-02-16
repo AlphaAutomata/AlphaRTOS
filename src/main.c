@@ -51,7 +51,7 @@ int main(void) {
 	// the LMC Terminal communicates over USB UART
 	terminalTaskID = addTask(initLMCterminal);
 	currTaskID = terminalTaskID;
-	initTask(terminalTaskID, (void *)115200);
+	initTask(terminalTaskID, 115200);
 	currTaskID = 0;
 	
 	while(1) {
@@ -67,7 +67,15 @@ int main(void) {
 			// call any callbacks
 			for (i=0; i<NUM_INT_CALLBACKS; i++) {
 				if (uartIntVector[i] != 0 && taskTable[uartIntVector[i]].interruptCallback != 0) {
-					taskTable[uartIntVector[i]].interruptCallback(UART, uartIntMask);
+					currTaskID = uartIntVector[i];
+					// conforming to ARM EABI, put the arguments to the user
+					// function in R0 and R1
+					currTask.frame.R0 = (uint32_t)UART;
+					currTask.frame.R1 = uartIntMask;
+					// set up user frame's LR and SP
+					currTask.frame.LR = (uint32_t)userReturn;
+					currTask.frame.SP = (uint32_t)(frameBase(i));
+					runTask(&(currTask.frame), &kframe, (int (*)(uint32_t))currTask.interruptCallback);
 				}
 				uartIntMask = 0;
 			}

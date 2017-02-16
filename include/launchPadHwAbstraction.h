@@ -62,7 +62,7 @@ typedef struct {
 	bool twoStopBits;
 } uartInfo;
 
-bool initUART(eUartController controller, uartInfo info);
+bool initUART(eUartController controller, uartInfo *info);
 bool disableUART(eUartController controller);
 
 
@@ -84,9 +84,10 @@ bool setPWM(ePwmController, unsigned int duty);
 /////////////////////////////// Interrupt Alert ///////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+// explicitly define the values, since these get passed through context switches
 typedef enum {
-	gpTimer,
-	UART
+	gpTimer = 0x00000000,
+	UART    = 0x00000001
 } eInterrupt;
 
 #endif

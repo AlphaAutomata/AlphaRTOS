@@ -6,7 +6,7 @@
 
 // This bit mask identifies which UART module triggered the interrupt.
 // Least significant bit is set by UART0, most significant bit is set by UART7.
-extern volatile uint8_t uartIntMask;
+extern volatile uint32_t uartIntMask;
 
 void uart0ISR(void);
 void uart1ISR(void);

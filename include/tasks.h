@@ -62,7 +62,7 @@ bool initTaskMaster(void);
 //! \return the task ID assigned to the task, or 0 if registration failed
 //
 //*****************************************************************************
-unsigned int addTask(int (*taskEntry)(void *));
+unsigned int addTask(int (*taskEntry)(uint32_t));
 
 //*****************************************************************************
 //
@@ -75,7 +75,7 @@ unsigned int addTask(int (*taskEntry)(void *));
 //! \return 0 on success
 //
 //*****************************************************************************
-int initTask(unsigned int taskNum, void *arg);
+int initTask(unsigned int taskNum, uint32_t arg);
 
 //*****************************************************************************
 //

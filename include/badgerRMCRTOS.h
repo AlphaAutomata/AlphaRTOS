@@ -20,7 +20,7 @@
 //! supports a single callback. Returns 0 on failure.
 //
 //*****************************************************************************
-int timerCallbackRegister(uint32_t interval, int (*callback)(void *));
+int timerCallbackRegister(uint32_t interval, int (*callback)(uint32_t));
 
 //*****************************************************************************
 //
@@ -74,7 +74,7 @@ uint32_t getTimerCallbackInterval(int callbackID);
 //! pool than the timer callback ID, on success. Returns -1 on failure. 
 //
 //*****************************************************************************
-int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint8_t deviceMask), int deviceNumber);
+int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint32_t deviceMask), int deviceNumber);
 
 //*****************************************************************************
 //

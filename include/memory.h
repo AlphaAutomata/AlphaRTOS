@@ -59,10 +59,33 @@ extern regframe_t kframe;
 //! performed an EABI return. 
 //
 //*****************************************************************************
-void runContextInitial(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(void *));
+void runTask(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(uint32_t));
 
+//*****************************************************************************
+//
+//! Perform a context switch from oldframe to newframe
+//!
+//! \param newframe points to a regframe_t where the new context's registers
+//! are stored
+//!
+//! \param oldframe points to a regrame_t where the old context's registers
+//! will be stored
+//!
+//! \return none
+//
+//*****************************************************************************
 void switchContext(regframe_t *newframe, regframe_t *oldframe);
 
+//*****************************************************************************
+//
+//! Called when a task has returned from being scheduled. Clears the currTaskID
+//! variable and switch back to the kernel context. 
+//!
+//! \param none
+//!
+//! \return none
+//
+//*****************************************************************************
 void userReturn(void);
 
 #endif

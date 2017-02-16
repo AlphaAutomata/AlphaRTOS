@@ -4,8 +4,6 @@
 #include "badgerRMCRTOS.h"
 #include "circular_buffer.h"
 
-#include "launchPadUIO.h"
-
 #define BUFF_SIZE 16
 #define CONVERSION_BUFFER_SIZE 24
 
@@ -15,7 +13,7 @@ uint8_t txData[BUFF_SIZE];
 circularBuffer_t rxBuff;
 uint8_t rxData[BUFF_SIZE];
 
-int uartFlow(void *arg) {
+int uartFlow(uint32_t arg) {
 	char uartChar;
 	
 	while (UARTSpaceAvail(UART0_BASE)) {
@@ -54,25 +52,22 @@ int uartFlow(void *arg) {
 //! \return 0, always
 //
 //*****************************************************************************
-int interruptCallback(eInterrupt interruptType, uint8_t deviceMask) {
+int interruptCallback(eInterrupt interruptType, uint32_t deviceMask) {
 	// we only care about the UART0 controller. Reject all other interrupts.
-	if (interruptType == UART && (deviceMask & 0x01)) uartFlow(0);
+	if (interruptType == UART && (deviceMask & 0x00000001)) uartFlow(0);
 	
 	return 0;
 }
 
-int initLMCterminal(void *arg) {
-	uint32_t baud;
+int initLMCterminal(uint32_t arg) {
 	uartInfo usbUART;
 	
-	baud = (uint32_t)arg;
-	
 	// initialize USB UART to 8N1
-	usbUART.baud = baud;
+	usbUART.baud = 115200;
 	usbUART.wlen = 8;
 	usbUART.parity = false;
 	usbUART.twoStopBits = false;
-	initUART(uart0, usbUART);
+	initUART(uart0, &usbUART);
 	
 	// every millisecond, poll the UART
 	timerCallbackRegister(1, uartFlow);
@@ -120,19 +115,19 @@ int putchar(int c) {
 	return c;
 }
 
-int putcharNonblock(int c) {
-	char in;
-	
-	in = c;
-	
-	circularBufferAddItem(&txBuff, &in);
-	
-	return c;
-}
-
 //#define va_start(va,arg0) va = (char *)(&arg0) - sizeof(arg0)
 //#define va_arg(va,type) *((type *)va); va = (char *)va - sizeof(type)
 //#define va_end(va) va = 0
+
+int printlit(const char *strlit) {
+	while (*strlit != '\0') {
+		putchar(*strlit);
+		if (*strlit == '\n') putchar('\r');
+		strlit++;
+	}
+	
+	return 0;
+}
 
 //*****************************************************************************
 //

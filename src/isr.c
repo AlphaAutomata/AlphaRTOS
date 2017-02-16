@@ -2,10 +2,10 @@
 #include "isr.h"
 #include "uart.h"
 
-volatile uint8_t uartIntMask;
+volatile uint32_t uartIntMask;
 
 void uart0ISR(void) {
-	uartIntMask |= 0x01;
+	uartIntMask |= 0x00000001;
 	
 	UARTIntClear(UART0_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -13,7 +13,7 @@ void uart0ISR(void) {
 }
 
 void uart1ISR(void) {
-	uartIntMask |= 0x02;
+	uartIntMask |= 0x00000002;
 	
 	UARTIntClear(UART1_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -21,7 +21,7 @@ void uart1ISR(void) {
 }
 
 void uart2ISR(void) {
-	uartIntMask |= 0x04;
+	uartIntMask |= 0x00000004;
 	
 	UARTIntClear(UART2_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -29,7 +29,7 @@ void uart2ISR(void) {
 }
 
 void uart3ISR(void) {
-	uartIntMask |= 0x08;
+	uartIntMask |= 0x00000008;
 	
 	UARTIntClear(UART3_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -37,7 +37,7 @@ void uart3ISR(void) {
 }
 
 void uart4ISR(void) {
-	uartIntMask |= 0x10;
+	uartIntMask |= 0x00000010;
 	
 	UARTIntClear(UART4_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -45,7 +45,7 @@ void uart4ISR(void) {
 }
 
 void uart5ISR(void) {
-	uartIntMask |= 0x20;
+	uartIntMask |= 0x00000020;
 	
 	UARTIntClear(UART5_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -53,7 +53,7 @@ void uart5ISR(void) {
 }
 
 void uart6ISR(void) {
-	uartIntMask |= 0x40;
+	uartIntMask |= 0x00000040;
 	
 	UARTIntClear(UART6_BASE, UART_INT_TX | UART_INT_RX);
 	
@@ -61,7 +61,7 @@ void uart6ISR(void) {
 }
 
 void uart7ISR(void) {
-	uartIntMask |= 0x80;
+	uartIntMask |= 0x00000080;
 	
 	UARTIntClear(UART7_BASE, UART_INT_TX | UART_INT_RX);
 	

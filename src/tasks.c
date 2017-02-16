@@ -5,8 +5,6 @@
 #include "isr.h"
 #include "memory.h"
 
-#include "launchPadUIO.h"
-
 volatile unsigned int currTasks;
 
 int gpTimerIntVector[NUM_INT_CALLBACKS];
@@ -49,7 +47,7 @@ void userReturn(void) {
 	switchContext(&kframe, &((taskTable[ID]).frame));
 }
 
-unsigned int addTask(int (*taskEntry)(void *)) {
+unsigned int addTask(int (*taskEntry)(uint32_t)) {
 	if (taskEntry == 0 || currTasks >= NUM_TASKS) {
 		return 0;
 	}
@@ -62,7 +60,7 @@ unsigned int addTask(int (*taskEntry)(void *)) {
 	return currTasks;
 }
 
-int initTask(unsigned int taskNum, void *arg) {
+int initTask(unsigned int taskNum, uint32_t arg) {
 	// check for invalid task IDs
 	if (taskNum > currTasks || taskNum == 0) {
 		return false;
@@ -70,15 +68,14 @@ int initTask(unsigned int taskNum, void *arg) {
 	
 	taskTable[taskNum].status = TASK_STATUS_RUNNING;
 	
+	taskTable[taskNum].frame.R0 = arg;
 	taskTable[taskNum].frame.LR = (uint32_t)(userReturn);
 	taskTable[taskNum].frame.SP = (uint32_t)(frameBase(taskNum));
-	runContextInitial(
+	runTask(
 		&(taskTable[taskNum].frame),
 		&kframe,
 		taskTable[taskNum].taskEntry
 	);
-	
-	setLED(cyan);
 	
 	return taskTable[taskNum].frame.R0;
 }
@@ -87,7 +84,7 @@ int initTask(unsigned int taskNum, void *arg) {
 ///////////////////////////// Badger RMC RTOS API /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-int timerCallbackRegister(uint32_t interval, int (*callback)(void *)) {
+int timerCallbackRegister(uint32_t interval, int (*callback)(uint32_t)) {
 	if (currTaskID == 0 || callback == 0 || interval == 0) {
 		return 0;
 	}
@@ -123,7 +120,7 @@ uint32_t getTimerCallbackInterval(int callbackID) {
 	return currTask.ticksInterval;
 }
 
-int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint8_t deviceMask), int deviceNumber) {
+int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint32_t deviceMask), int deviceNumber) {
 	int *iVector;
 	int i;
 	uint32_t deviceBase;
@@ -235,6 +232,15 @@ int interruptCallbackUnregister(eInterrupt interrupt, int callbackID) {
 }
 
 void taskYield(void) {
+	unsigned int ID;
+	
+	currTask.status = TASK_STATUS_YIELDING;
+	
+	ID = currTaskID;
+	currTaskID = 0;
+	
+	switchContext(&kframe, &((taskTable[ID]).frame));
+	
 	return;
 }
 

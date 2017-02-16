@@ -1,6 +1,8 @@
 #ifndef _USER_TASKS_H_
 #define _USER_TASKS_H_
 
-extern int blinkyTask(void *arg);
+#include <stdint.h>
+
+extern int blinkyTask(uint32_t arg);
 
 #endif

@@ -1,7 +1,7 @@
 #include "launchPadHwAbstraction.h"
 #include "isr.h"
 
-bool initUART(eUartController controller, uartInfo info) {
+bool initUART(eUartController controller, uartInfo *info) {
 	uint32_t sysctlMask;
 	uint32_t gpioBase;
 	uint32_t uartBase;
@@ -80,7 +80,7 @@ bool initUART(eUartController controller, uartInfo info) {
 			return false;
 	}
 	// set write length, parity, and stop bits based on the info passed in
-	switch (info.wlen) {
+	switch (info->wlen) {
 		case 5 :
 			uartConfigMask = UART_CONFIG_WLEN_5;
 			break;
@@ -96,10 +96,10 @@ bool initUART(eUartController controller, uartInfo info) {
 		default :
 			return false;
 	}
-	if (info.parity) {
+	if (info->parity) {
 		uartConfigMask |= UART_CONFIG_PAR_ONE;
 	}
-	if (info.twoStopBits) {
+	if (info->twoStopBits) {
 		uartConfigMask |= UART_CONFIG_STOP_TWO;
 	}
 	
@@ -113,7 +113,7 @@ bool initUART(eUartController controller, uartInfo info) {
 	while(!SysCtlPeripheralReady(sysctlMask));
 	
 	// configure and initialize the UART peripheral
-	UARTConfigSetExpClk(uartBase, SysCtlClockGet(), info.baud, uartConfigMask);
+	UARTConfigSetExpClk(uartBase, SysCtlClockGet(), info->baud, uartConfigMask);
 	
 	return true;
 }

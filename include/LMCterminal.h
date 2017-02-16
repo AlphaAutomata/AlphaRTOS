@@ -1,9 +1,7 @@
-#include <stdint.h>
+#ifndef _LMC_TERMINAL_H_
+#define _LMC_TERMINAL_H_
 
-#define _CR_IN_  1
-#define _LF_IN_  0
-#define _CR_OUT_ 1
-#define _LF_OUT_ 1
+#include <stdint.h>
 
 //*****************************************************************************
 //
@@ -11,13 +9,14 @@
 //! and register the terminal's interrupt callback. Initializes the internal
 //! circularBuffer_t used to store data form the UART FIFOs. 
 //!
-//! \param arg is interpreted as an int internally, and used to set the UART
-//! baud rate
+//! \param arg is used to set the UART baud rate. This is currently unsupported
 //!
 //! \return 0, always
+//!
+//! \note sets UART mode to 8N1. baud currently defaults to 115200
 //
 //*****************************************************************************
-int initLMCterminal(void *arg);
+int initLMCterminal(uint32_t arg);
 
 int getchar(void);
 
@@ -25,4 +24,8 @@ int putchar(int c);
 
 int putcharNonblock(int c);
 
+int printlit(const char *strlit);
+
 int kprintf(const char *format, ...);
+
+#endif
