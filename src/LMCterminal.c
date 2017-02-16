@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <stdarg.h>
 
 #include "LMCterminal.h"
 #include "badgerRMCRTOS.h"
@@ -25,12 +25,16 @@ int uartFlow(void *arg) {
 			break;
 		}
 	}
+	
 	while (UARTCharsAvail(UART0_BASE)) {
 		uartChar = UARTCharGet(UART0_BASE);
-#ifdef _PRINTF_CR_LF
-		if (uartChar == '\n') putchar('\r');
-#endif
-		putchar(uartChar);
+
+		if (uartChar == '\r') {
+			UARTCharPut(UART0_BASE, '\n');
+		}
+		
+		UARTCharPut(UART0_BASE, uartChar);
+		
 		circularBufferAddItem(&rxBuff, &uartChar);
 	}
 	
@@ -111,19 +115,28 @@ int putchar(int c) {
 	char in;
 	
 	in = c;
-	
 	while (!circularBufferAddItem(&txBuff, &in));
 	
 	return c;
 }
 
-#define va_start(va,arg0) va = (char *)(&arg0) + sizeof(arg0)
-#define va_arg(va,type) *((type *)va); va = (char *)va + sizeof(type)
-#define va_end(va) va = 0
+int putcharNonblock(int c) {
+	char in;
+	
+	in = c;
+	
+	circularBufferAddItem(&txBuff, &in);
+	
+	return c;
+}
+
+//#define va_start(va,arg0) va = (char *)(&arg0) - sizeof(arg0)
+//#define va_arg(va,type) *((type *)va); va = (char *)va - sizeof(type)
+//#define va_end(va) va = 0
 
 //*****************************************************************************
 //
-//! TODO: optimize charCnt
+//!
 //
 // *****************************************************************************
 int kprintf(const char *format, ...) {
@@ -133,9 +146,10 @@ int kprintf(const char *format, ...) {
 	int intVal;
 	int i;
 	int charCnt;
+	uint64_t longVal;
 	
 	// process variable arguments
-	char *va;
+	va_list va;
 	va_start(va, format);
 	
 	rdChar = (char *)format;
@@ -146,17 +160,17 @@ int kprintf(const char *format, ...) {
 	while (*rdChar != '\0') {
 		switch (*rdChar) {
 			// special character considerations
-#ifdef _PRINTF_CR_LF
 			case '\n' :
 				putchar('\n');
 				putchar('\r');
 				charCnt++;
 				break;
-#endif
 			// number literal conversions
 			case '%' :
 				rdChar++;
 				switch (*rdChar) {
+					case '\0' :
+						goto END;
 					case 'c' :
 						printChar = va_arg(va, unsigned int);
 						putchar(printChar);
@@ -178,6 +192,25 @@ int kprintf(const char *format, ...) {
 							intVal /= 10;
 							i--;
 						}
+						convBuff[i] = (char)(intVal + '0');
+						// print buffer
+						while (i < CONVERSION_BUFFER_SIZE) {
+							putchar(convBuff[i]);
+							charCnt++;
+							i++;
+						}
+						break;
+					case 'l' :
+						// grap the argument value
+						longVal = va_arg(va, uint64_t);
+						// convert to integer literal
+						i = CONVERSION_BUFFER_SIZE - 1;
+						while ((longVal >= 10) && (i >= 0)) {
+							convBuff[i] = (longVal % 10) + '0';
+							longVal /= 10;
+							i--;
+						}
+						convBuff[i] = (char)(longVal + '0');
 						// print buffer
 						while (i < CONVERSION_BUFFER_SIZE) {
 							putchar(convBuff[i]);
@@ -194,6 +227,8 @@ int kprintf(const char *format, ...) {
 		
 		rdChar++;
 	}
+	
+	END:
 	
 	va_end(va);
 	

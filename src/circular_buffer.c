@@ -1,6 +1,11 @@
 #include "circular_buffer.h"
+#include "interrupt.h"
+
+#include "launchPadUIO.h"
 
 bool initCircularBuffer(circularBuffer_t *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr) {
+	if (buff == 0 || buffAddr == 0 || itemSize == 0 || numItems == 0) return false;
+	
 	buff->itemSize = itemSize;
 	buff->numItems = numItems;
 	buff->rdCnt = 0;
@@ -77,9 +82,11 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 
 bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	// if the buffer doesn't have any more space, return false
-	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
+	if (buff == 0 || item == 0 || buff->wrCnt - buff->rdCnt >= buff->numItems) {
 		return false;
 	}
+	
+	IntMasterDisable();
 	
 	// use the unsafe internal function to add a single item
 	addSingleItemUnsafe(buff, item);
@@ -87,11 +94,20 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	// increment the write counter
 	buff->wrCnt++;
 	
+	IntMasterEnable();
+	
 	return true;
 }
 
 unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems) {
 	unsigned int itemsRemaining;
+	
+	IntMasterDisable();
+	
+	if (buff == 0 || item == 0) {
+		IntMasterEnable();
+		return 0;
+	}
 	
 	// if the buffer doesn't have enough room, only add enough elements to fill
 	// the buffer
@@ -112,6 +128,8 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
 		// update remaining items count
 		itemsRemaining--;
 	}
+	
+	IntMasterEnable();
 	
 	return numItems;
 }
@@ -183,8 +201,11 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 }
 
 bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
+	IntMasterDisable();
+	
 	// if the buffer is empty, return false
-	if (buff->rdCnt >= buff->wrCnt) {
+	if (buff == 0 || data == 0 || buff->rdCnt >= buff->wrCnt) {
+		IntMasterEnable();
 		return false;
 	}
 	
@@ -202,11 +223,20 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 		buff->wrCnt -= buff->numItems;
 	}
 	
+	IntMasterEnable();
+	
 	return true;
 }
 
 unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems) {
 	unsigned int itemsRemaining;
+	
+	IntMasterDisable();
+	
+	if (buff == 0 || data == 0 || numItems == 0) {
+		IntMasterEnable();
+		return 0;
+	}
 	
 	// check if there are actually numItems items in the buffer. If not, only
 	// remove as many items as there are in the buffer.
@@ -236,6 +266,8 @@ unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, un
 		buff->rdCnt -= buff->numItems;
 		buff->wrCnt -= buff->numItems;
 	}
+	
+	IntMasterEnable();
 	
 	return numItems;
 }

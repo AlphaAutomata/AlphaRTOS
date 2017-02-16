@@ -1,9 +1,10 @@
-#define PART_TM4C123GH6PM
-
 #include <string.h>
 
 #include "scheduler.h"
 #include "launchPadUIO.h"
+
+#include "tasks.h"
+#include "isr.h"
 
 int currTaskID;
 
@@ -30,7 +31,7 @@ void schedule(struct task *oldTask) {
 		while(1);
 	}
 	
-	while (i <= currTasks) {
+	for (i=1; i<=currTasks; i++) {
 		// For each task, if it is ready, run its callback. If not, decrement its remaining ticks. 
 		if (taskTable[i].ticksRemaining == 0 && taskTable[i].status == TASK_STATUS_RUNNING) {
 			// Keep track of what the running task is
@@ -48,9 +49,9 @@ void schedule(struct task *oldTask) {
 		} else {
 			taskTable[i].ticksRemaining--;
 		}
-		
-		i++;
 	}
+	
+	return;
 }
 
 void SysTick_Handler(void) {
@@ -59,6 +60,11 @@ void SysTick_Handler(void) {
 	
 	// Run a round of the scheduler.
 	runScheduler = true;
+	
+	// If the SysTick interrupts when a task is running, kill the task
+	if (currTaskID != 0) {
+		// Gotta figure out how to do this
+	}
 	
 	return;
 }

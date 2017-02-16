@@ -1,15 +1,18 @@
 #include "badgerRMCRTOS.h"
 #include "launchPadHwAbstraction.h"
 #include "launchPadUIO.h"
+#include "LMCterminal.h"
 
 volatile bool ledOn;
 
 int taskCallback(void *arg) {
 	if (ledOn) {
 		ledOn = false;
+		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(off);
 	} else {
 		ledOn = true;
+		//kprintf("Uptime = %lms\n", getUptime());
 		setLED(green);
 	}
 	

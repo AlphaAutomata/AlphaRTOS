@@ -5,13 +5,14 @@
 #include <stdint.h>
 
 #include "launchPadHwAbstraction.h"
+#include "memory.h"
 
 #define TASK_STATUS_UNINITIALIZED 0x00000000
 #define TASK_STATUS_RUNNING       0x00000001
 #define TASK_STATUS_SLEEPING      0x00000002
 #define TASK_STATUS_RETURNED      0x00000004
 
-#define NUM_TASKS 32
+#define NUM_TASKS NUM_FRAMES
 
 #define currTask taskTable[currTaskID]
 
@@ -22,6 +23,7 @@ struct task {
 	int (*taskEntry)(void *);
 	int (*timerCallback)(void *);
 	int (*interruptCallback)(eInterrupt interruptType, uint8_t deviceMask);
+	regframe_t frame;
 };
 
 // These variables are declared in scheduler.c

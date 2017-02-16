@@ -14,6 +14,7 @@
 //
 //*****************************************************************************
 void HardFault_Handler(void) {
+	// Set the LED to red to indicate a hard fault
 	setLED(red);
 	while(1);
 }
@@ -52,9 +53,6 @@ int main(void) {
 	currTaskID = terminalTaskID;
 	initTask(terminalTaskID, (void *)115200);
 	currTaskID = 0;
-	
-	//kprintf("Line w/15 char\n");
-	//kprintf("This is a stupidly long string to test if the circular buffer is working\nIf the buffer is working, then this string will print perfecly and won't break anything\nIs 255 characters a lot? Have I hit it yet?\nMaybe not. This line will definitely do it though.\n");
 	
 	while(1) {
 		// SysTick triggers this every millisecond

@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "inc/tm4c123gh6pm.h"
-#include "inc/hw_memmap.h"
+#include "TM4C123GH6PM.h"
 
 #include "gpio.h"
 

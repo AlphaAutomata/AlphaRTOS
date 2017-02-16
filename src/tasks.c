@@ -3,6 +3,9 @@
 #include "tasks.h"
 #include "launchPadHwAbstraction.h"
 #include "isr.h"
+#include "memory.h"
+
+#include "launchPadUIO.h"
 
 volatile unsigned int currTasks;
 
@@ -35,6 +38,17 @@ bool initTaskMaster(void) {
 	return true;
 }
 
+void userReturn(void) {
+	unsigned int ID;
+	
+	// clear the running task indicator
+	ID = currTaskID;
+	currTaskID = 0;
+	
+	// run the kernel context
+	switchContext(&kframe, &((taskTable[ID]).frame));
+}
+
 unsigned int addTask(int (*taskEntry)(void *)) {
 	if (taskEntry == 0 || currTasks >= NUM_TASKS) {
 		return 0;
@@ -56,7 +70,17 @@ int initTask(unsigned int taskNum, void *arg) {
 	
 	taskTable[taskNum].status = TASK_STATUS_RUNNING;
 	
-	return taskTable[taskNum].taskEntry(arg);
+	taskTable[taskNum].frame.LR = (uint32_t)(userReturn);
+	taskTable[taskNum].frame.SP = (uint32_t)(frameBase(taskNum));
+	runContextInitial(
+		&(taskTable[taskNum].frame),
+		&kframe,
+		taskTable[taskNum].taskEntry
+	);
+	
+	setLED(cyan);
+	
+	return taskTable[taskNum].frame.R0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,31 +155,46 @@ int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt i
 					break;
 				case 1 :
 					deviceBase = UART1_BASE;
+					isrAddr = uart1ISR;
 					break;
 				case 2 :
 					deviceBase = UART2_BASE;
+					isrAddr = uart2ISR;
 					break;
 				case 3 :
 					deviceBase = UART3_BASE;
+					isrAddr = uart3ISR;
 					break;
 				case 4 :
 					deviceBase = UART4_BASE;
+					isrAddr = uart4ISR;
 					break;
 				case 5 :
 					deviceBase = UART5_BASE;
+					isrAddr = uart5ISR;
 					break;
 				case 6 :
 					deviceBase = UART6_BASE;
+					isrAddr = uart6ISR;
 					break;
 				case 7 :
 					deviceBase = UART7_BASE;
+					isrAddr = uart7ISR;
 					break;
 				default :
 					return -1;
 			}
 			
+			// enable the UART transmit and receive FIFOs
+			UARTFIFOEnable(deviceBase);
+			// register the appropririate UART interrupt service routine
 			UARTIntRegister(deviceBase, isrAddr);
-			UARTIntEnable(deviceBase, UART_INT_TX | UART_INT_RX);
+			// Set the trasmit FIFO to trigger on FIFO level
+			UARTTxIntModeSet(deviceBase, UART_TXINT_MODE_FIFO);
+			// set both FIFOs levels. Tx interrupts when almost empty, Rx interrupts when almost full.
+			UARTFIFOLevelSet(deviceBase, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
+			// enable interrupts for receive and transmit
+			UARTIntEnable(deviceBase, UART_INT_RX | UART_INT_TX);
 			
 			break;
 		default :

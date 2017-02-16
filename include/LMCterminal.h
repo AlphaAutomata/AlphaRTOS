@@ -1,6 +1,9 @@
 #include <stdint.h>
 
-#define _PRINTF_CR_LF
+#define _CR_IN_  1
+#define _LF_IN_  0
+#define _CR_OUT_ 1
+#define _LF_OUT_ 1
 
 //*****************************************************************************
 //
@@ -19,5 +22,7 @@ int initLMCterminal(void *arg);
 int getchar(void);
 
 int putchar(int c);
+
+int putcharNonblock(int c);
 
 int kprintf(const char *format, ...);
