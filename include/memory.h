@@ -11,7 +11,7 @@
 #define NUM_FRAMES (RW_MEM_SIZE)/(STACK_SIZE)
 
 #define KFRAMEBase __Vectors[0]
-#define frameBase(taskID) RW_MEM_BASE + STACK_SIZE * (taskID+1)
+#define frameBase(taskID) RW_MEM_BASE + RW_MEM_SIZE - STACK_SIZE * (taskID+1)
 
 typedef struct {
 	uint32_t R0;

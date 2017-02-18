@@ -4,6 +4,8 @@
 #include "badgerRMCRTOS.h"
 #include "circular_buffer.h"
 
+#include "launchPadUIO.h"
+
 #define BUFF_SIZE 16
 #define CONVERSION_BUFFER_SIZE 24
 
@@ -167,13 +169,13 @@ int kprintf(const char *format, ...) {
 					case '\0' :
 						goto END;
 					case 'c' :
-						printChar = va_arg(va, unsigned int);
+						printChar = va_arg(va, int);
 						putchar(printChar);
 						charCnt++;
 						break;
 					case 'd' :
 					case 'i' :
-						// grap the argument value
+						// grab the argument value
 						// print negative sign if necessary
 						intVal = va_arg(va, int);
 						if (intVal < 0) {
@@ -218,6 +220,7 @@ int kprintf(const char *format, ...) {
 			default :
 				putchar(*rdChar);
 				charCnt++;
+				break;
 		}
 		
 		rdChar++;

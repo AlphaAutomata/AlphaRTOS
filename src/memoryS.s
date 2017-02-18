@@ -14,7 +14,7 @@ runTask PROC
 		ADD		R0, #48			; increment pointer to SP field in struct
 		LDR		SP, [R0], #4	; load the new stack pointer
 		LDR		LR, [R0]		; load the link register so it returns to where we want it to
-		SUB		R0, #60			; go back to the beginning of the struct to load R0
+		SUB		R0, #56			; go back to the beginning of the struct to load R0
 		LDR		R0, [R0]		; load R0 from struct
 		
 		BX		R4				; call into the new context

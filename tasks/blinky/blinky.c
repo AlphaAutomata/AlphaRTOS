@@ -11,13 +11,11 @@ volatile bool print;
 int taskCallback(uint32_t arg) {
 	if (ledOn) {
 		ledOn = false;
-		if (print) printlit("LED off\n");
-		//kprintf("Uptime = %lms\n", getUptime());
+		if (print) kprintf("Uptime = %lms\n", getUptime());
 		setLED(off);
 	} else {
 		ledOn = true;
-		if (print) printlit("LED on\n");
-		//kprintf("Uptime = %lms\n", getUptime());
+		if (print) kprintf("Uptime = %lms\n", getUptime());
 		setLED(green);
 	}
 	
