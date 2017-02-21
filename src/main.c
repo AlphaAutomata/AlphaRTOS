@@ -42,7 +42,7 @@ int main(void) {
 	// the scheduler is working as intended
 	addTask(blinkyTask, 0);
 	
-	// the LMC Terminal communicates over USB UART
+	// the LMC Terminal communicates over USB UART, and here we initalize it to 1Mbaud
 	addTask(initLMCterminal, 1000000);
 	
 	while(1) {

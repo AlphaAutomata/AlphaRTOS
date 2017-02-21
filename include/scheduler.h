@@ -18,8 +18,8 @@
 
 #define currTask taskTable[currTaskID]
 
-// has six 32-bit elements plus regframe_t, has size 24+sizeof(regframe_t)
-// if this changes, must update memoryS.s assembly routines
+// has six 32-bit elements plus regframe_t, aka 24+sizeof(regframe_t)
+// if this changes, must update memoryS.s assembly macros
 struct task {
 	uint32_t ticksInterval;
 	volatile uint32_t ticksRemaining;

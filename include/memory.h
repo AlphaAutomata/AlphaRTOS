@@ -4,17 +4,20 @@
 #include "TM4C123GH6PM.h"
 #include "core_cm4.h"
 
+// change these macros depending on how memory is allocated
 #define VECTOR_TABLE_BASE 0x00000000
 #define RW_MEM_BASE       0x20000000
 #define RW_MEM_SIZE       0x00008000
 #define STACK_SIZE        0x00000400
-#define NUM_FRAMES (RW_MEM_SIZE)/(STACK_SIZE)
+// statically allocate space for global memory by limiting the number of stacks
+#define NUM_FRAMES ((RW_MEM_SIZE)/(STACK_SIZE))-4
 
 #define KFRAMEBase __Vectors[0]
+// taskID+1 ensures that the kernel stack size is double the task stack size
 #define frameBase(taskID) RW_MEM_BASE + RW_MEM_SIZE - STACK_SIZE * (taskID+1)
 
 // contains 17 elements, summing to 68 bytes
-// if size or arrangement changes, must update memoryS.s routines
+// if size or arrangement changes, must update memoryS.s macros
 typedef struct {
 	uint32_t R0;
 	uint32_t R1;
@@ -78,21 +81,6 @@ void runTask(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(uint32
 //
 //*****************************************************************************
 void switchContext(regframe_t *newframe, regframe_t *oldframe);
-
-//*****************************************************************************
-//
-//! Perform a context switch from oldframe to newframe in Handler mode
-//!
-//! \param newframe points to a regframe_t where the new context's registers
-//! are stored
-//!
-//! \param oldframe points to a regrame_t where the old context's registers
-//! will be stored
-//!
-//! \return none
-//
-//*****************************************************************************
-void preempt(regframe_t *newframe, regframe_t *oldframe);
 
 //*****************************************************************************
 //
