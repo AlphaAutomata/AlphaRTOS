@@ -11,11 +11,11 @@ volatile bool print;
 int taskCallback(uint32_t arg) {
 	if (ledOn) {
 		ledOn = false;
-		if (print) kprintf("Uptime = %lms\n", getUptime());
+		if (print) kprintf("Uptime = %ls\n", getUptime()/1000);
 		setLED(off);
 	} else {
 		ledOn = true;
-		if (print) kprintf("Uptime = %lms\n", getUptime());
+		if (print) kprintf("Uptime = %ls\n", getUptime()/1000);
 		setLED(green);
 	}
 	
@@ -37,7 +37,7 @@ int blinkyTask(uint32_t arg) {
 	ledOn = false;
 	print = true;
 	
-	timerCallbackRegister(1000, taskCallback);
+	timerCallbackRegister(999, taskCallback);
 	
 	setLED(off);
 	

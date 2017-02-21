@@ -13,6 +13,8 @@
 #define KFRAMEBase __Vectors[0]
 #define frameBase(taskID) RW_MEM_BASE + RW_MEM_SIZE - STACK_SIZE * (taskID+1)
 
+// contains 17 elements, summing to 68 bytes
+// if size or arrangement changes, must update memoryS.s routines
 typedef struct {
 	uint32_t R0;
 	uint32_t R1;
@@ -29,7 +31,8 @@ typedef struct {
 	uint32_t R12;
 	uint32_t SP;
 	uint32_t LR;
-	xPSR_Type PSR;
+	uint32_t PC;
+	uint32_t xPCR;
 } regframe_t;
 
 extern unsigned int frameUser[NUM_FRAMES];
@@ -63,7 +66,7 @@ void runTask(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(uint32
 
 //*****************************************************************************
 //
-//! Perform a context switch from oldframe to newframe
+//! Perform a context switch from oldframe to newframe in Thread mode
 //!
 //! \param newframe points to a regframe_t where the new context's registers
 //! are stored
@@ -75,6 +78,21 @@ void runTask(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(uint32
 //
 //*****************************************************************************
 void switchContext(regframe_t *newframe, regframe_t *oldframe);
+
+//*****************************************************************************
+//
+//! Perform a context switch from oldframe to newframe in Handler mode
+//!
+//! \param newframe points to a regframe_t where the new context's registers
+//! are stored
+//!
+//! \param oldframe points to a regrame_t where the old context's registers
+//! will be stored
+//!
+//! \return none
+//
+//*****************************************************************************
+void preempt(regframe_t *newframe, regframe_t *oldframe);
 
 //*****************************************************************************
 //

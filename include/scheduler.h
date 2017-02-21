@@ -12,11 +12,14 @@
 #define TASK_STATUS_SLEEPING      0x00000002
 #define TASK_STATUS_RETURNED      0x00000004
 #define TASK_STATUS_YIELDING      0x00000008
+#define TASK_STATUS_PREEMPTED     0x00000010
 
 #define NUM_TASKS NUM_FRAMES
 
 #define currTask taskTable[currTaskID]
 
+// has six 32-bit elements plus regframe_t, has size 24+sizeof(regframe_t)
+// if this changes, must update memoryS.s assembly routines
 struct task {
 	uint32_t ticksInterval;
 	volatile uint32_t ticksRemaining;

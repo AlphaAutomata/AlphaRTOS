@@ -15,6 +15,19 @@ uint8_t txData[BUFF_SIZE];
 circularBuffer_t rxBuff;
 uint8_t rxData[BUFF_SIZE];
 
+//*****************************************************************************
+//
+//! As long as the UART FIFO has room and there are characters available in the
+//! transmit buffer to write, transfer characters from the buffer to the UART
+//! hardware FIFO. As long as there are characters in the receive hardware
+//! FIFO, transfer them to the receive memory buffer. If there is no room in
+//! the receive memory buffer, the character is discarded. 
+//!
+//! \param arg is ignored.
+//!
+//! \return 0, always
+//
+//*****************************************************************************
 int uartFlow(uint32_t arg) {
 	char uartChar;
 	
@@ -43,13 +56,14 @@ int uartFlow(uint32_t arg) {
 
 //*****************************************************************************
 //
-//! Initialize the LMC Terminal. Initialize UART0, set up interrupts, and
-//! and register the terminal's interrupt callback.
+//! Called whenever a UART Tx or Rx interrupt happens. If UART0 caused the
+//! interrupt, call uartFlow() to handle I/O.
 //!
 //! \param interruptType is the type of interrupt received. Only accepts UART
 //!
 //! \param deviceMask is a bit mask identifying which UART modules caused
-//! interrupts. Only handle UART0.
+//! interrupts. Bit-0, the LSB, being set indicates UART0, bit 7 being set
+//! indicates UART7. Only handle UART0. 
 //!
 //! \return 0, always
 //
@@ -117,25 +131,23 @@ int putchar(int c) {
 	return c;
 }
 
-//#define va_start(va,arg0) va = (char *)(&arg0) - sizeof(arg0)
-//#define va_arg(va,type) *((type *)va); va = (char *)va - sizeof(type)
-//#define va_end(va) va = 0
-
 int printlit(const char *strlit) {
+	int numChars;
+	
+	numChars = 0;
 	while (*strlit != '\0') {
 		putchar(*strlit);
-		if (*strlit == '\n') putchar('\r');
+		numChars++;
+		if (*strlit == '\n') {
+			putchar('\r');
+			numChars++;
+		}
 		strlit++;
 	}
 	
-	return 0;
+	return numChars;
 }
 
-//*****************************************************************************
-//
-//!
-//
-// *****************************************************************************
 int kprintf(const char *format, ...) {
 	char *rdChar;
 	char convBuff[CONVERSION_BUFFER_SIZE];
@@ -158,9 +170,9 @@ int kprintf(const char *format, ...) {
 		switch (*rdChar) {
 			// special character considerations
 			case '\n' :
-				putchar('\n');
+				putchar(*rdChar);
 				putchar('\r');
-				charCnt++;
+				charCnt += 2;
 				break;
 			// number literal conversions
 			case '%' :

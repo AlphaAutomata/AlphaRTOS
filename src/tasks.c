@@ -90,8 +90,8 @@ int timerCallbackRegister(uint32_t interval, int (*callback)(uint32_t)) {
 	}
 	
 	currTask.timerCallback = callback;
-	currTask.ticksInterval = interval;
-	currTask.ticksRemaining = interval;
+	currTask.ticksInterval = interval - 1;
+	currTask.ticksRemaining = interval - 1;
 	
 	return 1;
 }

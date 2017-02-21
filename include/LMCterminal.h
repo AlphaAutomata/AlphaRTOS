@@ -18,14 +18,50 @@
 //*****************************************************************************
 int initLMCterminal(uint32_t arg);
 
+//*****************************************************************************
+//
+//! Get a single ASCII character from USB UART
+//!
+//! \param none
+//!
+//! \return the character read from USB UART
+//
+//*****************************************************************************
 int getchar(void);
 
+//*****************************************************************************
+//
+//! Write a single character to USB UART
+//!
+//! \param c is the ASCII character to write to USB UART
+//!
+//! \return the character written to USB UART
+//
+//*****************************************************************************
 int putchar(int c);
 
-int putcharNonblock(int c);
-
+//*****************************************************************************
+//
+//! Write a string literal to USB UART. Converts LF to CRLF.
+//!
+//! \param strlit is the C-style string literal to write
+//!
+//! \return the number of characters written to USB UART
+//
+//*****************************************************************************
 int printlit(const char *strlit);
 
+//*****************************************************************************
+//
+//! Write a string literal to USB UART. Converts LF to CRLF.
+//!
+//! \param format is the stdio printf-style string literal to write. Currently
+//! only supports %c, %d, %i, and %l formatting characters and no formatting
+//! parameters. 
+//!
+//! \return the number of characters written to USB UART
+//
+//*****************************************************************************
 int kprintf(const char *format, ...);
 
 #endif

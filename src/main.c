@@ -22,9 +22,6 @@ void HardFault_Handler(void) {
 int main(void) {
 	int i;
 	
-	unsigned int blinkyTaskID;
-	unsigned int terminalTaskID;
-	
 	// Initialize GPIO Port A for UART over USB
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
@@ -43,16 +40,10 @@ int main(void) {
 	
 	// the Blinky task just toggles the RGB LED once every seconds to indicate
 	// the scheduler is working as intended
-	blinkyTaskID = addTask(blinkyTask);
-	currTaskID = blinkyTaskID;
-	initTask(blinkyTaskID, 0);
-	currTaskID = 0;
+	addTask(blinkyTask);
 	
 	// the LMC Terminal communicates over USB UART
-	terminalTaskID = addTask(initLMCterminal);
-	currTaskID = terminalTaskID;
-	initTask(terminalTaskID, 115200);
-	currTaskID = 0;
+	addTask(initLMCterminal);
 	
 	while(1) {
 		// SysTick triggers this every millisecond
@@ -75,6 +66,7 @@ int main(void) {
 					// set up user frame's LR and SP
 					currTask.frame.LR = (uint32_t)userReturn;
 					currTask.frame.SP = (uint32_t)(frameBase(i));
+					// have the SysTick ISR return into the kernel at userReturn() when preempting tasks
 					runTask(&(currTask.frame), &kframe, (int (*)(uint32_t))currTask.interruptCallback);
 				}
 				uartIntMask = 0;
