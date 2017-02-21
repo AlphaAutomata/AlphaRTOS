@@ -36,7 +36,7 @@ void schedule(struct task *oldTask) {
 		switch (taskTable[i].status) {
 			case TASK_STATUS_UNINITIALIZED :
 				currTaskID = i;
-				initTask(i, 0);
+				initTask(i, currTask.initArg);
 				currTaskID = 0;
 				break;
 			case TASK_STATUS_RUNNING :

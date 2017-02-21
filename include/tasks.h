@@ -59,10 +59,12 @@ bool initTaskMaster(void);
 //! \param taskEntry is a pointer to a function to be called to start running
 //! the task
 //!
+//! \param initArg is the argument to pass to the task on initialization
+//!
 //! \return the task ID assigned to the task, or 0 if registration failed
 //
 //*****************************************************************************
-unsigned int addTask(int (*taskEntry)(uint32_t));
+unsigned int addTask(int (*taskEntry)(uint32_t), uint32_t initArg);
 
 //*****************************************************************************
 //

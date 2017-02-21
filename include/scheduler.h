@@ -24,6 +24,7 @@ struct task {
 	uint32_t ticksInterval;
 	volatile uint32_t ticksRemaining;
 	volatile uint32_t status;
+	uint32_t initArg;
 	int (*taskEntry)(uint32_t);
 	int (*timerCallback)(uint32_t);
 	int (*interruptCallback)(eInterrupt interruptType, uint32_t deviceMask);

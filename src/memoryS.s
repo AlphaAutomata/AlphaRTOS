@@ -94,7 +94,7 @@ preempt	PUSH	{R0-R3,R12,LR}	; push caller-save registers
 		LDR		R0, =taskTable	; load the taskTable base
 		LDR		R1, =currTaskID	; load the current task ID
 		LDR		R1, [R1]
-		MOV		R2, #92			; set R2 to sizeof(struct task)
+		MOV		R2, #96			; set R2 to sizeof(struct task)
 		MLA		R1, R1, R2, R0	; multiply-accumulate to index into taskTable to currTask
 		
 		; currTask.status = TASK_STATUS_PREEMPTED;

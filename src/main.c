@@ -40,10 +40,10 @@ int main(void) {
 	
 	// the Blinky task just toggles the RGB LED once every seconds to indicate
 	// the scheduler is working as intended
-	addTask(blinkyTask);
+	addTask(blinkyTask, 0);
 	
 	// the LMC Terminal communicates over USB UART
-	addTask(initLMCterminal);
+	addTask(initLMCterminal, 1000000);
 	
 	while(1) {
 		// SysTick triggers this every millisecond

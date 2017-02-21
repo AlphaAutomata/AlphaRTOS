@@ -47,7 +47,7 @@ void userReturn(void) {
 	switchContext(&kframe, &((taskTable[ID]).frame));
 }
 
-unsigned int addTask(int (*taskEntry)(uint32_t)) {
+unsigned int addTask(int (*taskEntry)(uint32_t), uint32_t initArg) {
 	if (taskEntry == 0 || currTasks >= NUM_TASKS) {
 		return 0;
 	}
@@ -55,6 +55,7 @@ unsigned int addTask(int (*taskEntry)(uint32_t)) {
 	currTasks++;
 	
 	taskTable[currTasks].status = TASK_STATUS_UNINITIALIZED;
+	taskTable[currTasks].initArg = initArg;
 	taskTable[currTasks].taskEntry = taskEntry;
 	
 	return currTasks;

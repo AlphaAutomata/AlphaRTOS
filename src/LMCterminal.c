@@ -79,7 +79,7 @@ int initLMCterminal(uint32_t arg) {
 	uartInfo usbUART;
 	
 	// initialize USB UART to 8N1
-	usbUART.baud = 115200;
+	usbUART.baud = arg;
 	usbUART.wlen = 8;
 	usbUART.parity = false;
 	usbUART.twoStopBits = false;
