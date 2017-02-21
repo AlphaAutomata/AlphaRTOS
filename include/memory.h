@@ -38,8 +38,6 @@ typedef struct {
 	uint32_t xPCR;
 } regframe_t;
 
-extern unsigned int frameUser[NUM_FRAMES];
-
 extern regframe_t kframe;
 
 //*****************************************************************************

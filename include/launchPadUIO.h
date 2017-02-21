@@ -22,7 +22,8 @@ enum ledColor {
 //*****************************************************************************
 //
 //! Initialize the GPIO pins for the RGB LED and the two push buttons. Port F
-//! must already be initialized and unlocked.
+//! must already be initialized, but this function performs the unlock requred
+//! to set pin pad configurations. 
 //!
 //! \param none
 //!
@@ -49,7 +50,7 @@ void setLED(enum ledColor color);
 //! \param lPressed is a pointer to a boolean to store whether the left button
 //! is pressed
 //!
-//! \param rPressed is a pointe rto a boolean to store whether the right button
+//! \param rPressed is a pointer to a boolean to store whether the right button
 //! is pressed
 //!
 //! \return none

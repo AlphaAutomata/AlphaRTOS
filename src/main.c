@@ -48,7 +48,7 @@ int main(void) {
 	while(1) {
 		// SysTick triggers this every millisecond
 		if (runScheduler) {
-			schedule(0);
+			schedule();
 			runScheduler = false;
 		}
 		

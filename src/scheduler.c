@@ -22,7 +22,7 @@ void initScheduler(void) {
 	memset(taskTable, 0, sizeof(taskTable));
 }
 
-void schedule(struct task *oldTask) {
+void schedule(void) {
 	unsigned int i;
 	
 	if (currTaskID != 0) {

@@ -25,6 +25,18 @@ __xPSR				EQU 64
 regframe_t_offset	EQU	24
 regframe_t_size		EQU	68
 structTaskSize		EQU	regframe_t_offset+regframe_t_size
+
+; macros to access data from the IRQ stack
+; these are defined by the Cortex-M4 ISA
+__IRQR0				EQU	0
+__IRQR1				EQU	4
+__IRQR2				EQU	8
+__IRQR3				EQU	12
+__IRQR12			EQU	16
+__IRQLR				EQU	20
+__IRQPC				EQU	24
+__IRQxPSR			EQU	28
+__preIRQtop			EQU	32
 		
 		AREA	FLASH, CODE, READONLY
 		
@@ -103,20 +115,20 @@ SysTick_Handler PROC
 		BEQ		return
 		
 		; preempt running task by dropping out of the ISR into a context switch routine
-		LDMIA	SP, {R0-R3,R12}	; load the general purpose registers from IRQ stack
-		SUB		SP, #4			; allocate a 32-bit word on stack, which we won't restore. This
-								; effectively moves the IRQ stack by a word. 
-		STMIA	SP, {R0-R3,R12}	; store the general purpose registers to shifted IRQ stack
+		LDMIA	SP, {R0-R3,R12}			; load the general purpose registers from IRQ stack
+		SUB		SP, #4					; allocate a 32-bit word on stack, which we won't restore.
+										; This effectively moves the IRQ stack by a word. 
+		STMIA	SP, {R0-R3,R12}			; store the general purpose registers to shifted IRQ stack
 		
-		LDR		R0, [SP,#24]	; load the LR from unshifted IRQ stack location
-		LDR		R1, [SP,#28]	; load the PC from unshifted IRQ stack location
-		LDR		R2, [SP,#32]	; load the xPSR from unshifted IRQ stack location
+		LDR		R0, [SP,#(__IRQLR+4)]	; load the LR from unshifted IRQ stack location
+		LDR		R1, [SP,#(__IRQPC+4)]	; load the PC from unshifted IRQ stack location
+		LDR		R2, [SP,#(__IRQxPSR+4)]	; load the xPSR from unshifted IRQ stack location
 		
-		STR		R0, [SP,#20]	; store the LR into shifted IRQ stack location
-		STR		R1, [SP,#32]	; store the PC into new top of pre-IRQ stack
-		LDR		R1, =preempt	; load the address of label preempt
-		STR		R1, [SP,#24]	; replace return PC in shifted IRQ stack with pointer to preempt
-		STR		R2, [SP,#28]	; store the xPSR into shifted IRQ stack location
+		STR		R0, [SP,#(__IRQLR)]		; store the LR into shifted IRQ stack location
+		STR		R1, [SP,#(__preIRQtop)]	; store the PC into new top of pre-IRQ stack
+		LDR		R1, =preempt			; load the address of label preempt
+		STR		R1, [SP,#(__IRQPC)]		; point return PC in shifted IRQ stack to preempt label
+		STR		R2, [SP,#(__IRQxPSR)]	; store the xPSR into shifted IRQ stack location
 		
 		; return from IRQ
 return	BX		LR				; execute return from ISR

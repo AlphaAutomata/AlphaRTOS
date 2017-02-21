@@ -39,7 +39,7 @@ extern void SysTick_Handler(void);
 //! \return none
 //
 //*****************************************************************************
-extern void schedule(struct task *oldTask);
+extern void schedule(void);
 
 //*****************************************************************************
 //
