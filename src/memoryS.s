@@ -18,6 +18,17 @@ __LR				EQU 56
 __PC				EQU 60
 __xPSR				EQU 64
 
+; offset macros to access fields in struct task
+; must change if struct task definition changes in scheduler.h
+taskTicksInterval	EQU	0
+taskTickRemaining	EQU	4
+taskStatus			EQU	8
+taskInitArg			EQU	12
+taskTaskEntry		EQU	16
+taskTimerCallback	EQU	20
+taskIntCallback		EQU	24
+taskFrame			EQU	28
+
 ; size macros for regframe_t and sizeof(struct task)
 ; must change if struct task or regframe_t definitions change
 ; struct task	defined in scheduler.h
@@ -131,7 +142,7 @@ SysTick_Handler PROC
 		STR		R2, [SP,#(__IRQxPSR)]	; store the xPSR into shifted IRQ stack location
 		
 		; return from IRQ
-return	BX		LR				; execute return from ISR
+return	BX		LR						; execute return from ISR
 		
 		; the preempt subroutine runs as if it was inserted into whatever code the Systick
 		; interrupted. It performs an EABI standard function call to switchContext() in order to
@@ -147,22 +158,22 @@ preempt	PUSH	{R0-R3,R12,LR}			; push caller-save registers
 		MLA		R1, R1, R2, R0			; multiply-accumulate to index into taskTable to currTask
 		
 		; currTask.status = TASK_STATUS_PREEMPTED;
-		MOV		R2, #0x00000010	; set R2 to TASK_STATUS_PREEMPTED
-		STR		R2, [R1,#8]		; store task status
+		MOV		R2, #0x00000010			; set R2 to TASK_STATUS_PREEMPTED
+		STR		R2, [R1,#taskStatus]	; store task status
 		
 		; switchContext(&kframe, &(currTask.frame));
-		ADD		R1, #24			; offset into the frame field of the current task entry, loading
-								; currTask.frame as *oldframe
-		LDR		R0, =kframe		; load kframe as *newframe
-		BL		switchContext	; call function to perform context switch
+		ADD		R1, #taskFrame			; offset into the frame field of the current task entry,
+										; loading currTask.frame as *oldframe
+		LDR		R0, =kframe				; load kframe as *newframe
+		BL		switchContext			; call function to perform context switch
 		
-		LDR		R0, [SP,#24]	; load the return PC
-		ORR		R0, #0x00000001	; odd-align the return PC, since Cortex-M4 is Thumb-only
-		STR		R0, [SP,#24]	; store back odd-aligned PC
-		POP		{R0-R3,R12,LR}	; load the saved registers
-		POP		{PC}			; return to user task
+		LDR		R0, [SP,#__IRQPC]		; load the return PC
+		ORR		R0, #0x00000001			; odd-align the return PC, since Cortex-M4 is Thumb-only
+		STR		R0, [SP,#__IRQPC]		; store back odd-aligned PC
+		POP		{R0-R3,R12,LR}			; load the saved registers
+		POP		{PC}					; return to user task
 		
-		NOP						; binary alignment padding
+		NOP								; binary alignment padding
 		
 		ENDP
 		
