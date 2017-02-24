@@ -7,6 +7,10 @@
 #include "launchPadHwAbstraction.h"
 #include "memory.h"
 
+// number of clock cycles between SysTick interrupts. For LaunchPad at 50MHz,
+// this sets the SysTick interval to 1ms. 
+#define SYSTICK_INTERVAL 50000
+
 #define TASK_STATUS_UNINITIALIZED 0x00000000
 #define TASK_STATUS_RUNNING       0x00000001
 #define TASK_STATUS_SLEEPING      0x00000002
@@ -48,5 +52,17 @@ extern volatile unsigned int currTasks;
 //
 //*****************************************************************************
 void initScheduler(void);
+
+//*****************************************************************************
+//
+//! Interrupt service routine to make sure no task overruns its alloted
+//! scheduling slot. Implemented in memoryS.s, since it forces a context switch
+//!
+//! \param none
+//!
+//! \return none
+//
+//*****************************************************************************
+extern void TIMER0A_Handler(void);
 
 #endif

@@ -14,11 +14,15 @@ bool initTaskMaster(void) {
 	// Initially, we have no tasks.
 	currTasks = 0;
 	
-	// Start the SysTick
-	SysTickEnable();
+	// clearn the interrupt vectors
+	memset(gpTimerIntVector, 0, sizeof(gpTimerIntVector));
+	memset(uartIntVector, 0, sizeof(gpTimerIntVector));
+	
+	// initialize the scheduler
+	initScheduler();
 	
 	// Set SysTick to 1ms
-	SysTickPeriodSet(50000);
+	SysTickPeriodSet(SYSTICK_INTERVAL);
 	
 	// Register our scheduler
 	SysTickIntRegister(&SysTick_Handler);
@@ -26,12 +30,8 @@ bool initTaskMaster(void) {
 	// Enable SysTick interrupts
 	SysTickIntEnable();
 	
-	// clearn the interrupt vectors
-	memset(gpTimerIntVector, 0, sizeof(gpTimerIntVector));
-	memset(uartIntVector, 0, sizeof(gpTimerIntVector));
-	
-	// initialize the scheduler
-	initScheduler();
+	// Start the SysTick
+	SysTickEnable();
 	
 	return true;
 }
@@ -225,6 +225,8 @@ int interruptCallbackUnregister(eInterrupt interrupt, int callbackID) {
 		case UART :
 			iVector = uartIntVector;
 			break;
+		default :
+			return -1;
 	}
 	
 	iVector[callbackID] = 0;

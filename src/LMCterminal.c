@@ -86,7 +86,7 @@ int initLMCterminal(uint32_t arg) {
 	initUART(uart0, &usbUART);
 	
 	// every millisecond, poll the UART
-	timerCallbackRegister(1, uartFlow);
+	timerCallbackRegister(5, uartFlow);
 	
 	// every time a UART FIFO interrupt happens, handle it
 	interruptCallbackRegister(UART, interruptCallback, 0);

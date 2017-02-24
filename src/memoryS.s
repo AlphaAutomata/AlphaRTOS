@@ -48,6 +48,11 @@ __IRQLR				EQU	20
 __IRQPC				EQU	24
 __IRQxPSR			EQU	28
 __preIRQtop			EQU	32
+
+; macros for Timer0 peripheral interrupt clear
+TIMER0_BASE			EQU 0x40030000
+TIMER_TIMA_TIMEOUT	EQU 0x00000001
+TIMER_O_ICR			EQU 0x00000024
 		
 		AREA	FLASH, CODE, READONLY
 		
@@ -120,6 +125,7 @@ SysTick_Handler PROC
 		STR		R1, [R0]
 		
 		; if a user task is running, preempt with context switch
+IRQ_prep_preempt
 		LDR		R0, =currTaskID
 		LDR		R1, [R0]
 		CMP		R1, #0
@@ -173,7 +179,22 @@ preempt	PUSH	{R0-R3,R12,LR}			; push caller-save registers
 		POP		{R0-R3,R12,LR}			; load the saved registers
 		POP		{PC}					; return to user task
 		
-		NOP								; binary alignment padding
+		ENDP
+		
+		; this ISR functions identically to the SysTick ISR, except it shouldn't update timekeeping
+		; globals. Therefore we simply jump into the SysTick ISR right after global variable update
+TIMER0A_Handler PROC
+		EXPORT TIMER0A_Handler
+		IMPORT TimerIntClear
+		
+		; clear timer timeout interrupt
+		MOV32	R0, #(TIMER0_BASE+TIMER_O_ICR)	; set mem-mapped address of timer interrupt clear
+		MOV		R1, #TIMER_TIMA_TIMEOUT			; set register write value to clear timeout int
+		STR		R1, [R0]						; do register write
+		
+		B		IRQ_prep_preempt				; branch to ISR-context preemption code
+		
+		NOP
 		
 		ENDP
 		

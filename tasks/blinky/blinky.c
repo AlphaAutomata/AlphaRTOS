@@ -37,7 +37,7 @@ int blinkyTask(uint32_t arg) {
 	ledOn = false;
 	print = true;
 	
-	timerCallbackRegister(999, taskCallback);
+	timerCallbackRegister(1000, taskCallback);
 	
 	setLED(off);
 	

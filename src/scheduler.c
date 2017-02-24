@@ -1,4 +1,8 @@
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "timer.h"
 
 #include "scheduler.h"
 #include "launchPadUIO.h"
@@ -20,6 +24,18 @@ void initScheduler(void) {
 	currTaskID = 0;
 	
 	memset(taskTable, 0, sizeof(taskTable));
+	
+	// turn on clock for Timer0 peripheral device
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_TIMER0));
+	
+	// set up a General Purpose Timer which will be used to ensure each task only runs for a
+	// limited amount of time. The time slots are set and the interrupts enabled at the beginning
+	// of each scheduling round, and disabled at the end of each scheduling round. 
+	// Set timer to be periodic, and have no additional actions other than triggering and interrupt
+	// when timing out. 
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT);
+	TimerIntRegister(TIMER0_BASE, TIMER_A, TIMER0A_Handler);
 }
 
 void schedule(void) {
@@ -31,7 +47,15 @@ void schedule(void) {
 		while(1);
 	}
 	
+	// enable the interrupt right before entering the scheduling loop
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	
 	for (i=1; i<=currTasks; i++) {
+		// set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
+		// aside time for OS operations. Reload the timer at the start of each task. 
+		TimerLoadSet(TIMER0_BASE, TIMER_A, SYSTICK_INTERVAL / (currTasks+1));
+		TimerEnable(TIMER0_BASE, TIMER_A);
+		
 		// For each task, determine action based on its status
 		switch (taskTable[i].status) {
 			case TASK_STATUS_UNINITIALIZED :
@@ -52,7 +76,7 @@ void schedule(void) {
 						currTaskID = 0;
 					}
 					// Reload the remaining ticks counter
-					taskTable[i].ticksRemaining = taskTable[i].ticksInterval;
+					taskTable[i].ticksRemaining = taskTable[i].ticksInterval - 1;
 				} else {
 					taskTable[i].ticksRemaining--;
 				}
@@ -69,4 +93,7 @@ void schedule(void) {
 				break;
 		}
 	}
+	
+	// disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
+	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 }

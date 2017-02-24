@@ -600,6 +600,11 @@
               <FileType>1</FileType>
               <FilePath>.\driverlib\uart.c</FilePath>
             </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\driverlib\timer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
