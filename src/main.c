@@ -30,8 +30,21 @@ int main(void) {
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
 	
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
+	
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
+	
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD));
+	
+	
+	
 	// initialize LaunchPad RGB LED and push buttons
 	initUIO();
+	
+	initPWM(pwm0,pwm_gen0);
 	
 	// add all the existing tasks
 	// TODO: when booting in debug mode, delay initTask calls until a command

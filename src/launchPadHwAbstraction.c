@@ -1,5 +1,99 @@
 #include "launchPadHwAbstraction.h"
 #include "isr.h"
+#include "pwm.h"
+
+#include "launchPadUIO.h"
+
+bool initPWM(ePwmController controller, ePwmGenerator generator){
+	uint32_t Base;
+	uint32_t Gen;	
+	uint32_t rxPinConfigMask;
+	uint32_t port;
+	uint8_t pin;
+	uint32_t SysCtlBase;
+	
+	switch (controller) {
+		case pwm0:
+			Base = PWM0_BASE;
+			SysCtlBase = SYSCTL_PERIPH_PWM0;
+			switch (generator) {
+				case pwm_gen0:
+					Gen = PWM_GEN_0;
+					rxPinConfigMask = GPIO_PB6_M0PWM0;
+					pin = GPIO_PIN_6;
+					break;
+				case pwm_gen1:
+					Gen = PWM_GEN_1;
+					rxPinConfigMask = GPIO_PB7_M0PWM1;
+					pin = GPIO_PIN_7;
+					break;
+				case pwm_gen2:
+					Gen = PWM_GEN_2;
+					rxPinConfigMask = GPIO_PB4_M0PWM2;
+					pin = GPIO_PIN_4;
+					break;
+				case pwm_gen3:
+					Gen = PWM_GEN_3;
+					rxPinConfigMask = GPIO_PB5_M0PWM3;
+					pin = GPIO_PIN_5;
+					break;
+			}
+			port = GPIOB_BASE;
+			break;
+	
+		case pwm1:
+			Base = PWM1_BASE;
+			SysCtlBase = SYSCTL_PERIPH_PWM1;
+			switch (generator) {
+				case pwm_gen0:
+					Gen = PWM_GEN_0;
+					rxPinConfigMask = GPIO_PD0_M1PWM0;
+					port = GPIOD_BASE;
+					pin = GPIO_PIN_0;
+					break;
+				case pwm_gen1:
+					Gen = PWM_GEN_1;
+					rxPinConfigMask = GPIO_PD1_M1PWM1;
+					port = GPIOD_BASE;
+					pin = GPIO_PIN_1;
+					break;
+				case pwm_gen2:
+					Gen = PWM_GEN_2;
+					rxPinConfigMask = GPIO_PE4_M1PWM2;
+					port = GPIOE_BASE;
+					pin = GPIO_PIN_4;
+					break;
+				case pwm_gen3:
+					Gen = PWM_GEN_3;
+					rxPinConfigMask = GPIO_PE5_M1PWM3;
+					port = GPIOE_BASE;
+					pin = GPIO_PIN_5;
+					break;
+			}
+			break;
+		}
+	
+	GPIOPinTypePWM(port, pin);
+	GPIOPinConfigure(rxPinConfigMask);
+	SysCtlPeripheralEnable(SysCtlBase);
+	while(!SysCtlPeripheralReady(SysCtlBase));
+	PWMGenEnable(Base, Gen);
+	PWMGenConfigure(Base, Gen, PWM_GEN_MODE_DOWN);
+	PWMGenPeriodSet(Base, Gen, 3000);
+	PWMPulseWidthSet(Base, Gen, 1000);
+	PWMOutputState(Base, (PWM_OUT_0_BIT | PWM_OUT_1_BIT), true);
+	return true;
+}
+
+bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty){
+	switch (controller){
+		case pwm0:
+			PWMPulseWidthSet(PWM0_BASE, generator, duty);
+		case pwm1:
+			PWMPulseWidthSet(PWM1_BASE, generator, duty);
+	}
+	return true;
+}
 
 bool initUART(eUartController controller, uartInfo *info) {
 	uint32_t sysctlMask;

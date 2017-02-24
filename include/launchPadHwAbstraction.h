@@ -9,6 +9,7 @@
 #endif
 
 #include "TM4C123GH6PM.h"
+#include "pwm.h"
 #include "sysctl.h"
 #include "gpio.h"
 #include "pin_map.h"
@@ -75,9 +76,16 @@ typedef enum {
 	pwm1
 } ePwmController;
 
-bool initPWM(ePwmController controller);
+typedef enum {
+	pwm_gen0,
+	pwm_gen1,
+	pwm_gen2,
+	pwm_gen3
+} ePwmGenerator;
+
+bool initPWM(ePwmController controller, ePwmGenerator generator);
 bool disablePWM(ePwmController controller);
-bool setPWM(ePwmController, unsigned int duty);
+bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty);
 
 
 ///////////////////////////////////////////////////////////////////////////////

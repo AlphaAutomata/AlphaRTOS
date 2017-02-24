@@ -605,6 +605,11 @@
               <FileType>1</FileType>
               <FilePath>.\driverlib\timer.c</FilePath>
             </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\driverlib\pwm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
