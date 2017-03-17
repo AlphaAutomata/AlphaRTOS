@@ -45,6 +45,9 @@ int main(void) {
 	initUIO();
 	
 	initPWM(pwm0,pwm_gen0);
+	initPWM(pwm0,pwm_gen1);
+	initPWM(pwm0,pwm_gen2);
+	initPWM(pwm0,pwm_gen3);
 	
 	// add all the existing tasks
 	// TODO: when booting in debug mode, delay initTask calls until a command

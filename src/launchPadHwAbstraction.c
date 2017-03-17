@@ -79,8 +79,8 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 	while(!SysCtlPeripheralReady(SysCtlBase));
 	PWMGenEnable(Base, Gen);
 	PWMGenConfigure(Base, Gen, PWM_GEN_MODE_DOWN);
-	PWMGenPeriodSet(Base, Gen, 3000);
-	PWMPulseWidthSet(Base, Gen, 1000);
+	PWMGenPeriodSet(Base, Gen, 3*ONE_MS_PULSE_WIDTH);
+	PWMPulseWidthSet(Base, Gen, 3*ONE_MS_PULSE_WIDTH/2);
 	PWMOutputState(Base, (PWM_OUT_0_BIT | PWM_OUT_1_BIT), true);
 	return true;
 }
