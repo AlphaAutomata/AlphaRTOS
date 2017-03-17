@@ -108,11 +108,20 @@ int initLMCterminal(uint32_t arg) {
 int getchar(void) {
 	char c;
 	
-	while (!circularBufferRemoveItem(&rxBuff, &c));
+	while (!circularBufferRemoveItem(&rxBuff, &c)) taskYield();
 	
 	return c;
 }
 
+
+int getchar_nonblock(void){
+	char c;
+	if (!circularBufferRemoveItem(&rxBuff, &c)) {
+		return -1;
+	} else {
+		return c;
+	}
+}
 //*****************************************************************************
 //
 //! Put character to a UART0
@@ -244,3 +253,5 @@ int kprintf(const char *format, ...) {
 	
 	return charCnt;
 }
+
+

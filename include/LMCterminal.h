@@ -31,6 +31,17 @@ int getchar(void);
 
 //*****************************************************************************
 //
+//! Get a single ASCII character from USB UART. Does not block.
+//!
+//! \param none
+//!
+//! \return the character read from USB UART if there is a char. -1 otherwise.
+//
+//*****************************************************************************
+int getchar_nonblock(void);
+
+//*****************************************************************************
+//
 //! Write a single character to USB UART
 //!
 //! \param c is the ASCII character to write to USB UART

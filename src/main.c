@@ -61,6 +61,9 @@ int main(void) {
 	// the LMC Terminal communicates over USB UART, and here we initalize it to 1Mbaud
 	addTask(initLMCterminal, 1000000);
 	
+	// read wheel speed commands from USB UART and set PWMs
+	addTask(ctrlLoop, 0);
+	
 	while(1) {
 		// SysTick triggers this every millisecond
 		if (runScheduler) {

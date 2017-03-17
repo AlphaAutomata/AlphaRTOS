@@ -4,5 +4,6 @@
 #include <stdint.h>
 
 extern int blinkyTask(uint32_t arg);
+extern int ctrlLoop(uint32_t arg);
 
 #endif

@@ -483,11 +483,6 @@
               <FilePath>.\src\tasks.c</FilePath>
             </File>
             <File>
-              <FileName>isr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\isr.c</FilePath>
-            </File>
-            <File>
               <FileName>memoryC.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\memoryC.c</FilePath>
@@ -570,6 +565,11 @@
             </GroupArmAds>
           </GroupOption>
           <Files>
+            <File>
+              <FileName>isr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\isr.c</FilePath>
+            </File>
             <File>
               <FileName>cpu.c</FileName>
               <FileType>1</FileType>
@@ -687,6 +687,11 @@
               <FileName>blinky.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\tasks\blinky\blinky.c</FilePath>
+            </File>
+            <File>
+              <FileName>ctrlLoop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\ctrlLoop.c</FilePath>
             </File>
           </Files>
         </Group>
