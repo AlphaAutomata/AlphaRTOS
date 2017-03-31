@@ -21,6 +21,10 @@ void HardFault_Handler(void) {
 
 int main(void) {
 	int i;
+	struct {
+		uint32_t left;
+		uint32_t right;
+	} wheelSpeeds;
 	
 	// Initialize GPIO Port A for UART over USB
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -62,7 +66,9 @@ int main(void) {
 	addTask(initLMCterminal, 1000000);
 	
 	// read wheel speed commands from USB UART and set PWMs
-	addTask(ctrlLoop, 0);
+	addTask(ctrlLoop, (uint32_t)&wheelSpeeds);
+	
+	addTask(SerialReader, (uint32_t)&wheelSpeeds);
 	
 	while(1) {
 		// SysTick triggers this every millisecond
