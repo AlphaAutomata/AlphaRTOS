@@ -1,6 +1,7 @@
 #include "badgerRMCRTOS.h"
 #include "launchPadHwAbstraction.h"
 #include "LMCterminal.h"
+
 struct width {
 	uint32_t left;
 	uint32_t right;
@@ -62,13 +63,13 @@ int output(uint32_t arg) {
 			default :
 				return 0;
 		}
-		numBytes ++;
+		numBytes++;
 		
 	}
 }
 
 int SerialReader(uint32_t arg) {
 	timerCallbackRegister(3, output);
-	DrivingWidth = (struct width *) arg;
+	DrivingWidth = (struct width *)arg;
 	return 0;
 }

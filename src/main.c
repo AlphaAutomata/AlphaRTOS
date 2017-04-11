@@ -4,6 +4,11 @@
 #include "isr.h"
 #include "LMCterminal.h"
 
+struct {
+	uint32_t left;
+	uint32_t right;
+} wheelSpeeds;
+
 //*****************************************************************************
 //
 //! Set the LED to red to indicate a hard fault
@@ -21,10 +26,6 @@ void HardFault_Handler(void) {
 
 int main(void) {
 	int i;
-	struct {
-		uint32_t left;
-		uint32_t right;
-	} wheelSpeeds;
 	
 	// Initialize GPIO Port A for UART over USB
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);

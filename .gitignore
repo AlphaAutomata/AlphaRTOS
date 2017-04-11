@@ -3,3 +3,5 @@
 Listings/
 Objects/
 RTE/
+*.diff
+*.scvd

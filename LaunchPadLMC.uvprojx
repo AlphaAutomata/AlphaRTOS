@@ -448,6 +448,11 @@
           </GroupOption>
           <Files>
             <File>
+              <FileName>isr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\isr.c</FilePath>
+            </File>
+            <File>
               <FileName>circular_buffer.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\circular_buffer.c</FilePath>
@@ -565,11 +570,6 @@
             </GroupArmAds>
           </GroupOption>
           <Files>
-            <File>
-              <FileName>isr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\isr.c</FilePath>
-            </File>
             <File>
               <FileName>cpu.c</FileName>
               <FileType>1</FileType>
@@ -692,6 +692,11 @@
               <FileName>ctrlLoop.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\ctrlLoop.c</FilePath>
+            </File>
+            <File>
+              <FileName>SerialReader.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\tasks\SerialReader.c</FilePath>
             </File>
           </Files>
         </Group>

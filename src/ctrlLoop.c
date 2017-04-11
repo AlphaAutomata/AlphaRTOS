@@ -9,14 +9,14 @@ struct speeds {
 
 struct speeds *sharedSpeeds;
 
-int SetPWM(uint32_t arg){
+int SetWheels(uint32_t arg){
 	setPWM(pwm0, pwm_gen0, sharedSpeeds->left);
 	setPWM(pwm0, pwm_gen1, sharedSpeeds->right);
-	return 1;
+	return 0;
 }
 
 int ctrlLoop(uint32_t arg) {
 	sharedSpeeds = (struct speeds *)arg;
-	timerCallbackRegister(3, SetPWM);
+	timerCallbackRegister(3, SetWheels);
 	return 0;
 }
