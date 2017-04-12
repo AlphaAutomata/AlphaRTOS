@@ -32,14 +32,20 @@ int parse(uint32_t arg) {
 				lastOp = opcode;
 			}
 			
+			kprintf("Decoded Packet Dump\n");
+			for (i=0; i<16; i++) {
+				kprintf(" 0x%X", packet[i]);
+			}
+			kprintf("\n");
+			
 			switch (opcode) {
 				case DRIVE_OPCODE :
 					ParseDrivePayload(payload_ptr, &dr);
 					
-					leftWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.left+100))/200 + ONE_MS_PULSE_WIDTH/2);
+					leftWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)dr.left)+100)) / 200) + ONE_MS_PULSE_WIDTH);
 					wheelPWM.left = leftWidth;
 
-					rightWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.right+100))/200 + ONE_MS_PULSE_WIDTH/2);
+					rightWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)dr.right)+100)) / 200) + ONE_MS_PULSE_WIDTH);
 					wheelPWM.right = rightWidth;
 					break;
 				
