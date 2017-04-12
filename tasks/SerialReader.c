@@ -15,40 +15,38 @@ struct DrivePayload dr;
 uint8_t packet[16];
 uint8_t opcode;
 uint8_t *payload_ptr;
-int byteNum;
+uint8_t byteNum;
 
+// does not return unless it fails
 int parse(uint32_t arg) {
-	int readChar;
 	unsigned int leftWidth;
 	unsigned int rightWidth;
 	
-	readChar = getchar_nonblock();
-	if (readChar == PKT_HEADER_BYTE) {
-		packet[0] = readChar;
-		
-		byteNum = 1;
-		while(1) {
-			readChar = getchar_nonblock();
+	// continuously read UART bytes
+	// uses getchar(), which yields the CPU when blocking
+	while (byteNum < 16) {
+		packet[byteNum] = getchar();
+		if (packet[byteNum] == 0x00) {
+			ReadPacketHeader(&packet[0], byteNum, &opcode, &payload_ptr);
 			
-			if (readChar >= 0) {
-				packet[byteNum] = readChar;
-				byteNum++;
+			switch (opcode) {
+				case DRIVE_OPCODE :
+					ParseDrivePayload(payload_ptr, &dr);
+					
+					leftWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.left+100))/200 + ONE_MS_PULSE_WIDTH/2);
+					DrivingWidth->left = leftWidth;
+
+					rightWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.right+100))/200 + ONE_MS_PULSE_WIDTH/2);
+					DrivingWidth->right = rightWidth;
+					break;
+				
+				default :
+					break;
 			}
 			
-			if (byteNum > 4) break;
+			byteNum = 0;
 		}
 	}
-	
-	ReadPacketHeader(&packet[0], byteNum, &opcode, &payload_ptr);
-	if (opcode == DRIVE_OPCODE) {
-		ParseDrivePayload(payload_ptr, &dr);
-	}
-	
-	leftWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.left+100))/200 + ONE_MS_PULSE_WIDTH/2);
-	DrivingWidth -> left = leftWidth;
-
-	rightWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.right+100))/200 + ONE_MS_PULSE_WIDTH/2);
-	DrivingWidth -> right = rightWidth;
 	
 	return 0;
 }
@@ -56,9 +54,13 @@ int parse(uint32_t arg) {
 int SerialReader(uint32_t arg) {
 	timerCallbackRegister(3, parse);
 	DrivingWidth = (struct width *)arg;
+	
 	dr.left = 0;
 	dr.right = 0;
 	DrivingWidth->left = (3*ONE_MS_PULSE_WIDTH)/2;
 	DrivingWidth->right = (3*ONE_MS_PULSE_WIDTH)/2;
+	
+	byteNum = 0;
+	
 	return 0;
 }

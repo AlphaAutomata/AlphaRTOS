@@ -5,3 +5,4 @@ Objects/
 RTE/
 *.diff
 *.scvd
+*.TMP
