@@ -87,7 +87,7 @@ static int ReadPacketHeader(uint8_t *buffer, uint8_t length, uint8_t *opcode, ui
 		*opcode = buffer[PKT_OP_INDEX];
 
 	if (payload_ptr)
-		*payload_ptr = (length == PKT_MIN_SIZE) ? NULL : buffer + PKT_PAYLOAD_START_INDEX;
+		*payload_ptr = (length == PKT_MIN_SIZE) ? 0 : buffer + PKT_PAYLOAD_START_INDEX;
 	return 1;
 }
 
@@ -147,8 +147,8 @@ static int CreateDrivePacket(uint8_t *buffer, uint8_t length, struct DrivePayloa
 {
 	if (length < PKT_MIN_SIZE + 2)
 		return 0;
-	buffer[PKT_HDR_INDEX] = PKT_HDR_INDEX;
-	buffer[PKT_OP_INDEX] = PKT_OP_INDEX;
+	buffer[PKT_HDR_INDEX] = PKT_HEADER_BYTE;
+	buffer[PKT_OP_INDEX] = DRIVE_OPCODE;
 	buffer[PKT_PAYLOAD_SIZE_INDEX] = 2;
 	buffer[PKT_PAYLOAD_START_INDEX] = payload.left;
 	buffer[PKT_PAYLOAD_START_INDEX + 1] = payload.right;
@@ -163,8 +163,8 @@ static int CreateReportLocationPacket(uint8_t *buffer, uint8_t length, struct Lo
 
     __CLAMP(payload.heading, 180, -180);
 
-    buffer[PKT_HDR_INDEX] = PKT_HDR_INDEX;
-    buffer[PKT_OP_INDEX] = PKT_OP_INDEX;
+    buffer[PKT_HDR_INDEX] = PKT_HEADER_BYTE;
+    buffer[PKT_OP_INDEX] = REPORT_LOCATION_OPCODE;
     buffer[PKT_PAYLOAD_SIZE_INDEX] = 3 * sizeof(int16_t);
     buffer[PKT_PAYLOAD_START_INDEX] = payload.x >> 8;
     buffer[PKT_PAYLOAD_START_INDEX + 1] = payload.x & 0xFF;
@@ -185,8 +185,8 @@ static int CreateReportEncoderPacket(uint8_t *buffer, uint8_t length, struct Enc
     if (length < PKT_MIN_SIZE + 6 * sizeof(int16_t))
         return 0;
 
-    buffer[PKT_HDR_INDEX] = PKT_HDR_INDEX;
-    buffer[PKT_OP_INDEX] = PKT_OP_INDEX;
+    buffer[PKT_HDR_INDEX] = PKT_HEADER_BYTE;
+    buffer[PKT_OP_INDEX] = REPORT_ENCODER_OPCODE;
     buffer[PKT_PAYLOAD_SIZE_INDEX] = 6 * sizeof(int16_t);
     buffer[PKT_PAYLOAD_START_INDEX + 0] = payload.front_left >> 8;
     buffer[PKT_PAYLOAD_START_INDEX + 1] = payload.front_left & 0xFF;

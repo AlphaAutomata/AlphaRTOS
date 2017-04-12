@@ -12,68 +12,52 @@ struct width *DrivingWidth;
 
 struct DrivePayload dr;
 
+uint8_t packet[16];
+uint8_t opcode;
+uint8_t *payload_ptr;
+int byteNum;
+
 int parse(uint32_t arg) {
-	int numBytes;
 	int readChar;
-	int8_t leftSpd;
-	int8_t rightSpd;
 	unsigned int leftWidth;
 	unsigned int rightWidth;
 	
-	numBytes = 0;
-	
-	while (1){
-		readChar = getchar_nonblock();
-		if (readChar == -1) return 0;
+	readChar = getchar_nonblock();
+	if (readChar == PKT_HEADER_BYTE) {
+		packet[0] = readChar;
 		
-		switch (numBytes) {
-			case 0 : 
-				if (readChar != 0xAB){
-					return 0;
-				} else {
-					break;
-				}
+		byteNum = 1;
+		while(1) {
+			readChar = getchar_nonblock();
 			
-			case 1 : 
-				if (readChar != 0x00){
-					return 0;
-				} else {
-					break;
-				}
-				
-			case 2 : 
-					if (readChar != 0x02){
-					return 0;
-				} else {
-					break;
-				}
+			if (readChar >= 0) {
+				packet[byteNum] = readChar;
+				byteNum++;
+			}
 			
-			case 3 :
-				leftSpd = (int8_t)readChar;
-				leftWidth = (unsigned int) (ONE_MS_PULSE_WIDTH*(leftSpd+100))/200 + ONE_MS_PULSE_WIDTH/2;
-				DrivingWidth -> left = leftWidth;
-				break;
-			
-			case 4 :
-				rightSpd = (int8_t)readChar;
-				rightWidth = (unsigned int) (ONE_MS_PULSE_WIDTH*(rightSpd+100))/200 + ONE_MS_PULSE_WIDTH/2;
-				DrivingWidth -> right = rightWidth;
-				break;
-			
-			case 5 :
-				return 0;
-			
-			default :
-				return 0;
+			if (byteNum > 4) break;
 		}
-		numBytes++;
-		
 	}
+	
+	ReadPacketHeader(&packet[0], byteNum, &opcode, &payload_ptr);
+	if (opcode == DRIVE_OPCODE) {
+		ParseDrivePayload(payload_ptr, &dr);
+	}
+	
+	leftWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.left+100))/200 + ONE_MS_PULSE_WIDTH/2);
+	DrivingWidth -> left = leftWidth;
+
+	rightWidth = (unsigned int) ((ONE_MS_PULSE_WIDTH*((int)dr.right+100))/200 + ONE_MS_PULSE_WIDTH/2);
+	DrivingWidth -> right = rightWidth;
+	
+	return 0;
 }
 
 int SerialReader(uint32_t arg) {
 	timerCallbackRegister(3, parse);
 	DrivingWidth = (struct width *)arg;
+	dr.left = 0;
+	dr.right = 0;
 	DrivingWidth->left = (3*ONE_MS_PULSE_WIDTH)/2;
 	DrivingWidth->right = (3*ONE_MS_PULSE_WIDTH)/2;
 	return 0;
