@@ -72,7 +72,7 @@ void runTask(regframe_t *newframe, regframe_t *oldframe, int (*taskEntry)(uint32
 //! \param newframe points to a regframe_t where the new context's registers
 //! are stored
 //!
-//! \param oldframe points to a regrame_t where the old context's registers
+//! \param oldframe points to a regframe_t where the old context's registers
 //! will be stored
 //!
 //! \return none

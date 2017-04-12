@@ -85,6 +85,11 @@ typedef enum {
 	pwm_gen3
 } ePwmGenerator;
 
+typedef enum {
+	qei0,
+	qei1
+} eQeiEncoder;
+
 bool initPWM(ePwmController controller, ePwmGenerator generator);
 bool disablePWM(ePwmController controller);
 bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty);
@@ -99,5 +104,9 @@ typedef enum {
 	gpTimer = 0x00000000,
 	UART    = 0x00000001
 } eInterrupt;
+
+bool initQEI(eQeiEncoder encoder);
+bool initUART(eUartController controller, uartInfo *info);
+
 
 #endif

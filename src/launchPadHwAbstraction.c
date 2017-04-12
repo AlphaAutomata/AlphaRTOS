@@ -85,16 +85,6 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 	return true;
 }
 
-bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty){	
-	switch (controller){
-		case pwm0:
-			PWMPulseWidthSet(PWM0_BASE, generator, duty);
-		case pwm1:
-			PWMPulseWidthSet(PWM1_BASE, generator, duty);
-		}
-	return true;
-}
-
 bool initQEI(eQeiEncoder encoder) {
 	uint32_t rxPinConfigMask;
 	uint32_t base;
@@ -128,6 +118,37 @@ bool initQEI(eQeiEncoder encoder) {
 	GPIOPinConfigure(rxPinConfigMask);
 	SysCtlPeripheralEnable(SysCtlBase);
 	while(!SysCtlPeripheralReady(SysCtlBase));
+}
+
+bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty) {
+	uint32_t baseAddr;
+	uint32_t pwmOutput;
+	
+	switch (controller) {
+		case pwm0 :
+			baseAddr = PWM0_BASE;
+			break;
+		case pwm1 :
+			baseAddr = PWM1_BASE;
+			break;
+	}
+	
+	switch (generator) {
+		case pwm_gen0 :
+			pwmOutput = PWM_OUT_0;
+			break;
+		case pwm_gen1 :
+			pwmOutput = PWM_OUT_1;
+			break;
+		case pwm_gen2 :
+			pwmOutput = PWM_OUT_2;
+			break;
+		case pwm_gen3 :
+			pwmOutput = PWM_OUT_3;
+			break;
+	}
+	
+	PWMPulseWidthSet(baseAddr, pwmOutput, duty);
 	
 	return true;
 }

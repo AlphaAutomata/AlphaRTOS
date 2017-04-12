@@ -1,3 +1,6 @@
+#ifndef _CIRCULAR_BUFFER_H_
+#define _CIRCULAR_BUFFER_H_
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -112,3 +115,5 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
 //
 //*****************************************************************************
 unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems);
+
+#endif
