@@ -85,13 +85,50 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 	return true;
 }
 
-bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty){
+bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty){	
 	switch (controller){
 		case pwm0:
 			PWMPulseWidthSet(PWM0_BASE, generator, duty);
 		case pwm1:
 			PWMPulseWidthSet(PWM1_BASE, generator, duty);
+		}
+	return true;
+}
+
+bool initQEI(eQeiEncoder encoder) {
+	uint32_t rxPinConfigMask;
+	uint32_t base;
+	uint8_t pin;
+	uint32_t port;
+	uint32_t SysCtlBase;
+	uint8_t line;
+	
+	switch (encoder) {
+		case qei0:
+			base = QEI0_BASE;
+			port = GPIOD_BASE;
+			SysCtlBase = SYSCTL_PERIPH_QEI0;
+			rxPinConfigMask = GPIO_PD6_PHA0;
+			pin = GPIO_PIN_6;
+			rxPinConfigMask = GPIO_PD7_PHB0;
+			pin = GPIO_PIN_7;
+			break;
+	
+		case qei1:
+			base = QEI1_BASE;
+			port = GPIOC_BASE;
+			SysCtlBase = SYSCTL_PERIPH_QEI1;
+			rxPinConfigMask = GPIO_PC5_PHA1;
+			pin = GPIO_PIN_5;
+			rxPinConfigMask = GPIO_PC6_PHB1;
+			pin = GPIO_PIN_6;
+			break;
 	}
+
+	GPIOPinConfigure(rxPinConfigMask);
+	SysCtlPeripheralEnable(SysCtlBase);
+	while(!SysCtlPeripheralReady(SysCtlBase));
+	
 	return true;
 }
 
