@@ -108,6 +108,8 @@ static int decodeCOBS(uint8_t *buffer, uint8_t length) {
 			}
 		}
 	}
+	
+	return 0;
 }
 
 /**
@@ -121,13 +123,13 @@ static int ReadPacketHeader(uint8_t *buffer, uint8_t length, uint8_t *opcode, ui
 		return 0;
 
 	length = decodeCOBS(buffer, length);
-	
+/*	
 	if (buffer[PKT_HDR_INDEX] != PKT_HEADER_BYTE)
 		return 0;
 
 	if (buffer[length - 1] != PKT_END_BYTE)
 		return 0;
-
+*/
 	if (opcode)
 		*opcode = buffer[PKT_OP_INDEX];
 

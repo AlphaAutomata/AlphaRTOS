@@ -3,11 +3,7 @@
 #include "launchPadUIO.h"
 #include "isr.h"
 #include "LMCterminal.h"
-
-struct {
-	uint32_t left;
-	uint32_t right;
-} wheelSpeeds;
+#include "global_state.h"
 
 //*****************************************************************************
 //
@@ -61,15 +57,15 @@ int main(void) {
 	
 	// the Blinky task just toggles the RGB LED once every seconds to indicate
 	// the scheduler is working as intended
-	addTask(blinkyTask, 0);
+	addTask(blinkyTask, (uint32_t)&wheelPWM);
 	
 	// the LMC Terminal communicates over USB UART, and here we initalize it to 1Mbaud
 	addTask(initLMCterminal, 1000000);
 	
 	// read wheel speed commands from USB UART and set PWMs
-	addTask(ctrlLoop, (uint32_t)&wheelSpeeds);
+	addTask(ctrlLoop, (uint32_t)&wheelPWM);
 	
-	addTask(SerialReader, (uint32_t)&wheelSpeeds);
+	addTask(SerialReader, (uint32_t)&wheelPWM);
 	
 	while(1) {
 		// SysTick triggers this every millisecond

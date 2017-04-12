@@ -164,6 +164,7 @@ int kprintf(const char *format, ...) {
 	int intVal;
 	int i;
 	int charCnt;
+	uint32_t hexVal;
 	uint64_t longVal;
 	
 	// process variable arguments
@@ -229,6 +230,30 @@ int kprintf(const char *format, ...) {
 							i--;
 						}
 						convBuff[i] = (char)(longVal + '0');
+						// print buffer
+						while (i < CONVERSION_BUFFER_SIZE) {
+							putchar(convBuff[i]);
+							charCnt++;
+							i++;
+						}
+						break;
+					case 'X' :
+						hexVal = va_arg(va, uint32_t);
+						i = CONVERSION_BUFFER_SIZE - 1;
+						while ((hexVal >= 16) && (i >= 0)) {
+							if (hexVal % 16 < 10) {
+								convBuff[i] = (hexVal % 16) + '0';
+							} else {
+								convBuff[i] = (hexVal % 16) - 10 + 'A';
+							}
+							hexVal /= 16;
+							i--;
+						}
+						if (hexVal % 16 < 10) {
+							convBuff[i] = (hexVal % 16) + '0';
+						} else {
+							convBuff[i] = (hexVal % 16) - 10 + 'A';
+						}
 						// print buffer
 						while (i < CONVERSION_BUFFER_SIZE) {
 							putchar(convBuff[i]);
