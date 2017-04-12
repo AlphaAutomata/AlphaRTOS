@@ -1,6 +1,7 @@
 #include "launchPadHwAbstraction.h"
 #include "isr.h"
 #include "pwm.h"
+#include "qei.h"
 
 #include "launchPadUIO.h"
 
@@ -86,38 +87,47 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 }
 
 bool initQEI(eQeiEncoder encoder) {
-	uint32_t rxPinConfigMask;
+	uint32_t rxPinConfigMask1, rxPinConfigMask2;
 	uint32_t base;
-	uint8_t pin;
 	uint32_t port;
 	uint32_t SysCtlBase;
-	uint8_t line;
+	uint32_t typePinMask;
 	
 	switch (encoder) {
 		case qei0:
 			base = QEI0_BASE;
 			port = GPIOD_BASE;
 			SysCtlBase = SYSCTL_PERIPH_QEI0;
-			rxPinConfigMask = GPIO_PD6_PHA0;
-			pin = GPIO_PIN_6;
-			rxPinConfigMask = GPIO_PD7_PHB0;
-			pin = GPIO_PIN_7;
+			rxPinConfigMask1 = GPIO_PD6_PHA0;
+			rxPinConfigMask2 = GPIO_PD7_PHB0;
 			break;
 	
 		case qei1:
 			base = QEI1_BASE;
 			port = GPIOC_BASE;
 			SysCtlBase = SYSCTL_PERIPH_QEI1;
-			rxPinConfigMask = GPIO_PC5_PHA1;
-			pin = GPIO_PIN_5;
-			rxPinConfigMask = GPIO_PC6_PHB1;
-			pin = GPIO_PIN_6;
+			rxPinConfigMask1 = GPIO_PC5_PHA1;
+			rxPinConfigMask2 = GPIO_PC6_PHB1;
 			break;
 	}
-
-	GPIOPinConfigure(rxPinConfigMask);
+	typePinMask = GPIO_PIN_6 | GPIO_PIN_7;
+	
+	GPIOPinConfigure(rxPinConfigMask1);
+	GPIOPinConfigure(rxPinConfigMask2);
+	GPIOPinTypeQEI(port, typePinMask);
 	SysCtlPeripheralEnable(SysCtlBase);
 	while(!SysCtlPeripheralReady(SysCtlBase));
+	QEIConfigure(base, (QEI_CONFIG_CAPTURE_A_B | QEI_CONFIG_NO_RESET 
+					| QEI_CONFIG_QUADRATURE | QEI_CONFIG_NO_SWAP), 1023);
+	QEIEnable(QEI0_BASE);
+	QEIVelocityConfigure(QEI0_BASE, QEI_VELDIV_1, 5000000);
+	QEIVelocityEnable(QEI0_BASE);
+	return true;
+}
+
+int getWheelSpeed() {
+	return QEIVelocityGet(QEI0_BASE);//*(50000000/1024); //50000000 is clock time
+																	//1024 is rps
 }
 
 bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty) {

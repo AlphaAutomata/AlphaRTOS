@@ -50,6 +50,9 @@ int main(void) {
 	initPWM(pwm0,pwm_gen2);
 	initPWM(pwm0,pwm_gen3);
 	
+	initQEI(qei0);
+
+	
 	// add all the existing tasks
 	// TODO: when booting in debug mode, delay initTask calls until a command
 	// is received over UART
