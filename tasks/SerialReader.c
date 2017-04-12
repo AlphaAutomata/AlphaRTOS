@@ -1,6 +1,7 @@
 #include "badgerRMCRTOS.h"
 #include "launchPadHwAbstraction.h"
 #include "LMCterminal.h"
+#include "Packet.h"
 
 struct width {
 	uint32_t left;
@@ -9,7 +10,9 @@ struct width {
 
 struct width *DrivingWidth;
 
-int output(uint32_t arg) {
+struct DrivePayload dr;
+
+int parse(uint32_t arg) {
 	int numBytes;
 	int readChar;
 	int8_t leftSpd;
@@ -47,13 +50,13 @@ int output(uint32_t arg) {
 			
 			case 3 :
 				leftSpd = (int8_t)readChar;
-				leftWidth = (unsigned int) ONE_MS_PULSE_WIDTH * (leftSpd+100)/200;
+				leftWidth = (unsigned int) (ONE_MS_PULSE_WIDTH*(leftSpd+100))/200 + ONE_MS_PULSE_WIDTH/2;
 				DrivingWidth -> left = leftWidth;
 				break;
 			
 			case 4 :
 				rightSpd = (int8_t)readChar;
-				rightWidth = (unsigned int) ONE_MS_PULSE_WIDTH * (rightSpd+100)/200;
+				rightWidth = (unsigned int) (ONE_MS_PULSE_WIDTH*(rightSpd+100))/200 + ONE_MS_PULSE_WIDTH/2;
 				DrivingWidth -> right = rightWidth;
 				break;
 			
@@ -69,7 +72,9 @@ int output(uint32_t arg) {
 }
 
 int SerialReader(uint32_t arg) {
-	timerCallbackRegister(3, output);
+	timerCallbackRegister(3, parse);
 	DrivingWidth = (struct width *)arg;
+	DrivingWidth->left = (3*ONE_MS_PULSE_WIDTH)/2;
+	DrivingWidth->right = (3*ONE_MS_PULSE_WIDTH)/2;
 	return 0;
 }
