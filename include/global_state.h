@@ -8,7 +8,16 @@ typedef volatile struct {
 	uint32_t right;
 } wheelPWM_t;
 
+typedef volatile struct {
+	uint32_t leftSpd;
+	uint32_t rightSpd;
+	int leftDir;
+	int rightDir;
+	int32_t leftPos;
+	int32_t rightPos;
+} wheelQEI_t;
+
 extern wheelPWM_t wheelPWM;
-extern volatile uint8_t lastOp;
+extern wheelQEI_t wheelQEI;
 
 #endif

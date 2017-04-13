@@ -85,14 +85,23 @@ typedef enum {
 	pwm_gen3
 } ePwmGenerator;
 
-typedef enum {
-	qei0,
-	qei1
-} eQeiEncoder;
-
 bool initPWM(ePwmController controller, ePwmGenerator generator);
 bool disablePWM(ePwmController controller);
 bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty);
+
+///////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Quadrature Encoder /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+typedef enum {
+	qei0,
+	qei1
+} eQuadrature;
+
+bool initQEI(eQuadrature encoder);
+uint32_t getQEISpeed(eQuadrature encoder);
+int32_t getQEIDirection(eQuadrature encoder);
+int32_t getQEIPosition(eQuadrature encoder);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,8 +114,6 @@ typedef enum {
 	UART    = 0x00000001
 } eInterrupt;
 
-bool initQEI(eQeiEncoder encoder);
 bool initUART(eUartController controller, uartInfo *info);
-
 
 #endif

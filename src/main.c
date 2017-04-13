@@ -51,7 +51,7 @@ int main(void) {
 	initPWM(pwm0,pwm_gen3);
 	
 	initQEI(qei0);
-
+//	initQEI(qei1);
 	
 	// add all the existing tasks
 	// TODO: when booting in debug mode, delay initTask calls until a command
@@ -68,6 +68,7 @@ int main(void) {
 	// read wheel speed commands from USB UART and set PWMs
 	addTask(ctrlLoop, (uint32_t)&wheelPWM);
 	
+	// parse UART packets
 	addTask(SerialReader, (uint32_t)&wheelPWM);
 	
 	while(1) {

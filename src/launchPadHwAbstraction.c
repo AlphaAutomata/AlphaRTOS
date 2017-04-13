@@ -14,7 +14,7 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 	uint32_t SysCtlBase;
 	
 	switch (controller) {
-		case pwm0:
+		case pwm0 :
 			Base = PWM0_BASE;
 			SysCtlBase = SYSCTL_PERIPH_PWM0;
 			switch (generator) {
@@ -42,7 +42,7 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 			port = GPIOB_BASE;
 			break;
 	
-		case pwm1:
+		case pwm1 :
 			Base = PWM1_BASE;
 			SysCtlBase = SYSCTL_PERIPH_PWM1;
 			switch (generator) {
@@ -86,48 +86,86 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 	return true;
 }
 
-bool initQEI(eQeiEncoder encoder) {
-	uint32_t rxPinConfigMask1, rxPinConfigMask2;
-	uint32_t base;
-	uint32_t port;
-	uint32_t SysCtlBase;
+bool initQEI(eQuadrature encoder) {
+	uint32_t QEIPinAConfigMask, QEIPinBConfigMask;
+	uint32_t QEIbase;
+	uint32_t GPIObase;
+	uint32_t SysCtlMask;
 	uint32_t typePinMask;
 	
 	switch (encoder) {
 		case qei0:
-			base = QEI0_BASE;
-			port = GPIOD_BASE;
-			SysCtlBase = SYSCTL_PERIPH_QEI0;
-			rxPinConfigMask1 = GPIO_PD6_PHA0;
-			rxPinConfigMask2 = GPIO_PD7_PHB0;
+			QEIbase = QEI0_BASE;
+			GPIObase = GPIOD_BASE;
+			SysCtlMask = SYSCTL_PERIPH_QEI0;
+			QEIPinAConfigMask = GPIO_PD6_PHA0;
+			QEIPinBConfigMask = GPIO_PD7_PHB0;
+			typePinMask = GPIO_PIN_6 | GPIO_PIN_7;
 			break;
 	
 		case qei1:
-			base = QEI1_BASE;
-			port = GPIOC_BASE;
-			SysCtlBase = SYSCTL_PERIPH_QEI1;
-			rxPinConfigMask1 = GPIO_PC5_PHA1;
-			rxPinConfigMask2 = GPIO_PC6_PHB1;
+			QEIbase = QEI1_BASE;
+			GPIObase = GPIOC_BASE;
+			SysCtlMask = SYSCTL_PERIPH_QEI1;
+			QEIPinAConfigMask = GPIO_PC5_PHA1;
+			QEIPinBConfigMask = GPIO_PC6_PHB1;
+			typePinMask = GPIO_PIN_5 | GPIO_PIN_6;
 			break;
+		
+		default :
+			return false;
 	}
-	typePinMask = GPIO_PIN_6 | GPIO_PIN_7;
 	
-	GPIOPinConfigure(rxPinConfigMask1);
-	GPIOPinConfigure(rxPinConfigMask2);
-	GPIOPinTypeQEI(port, typePinMask);
-	SysCtlPeripheralEnable(SysCtlBase);
-	while(!SysCtlPeripheralReady(SysCtlBase));
-	QEIConfigure(base, (QEI_CONFIG_CAPTURE_A_B | QEI_CONFIG_NO_RESET 
-					| QEI_CONFIG_QUADRATURE | QEI_CONFIG_NO_SWAP), 1023);
-	QEIEnable(QEI0_BASE);
-	QEIVelocityConfigure(QEI0_BASE, QEI_VELDIV_1, 5000000);
-	QEIVelocityEnable(QEI0_BASE);
+	GPIOPinConfigure(QEIPinAConfigMask);
+	GPIOPinConfigure(QEIPinBConfigMask);
+	GPIOPinTypeQEI(GPIObase, typePinMask);
+	
+	SysCtlPeripheralEnable(SysCtlMask);
+	while(!SysCtlPeripheralReady(SysCtlMask));
+	
+	QEIConfigure(
+		QEIbase,
+		(QEI_CONFIG_CAPTURE_A_B | QEI_CONFIG_NO_RESET | QEI_CONFIG_QUADRATURE | QEI_CONFIG_NO_SWAP),
+		1023
+	);
+	QEIEnable(QEIbase);
+	QEIVelocityConfigure(QEIbase, QEI_VELDIV_1, 5000000);
+	QEIVelocityEnable(QEIbase);
+	
 	return true;
 }
 
-int getWheelSpeed() {
-	return QEIVelocityGet(QEI0_BASE);//*(50000000/1024); //50000000 is clock time
-																	//1024 is rps
+uint32_t getQEISpeed(eQuadrature encoder) {
+	switch (encoder) {
+		case qei0 :
+			return QEIVelocityGet(QEI0_BASE);
+		case qei1 :
+			return QEIVelocityGet(QEI1_BASE);
+		default :
+			return 0;
+	}
+}
+
+int32_t getQEIDirection(eQuadrature encoder) {
+	switch (encoder) {
+		case qei0 :
+			return QEIDirectionGet(QEI0_BASE);
+		case qei1 :
+			return QEIDirectionGet(QEI1_BASE);
+		default :
+			return 0;
+	}
+}
+
+int32_t getQEIPosition(eQuadrature encoder) {
+	switch (encoder) {
+		case qei0 :
+			return QEIPositionGet(QEI0_BASE);
+		case qei1 :
+			return QEIPositionGet(QEI1_BASE);
+		default :
+			return 0;
+	}
 }
 
 bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int duty) {

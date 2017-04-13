@@ -20,9 +20,22 @@ int taskCallback(uint32_t arg) {
 	
 	if (print) {
 		kprintf("Uptime = %ls\n", getUptime()/1000);
-		kprintf("  Last OPCODE = 0x%X\n", (uint8_t)lastOp);
-		kprintf("  Left Speed  = 0x%X\n", wheelPWM.left);
-		kprintf("  Right Speed = 0x%X\n", wheelPWM.right);
+		kprintf("  Left Speed  = %d", wheelQEI.leftSpd);
+		if (wheelQEI.leftDir > 0) {
+			kprintf(" fwd |\n");
+		} else if (wheelQEI.leftDir < 0) {
+			kprintf("     | bkw\n");
+		} else {
+			kprintf("\n");
+		}
+		kprintf("  Right Speed = %d", wheelQEI.rightSpd);
+		if (wheelQEI.rightDir > 0) {
+			kprintf(" fwd |\n");
+		} else if (wheelQEI.rightDir < 0) {
+			kprintf("     | bkw\n");
+		} else {
+			kprintf("\n");
+		}
 	}
 	
 	buttonsPressed(&lbpressed, &rbpressed);

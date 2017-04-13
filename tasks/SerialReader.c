@@ -15,28 +15,31 @@ uint8_t byteNum;
 int parse(uint32_t arg) {
 	unsigned int leftWidth;
 	unsigned int rightWidth;
+#ifdef DEBUG_SERIAL_READER
 	int i;
+#endif
 	
 	// continuously read UART bytes
 	// uses getchar(), which yields the CPU when blocking
 	while (byteNum < 16) {
 		packet[byteNum] = getchar();
 		if (packet[byteNum] == 0x00) {
+#ifdef DEBUG_SERIAL_READER
 			kprintf("Received Packet Dump\n");
 			for (i=0; i<16; i++) {
 				kprintf(" 0x%X", packet[i]);
 			}
 			kprintf("\n");
+#endif
 			
-			if (ReadPacketHeader(&packet[0], 16, &opcode, &payload_ptr)) {
-				lastOp = opcode;
-			}
-			
+			ReadPacketHeader(&packet[0], 16, &opcode, &payload_ptr);
+#ifdef DEBUG_SERIAL_READER
 			kprintf("Decoded Packet Dump\n");
 			for (i=0; i<16; i++) {
 				kprintf(" 0x%X", packet[i]);
 			}
 			kprintf("\n");
+#endif
 			
 			switch (opcode) {
 				case DRIVE_OPCODE :
