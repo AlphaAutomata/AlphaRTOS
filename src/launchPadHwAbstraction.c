@@ -1,9 +1,21 @@
+#include "inc/hw_types.h"
+#include "inc/hw_gpio.h"
+
 #include "launchPadHwAbstraction.h"
 #include "isr.h"
 #include "pwm.h"
 #include "qei.h"
+#include "badgerRMCRTOS.h"
 
 #include "launchPadUIO.h"
+#include "circular_buffer.h"
+
+#define BUFF_SIZE 16
+
+circularBuffer_t uart_txBuffs[8];
+uint8_t uart_txData[8][BUFF_SIZE];
+circularBuffer_t uart_rxBuffs[8];
+uint8_t uart_rxData[8][BUFF_SIZE];
 
 bool initPWM(ePwmController controller, ePwmGenerator generator){
 	uint32_t Base;
@@ -74,6 +86,10 @@ bool initPWM(ePwmController controller, ePwmGenerator generator){
 			break;
 		}
 	
+	// GPIO Port E needs to be unlocked before setting pin configurations
+	HWREG(port + GPIO_O_LOCK) = GPIO_LOCK_KEY;
+	HWREG(port + GPIO_O_CR) = pin;
+	
 	GPIOPinTypePWM(port, pin);
 	GPIOPinConfigure(rxPinConfigMask);
 	SysCtlPeripheralEnable(SysCtlBase);
@@ -115,6 +131,10 @@ bool initQEI(eQuadrature encoder) {
 		default :
 			return false;
 	}
+	
+	// GPIO Port C needs to be unlocked before setting pin configurations
+	HWREG(GPIObase + GPIO_O_LOCK) = GPIO_LOCK_KEY;
+	HWREG(GPIObase + GPIO_O_CR) = typePinMask;
 	
 	GPIOPinConfigure(QEIPinAConfigMask);
 	GPIOPinConfigure(QEIPinBConfigMask);
@@ -303,6 +323,9 @@ bool initUART(eUartController controller, uartInfo *info) {
 		uartConfigMask |= UART_CONFIG_STOP_TWO;
 	}
 	
+	initCircularBuffer(&(uart_txBuffs[(int)controller]), 1, BUFF_SIZE, uart_txData[(int)controller]);
+	initCircularBuffer(&(uart_rxBuffs[(int)controller]), 1, BUFF_SIZE, uart_rxData[(int)controller]);
+	
 	// Set the GPIO pins to UART hardware control
 	GPIOPinTypeUART(gpioBase, typePinMask);
 	GPIOPinConfigure(rxPinConfigMask);
@@ -316,4 +339,79 @@ bool initUART(eUartController controller, uartInfo *info) {
 	UARTConfigSetExpClk(uartBase, SysCtlClockGet(), info->baud, uartConfigMask);
 	
 	return true;
+}
+
+//*****************************************************************************
+//
+//! As long as the UART FIFO has room and there are characters available in the
+//! transmit buffer to write, transfer characters from the buffer to the UART
+//! hardware FIFO. As long as there are characters in the receive hardware
+//! FIFO, transfer them to the receive memory buffer. If there is no room in
+//! the receive memory buffer, the character is discarded. 
+//!
+//! @param controller specifies which UART controller to service
+//!
+//! @param base is the base address of the UART controller
+//
+//*****************************************************************************
+static void uartFlow(int controller, uint32_t base) {
+	char uartChar;
+	
+	while (UARTSpaceAvail(base)) {
+		if (circularBufferRemoveItem(&(uart_txBuffs[controller]), &uartChar)) {
+			UARTCharPut(base, uartChar);
+		} else {
+			break;
+		}
+	}
+	
+	if (UARTCharsAvail(base)) {
+		uartChar = UARTCharGet(base);
+
+		if (controller == 0 && uartChar == '\r') {
+			UARTCharPut(UART0_BASE, '\n');
+		}
+		
+		UARTCharPut(base, uartChar);
+		
+		circularBufferAddItem(&(uart_rxBuffs[controller]), &uartChar);
+	}
+}
+
+int uart_getchar(eUartController controller) {
+	char c;
+	
+	while (!circularBufferRemoveItem(&(uart_rxBuffs[(int)controller]), &c)) taskYield();
+	
+	return c;
+}
+
+int uart_getchar_nonblock(eUartController controller) {
+	char c;
+	
+	if (!circularBufferRemoveItem(&(uart_rxBuffs[(int)controller]), &c)) {
+		return -1;
+	} else {
+		return c;
+	}
+}
+
+int uart_putchar(eUartController controller, int c) {
+	char in;
+	
+	in = c;
+	while (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &in)) taskYield();
+	
+	return c;
+}
+
+int uart_putchar_nonblock(eUartController controller, int c) {
+	char in;
+	
+	in = c;
+	if (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &in)) {
+		return -1;
+	} else {
+		return c;
+	}
 }

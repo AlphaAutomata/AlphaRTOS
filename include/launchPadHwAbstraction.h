@@ -45,15 +45,16 @@ void resetPort(eLaunchPadGPIOPort port);
 ///////////////// Universal Asynchronous Receiver/Transmitter /////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+// Explicitly defined in order to facilitate array access to UART data buffers
 typedef enum {
-	uart0,
-	uart1,
-	uart2,
-	uart3,
-	uart4,
-	uart5,
-	uart6,
-	uart7
+	uart0 = 0,
+	uart1 = 1,
+	uart2 = 2,
+	uart3 = 3,
+	uart4 = 4,
+	uart5 = 5,
+	uart6 = 6,
+	uart7 = 7
 } eUartController;
 
 typedef struct {
@@ -66,6 +67,10 @@ typedef struct {
 bool initUART(eUartController controller, uartInfo *info);
 bool disableUART(eUartController controller);
 
+int uart_getchar(eUartController controller);
+int uart_getchar_nonblock(eUartController controller);
+int uart_putchar(eUartController controller, int c);
+int uart_putchar_nonblock(eUartController controller, int c);
 
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////////// Pulse-Width Modulator ////////////////////////////
@@ -113,7 +118,5 @@ typedef enum {
 	gpTimer = 0x00000000,
 	UART    = 0x00000001
 } eInterrupt;
-
-bool initUART(eUartController controller, uartInfo *info);
 
 #endif

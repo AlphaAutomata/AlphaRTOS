@@ -6,5 +6,6 @@
 extern int blinkyTask(uint32_t arg);
 extern int ctrlLoop(uint32_t arg);
 extern int SerialReader(uint32_t arg);
+extern int hm10_init(uint32_t arg);
 
 #endif

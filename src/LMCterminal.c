@@ -4,7 +4,7 @@
 #include "badgerRMCRTOS.h"
 #include "circular_buffer.h"
 
-#include "launchPadUIO.h"
+#include "isr.h"
 
 #define BUFF_SIZE 16
 #define CONVERSION_BUFFER_SIZE 24
@@ -28,7 +28,7 @@ uint8_t rxData[BUFF_SIZE];
 //! \return 0, always
 //
 //*****************************************************************************
-int uartFlow(uint32_t arg) {
+static int uartFlow(uint32_t arg) {
 	char uartChar;
 	
 	while (UARTSpaceAvail(UART0_BASE)) {
@@ -70,7 +70,21 @@ int uartFlow(uint32_t arg) {
 //*****************************************************************************
 int interruptCallback(eInterrupt interruptType, uint32_t deviceMask) {
 	// we only care about the UART0 controller. Reject all other interrupts.
-	if (interruptType == UART && (deviceMask & 0x00000001)) uartFlow(0);
+	if (!(interruptType == UART && (deviceMask & 0x00000001))) return 0;
+	
+	// handle UART FIFO stuffing/flushing
+	if (uartHWIntMask[0] & (UART_INT_TX | UART_INT_RX)) {
+		// If there is a receive error, flush the receive buffer
+		if (uartHWErrMask[0] != 0) {
+			while (UARTSpaceAvail(UART0_BASE)) UARTCharGet(UART0_BASE);
+		}
+		
+		uartFlow(0);
+	}
+	
+	// clear global interrupt state
+	deviceMask &= !0x00000001;
+	uartHWIntMask[0] = 0;
 	
 	return 0;
 }
@@ -85,7 +99,7 @@ int initLMCterminal(uint32_t arg) {
 	usbUART.twoStopBits = false;
 	initUART(uart0, &usbUART);
 	
-	// every millisecond, poll the UART
+	// every few milliseconds, poll the UART
 	timerCallbackRegister(5, uartFlow);
 	
 	// every time a UART FIFO interrupt happens, handle it
