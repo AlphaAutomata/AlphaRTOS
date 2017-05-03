@@ -54,7 +54,7 @@ int taskCallback(uint32_t arg) {
 
 int blinkyTask(uint32_t arg) {
 	ledOn = false;
-	print = false;
+	print = true;
 	
 	timerCallbackRegister(1000, taskCallback);
 	

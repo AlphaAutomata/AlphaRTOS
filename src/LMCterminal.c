@@ -6,86 +6,10 @@
 
 #include "isr.h"
 
-#define BUFF_SIZE 16
 #define CONVERSION_BUFFER_SIZE 24
 
-circularBuffer_t txBuff;
-uint8_t txData[BUFF_SIZE];
-
-circularBuffer_t rxBuff;
-uint8_t rxData[BUFF_SIZE];
-
-//*****************************************************************************
-//
-//! As long as the UART FIFO has room and there are characters available in the
-//! transmit buffer to write, transfer characters from the buffer to the UART
-//! hardware FIFO. As long as there are characters in the receive hardware
-//! FIFO, transfer them to the receive memory buffer. If there is no room in
-//! the receive memory buffer, the character is discarded. 
-//!
-//! \param arg is ignored.
-//!
-//! \return 0, always
-//
-//*****************************************************************************
-static int uartFlow(uint32_t arg) {
-	char uartChar;
-	
-	while (UARTSpaceAvail(UART0_BASE)) {
-		if (circularBufferRemoveItem(&txBuff, &uartChar)) {
-			UARTCharPut(UART0_BASE, uartChar);
-		} else {
-			break;
-		}
-	}
-	
-	if (UARTCharsAvail(UART0_BASE)) {
-		uartChar = UARTCharGet(UART0_BASE);
-
-		if (uartChar == '\r') {
-			UARTCharPut(UART0_BASE, '\n');
-		}
-		
-		UARTCharPut(UART0_BASE, uartChar);
-		
-		circularBufferAddItem(&rxBuff, &uartChar);
-	}
-	
-	return 0;
-}
-
-//*****************************************************************************
-//
-//! Called whenever a UART Tx or Rx interrupt happens. If UART0 caused the
-//! interrupt, call uartFlow() to handle I/O.
-//!
-//! \param interruptType is the type of interrupt received. Only accepts UART
-//!
-//! \param deviceMask is a bit mask identifying which UART modules caused
-//! interrupts. Bit-0, the LSB, being set indicates UART0, bit 7 being set
-//! indicates UART7. Only handle UART0. 
-//!
-//! \return 0, always
-//
-//*****************************************************************************
-int interruptCallback(eInterrupt interruptType, uint32_t deviceMask) {
-	// we only care about the UART0 controller. Reject all other interrupts.
-	if (!(interruptType == UART && (deviceMask & 0x00000001))) return 0;
-	
-	// handle UART FIFO stuffing/flushing
-	if (uartHWIntMask[0] & (UART_INT_TX | UART_INT_RX)) {
-		// If there is a receive error, flush the receive buffer
-		if (uartHWErrMask[0] != 0) {
-			while (UARTSpaceAvail(UART0_BASE)) UARTCharGet(UART0_BASE);
-		}
-		
-		uartFlow(0);
-	}
-	
-	// clear global interrupt state
-	deviceMask &= !0x00000001;
-	uartHWIntMask[0] = 0;
-	
+int uart0Flow(uint32_t arg) {
+	uartFlow((int)uart0, UART0_BASE);
 	return 0;
 }
 
@@ -100,12 +24,7 @@ int initLMCterminal(uint32_t arg) {
 	initUART(uart0, &usbUART);
 	
 	// every few milliseconds, poll the UART
-	timerCallbackRegister(5, uartFlow);
-	
-	// every time a UART FIFO interrupt happens, handle it
-	interruptCallbackRegister(UART, interruptCallback, 0);
-	initCircularBuffer(&rxBuff, 1, BUFF_SIZE, rxData);
-	initCircularBuffer(&txBuff, 1, BUFF_SIZE, txData);
+	timerCallbackRegister(5, uart0Flow);
 	
 	return 0;
 }
@@ -120,22 +39,13 @@ int initLMCterminal(uint32_t arg) {
 //
 // *****************************************************************************
 int getchar(void) {
-	char c;
-	
-	while (!circularBufferRemoveItem(&rxBuff, &c)) taskYield();
-	
-	return c;
+	return uart_getchar(uart0);
 }
-
 
 int getchar_nonblock(void){
-	char c;
-	if (!circularBufferRemoveItem(&rxBuff, &c)) {
-		return -1;
-	} else {
-		return c;
-	}
+	return uart_getchar_nonblock(uart0);
 }
+
 //*****************************************************************************
 //
 //! Put character to a UART0
@@ -146,12 +56,7 @@ int getchar_nonblock(void){
 //
 // *****************************************************************************
 int putchar(int c) {
-	char in;
-	
-	in = c;
-	while (!circularBufferAddItem(&txBuff, &in)) taskYield();
-	
-	return c;
+	return uart_putchar(uart0, c);
 }
 
 int printlit(const char *strlit) {

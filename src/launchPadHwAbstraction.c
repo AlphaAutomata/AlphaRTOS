@@ -10,13 +10,6 @@
 #include "launchPadUIO.h"
 #include "circular_buffer.h"
 
-#define BUFF_SIZE 16
-
-circularBuffer_t uart_txBuffs[8];
-uint8_t uart_txData[8][BUFF_SIZE];
-circularBuffer_t uart_rxBuffs[8];
-uint8_t uart_rxData[8][BUFF_SIZE];
-
 bool initPWM(ePwmController controller, ePwmGenerator generator){
 	uint32_t Base;
 	uint32_t Gen;	
@@ -225,6 +218,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 	uint32_t sysctlMask;
 	uint32_t gpioBase;
 	uint32_t uartBase;
+	void (*isrAddr)(void);
 	uint32_t uartConfigMask;
 	uint32_t rxPinConfigMask;
 	uint32_t txPinConfigMask;
@@ -236,6 +230,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART0;
 			gpioBase = GPIOA_BASE;
 			uartBase = UART0_BASE;
+			isrAddr = uart0ISR;
 			rxPinConfigMask = GPIO_PA0_U0RX;
 			txPinConfigMask = GPIO_PA1_U0TX;
 			typePinMask = GPIO_PIN_0 | GPIO_PIN_1;
@@ -244,6 +239,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART1;
 			gpioBase = GPIOB_BASE;
 			uartBase = UART1_BASE;
+			isrAddr = uart1ISR;
 			rxPinConfigMask = GPIO_PB0_U1RX;
 			txPinConfigMask = GPIO_PB1_U1TX;
 			typePinMask = GPIO_PIN_0 | GPIO_PIN_1;
@@ -252,6 +248,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART2;
 			gpioBase = GPIOD_BASE;
 			uartBase = UART2_BASE;
+			isrAddr = uart2ISR;
 			rxPinConfigMask = GPIO_PD6_U2RX;
 			txPinConfigMask = GPIO_PD7_U2TX;
 			typePinMask = GPIO_PIN_6 | GPIO_PIN_7;
@@ -260,6 +257,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART3;
 			gpioBase = GPIOC_BASE;
 			uartBase = UART3_BASE;
+			isrAddr = uart3ISR;
 			rxPinConfigMask = GPIO_PC6_U3RX;
 			txPinConfigMask = GPIO_PC7_U3TX;
 			typePinMask = GPIO_PIN_6 | GPIO_PIN_7;
@@ -268,6 +266,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART4;
 			gpioBase = GPIOC_BASE;
 			uartBase = UART4_BASE;
+			isrAddr = uart4ISR;
 			rxPinConfigMask = GPIO_PC4_U4RX;
 			txPinConfigMask = GPIO_PC5_U4TX;
 			typePinMask = GPIO_PIN_4 | GPIO_PIN_5;
@@ -276,6 +275,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART5;
 			gpioBase = GPIOE_BASE;
 			uartBase = UART5_BASE;
+			isrAddr = uart5ISR;
 			rxPinConfigMask = GPIO_PE4_U5RX;
 			txPinConfigMask = GPIO_PE5_U5TX;
 			typePinMask = GPIO_PIN_4 | GPIO_PIN_5;
@@ -284,6 +284,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART6;
 			gpioBase = GPIOD_BASE;
 			uartBase = UART6_BASE;
+			isrAddr = uart6ISR;
 			rxPinConfigMask = GPIO_PD4_U6RX;
 			txPinConfigMask = GPIO_PD5_U6TX;
 			typePinMask = GPIO_PIN_4 | GPIO_PIN_5;
@@ -292,6 +293,7 @@ bool initUART(eUartController controller, uartInfo *info) {
 			sysctlMask = SYSCTL_PERIPH_UART7;
 			gpioBase = GPIOE_BASE;
 			uartBase = UART7_BASE;
+			isrAddr = uart7ISR;
 			rxPinConfigMask = GPIO_PE0_U7RX;
 			txPinConfigMask = GPIO_PE1_U7TX;
 			typePinMask = GPIO_PIN_0 | GPIO_PIN_1;
@@ -335,47 +337,21 @@ bool initUART(eUartController controller, uartInfo *info) {
 	SysCtlPeripheralEnable(sysctlMask);
 	while(!SysCtlPeripheralReady(sysctlMask));
 	
+	// enable the UART transmit and receive FIFOs
+	UARTFIFOEnable(uartBase);
+	// register the appropririate UART interrupt service routine
+	UARTIntRegister(uartBase, isrAddr);
+	// Set the trasmit FIFO to trigger on FIFO level
+	UARTTxIntModeSet(uartBase, UART_TXINT_MODE_FIFO);
+	// set both FIFOs levels. Tx interrupts when almost empty, Rx interrupts when almost full.
+	UARTFIFOLevelSet(uartBase, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
+	// enable interrupts for receive and transmit
+	UARTIntEnable(uartBase, UART_INT_RX | UART_INT_TX);
+	
 	// configure and initialize the UART peripheral
 	UARTConfigSetExpClk(uartBase, SysCtlClockGet(), info->baud, uartConfigMask);
 	
 	return true;
-}
-
-//*****************************************************************************
-//
-//! As long as the UART FIFO has room and there are characters available in the
-//! transmit buffer to write, transfer characters from the buffer to the UART
-//! hardware FIFO. As long as there are characters in the receive hardware
-//! FIFO, transfer them to the receive memory buffer. If there is no room in
-//! the receive memory buffer, the character is discarded. 
-//!
-//! @param controller specifies which UART controller to service
-//!
-//! @param base is the base address of the UART controller
-//
-//*****************************************************************************
-static void uartFlow(int controller, uint32_t base) {
-	char uartChar;
-	
-	while (UARTSpaceAvail(base)) {
-		if (circularBufferRemoveItem(&(uart_txBuffs[controller]), &uartChar)) {
-			UARTCharPut(base, uartChar);
-		} else {
-			break;
-		}
-	}
-	
-	if (UARTCharsAvail(base)) {
-		uartChar = UARTCharGet(base);
-
-		if (controller == 0 && uartChar == '\r') {
-			UARTCharPut(UART0_BASE, '\n');
-		}
-		
-		UARTCharPut(base, uartChar);
-		
-		circularBufferAddItem(&(uart_rxBuffs[controller]), &uartChar);
-	}
 }
 
 int uart_getchar(eUartController controller) {

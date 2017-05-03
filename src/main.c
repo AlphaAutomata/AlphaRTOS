@@ -59,7 +59,7 @@ int main(void) {
 	addTask(blinkyTask, (uint32_t)&wheelPWM);
 	
 	// LMC Terminal communicates over USB UART, and we initalize it to1Mbaud
-	addTask(initLMCterminal, 1000000);
+	addTask(initLMCterminal, 115200);
 	
 	// Read global given speeds and QEI input, run PID loop, set wheel PWMs
 	addTask(ctrlLoop, (uint32_t)&wheelPWM);
