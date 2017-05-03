@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 
@@ -9,6 +11,7 @@
 
 #include "launchPadUIO.h"
 #include "circular_buffer.h"
+#include "LMCterminal.h"
 
 bool initPWM(ePwmController controller, ePwmGenerator generator){
 	uint32_t Base;
@@ -214,6 +217,31 @@ bool setPWM(ePwmController controller, ePwmGenerator generator, unsigned int dut
 	return true;
 }
 
+bool uartInitialized[8];
+
+int flow(uint32_t arg) {
+	if (uartInitialized[0]) uartFlow(0, UART0_BASE);
+	if (uartInitialized[1]) uartFlow(1, UART1_BASE);
+	if (uartInitialized[2]) uartFlow(2, UART2_BASE);
+	if (uartInitialized[3]) uartFlow(3, UART3_BASE);
+	if (uartInitialized[4]) uartFlow(4, UART4_BASE);
+	if (uartInitialized[5]) uartFlow(5, UART5_BASE);
+	if (uartInitialized[6]) uartFlow(6, UART6_BASE);
+	if (uartInitialized[7]) uartFlow(7, UART7_BASE);
+	
+	return 0;
+}
+
+int uartManager(uint32_t arg) {
+	memset(uartInitialized, 0, sizeof(uartInitialized));
+	timerCallbackRegister(arg, flow);
+	
+	// LMC Terminal provides a limited set of stdio functions over USB UART 
+	initLMCterminal(115200);
+	
+	return 0;
+}
+
 bool initUART(eUartController controller, uartInfo *info) {
 	uint32_t sysctlMask;
 	uint32_t gpioBase;
@@ -350,6 +378,8 @@ bool initUART(eUartController controller, uartInfo *info) {
 	
 	// configure and initialize the UART peripheral
 	UARTConfigSetExpClk(uartBase, SysCtlClockGet(), info->baud, uartConfigMask);
+	
+	uartInitialized[(int)controller] = true;
 	
 	return true;
 }

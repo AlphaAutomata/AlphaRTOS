@@ -1,11 +1,9 @@
 #include "badgerRMCRTOS.h"
 
 #include "LMCterminal.h"
+#include "isr.h"
 
 int timerCallback(uint32_t arg) {
-	char a;
-	char t;
-	char data;
 	int i;
 	
 	uint8_t string[10];
@@ -21,9 +19,11 @@ int timerCallback(uint32_t arg) {
 	string[8] = '\n';
 	string[9] = '\r';
 	
-	for (i=0; i<8; i++) {
+	for (i=0; i<2; i++) {
 		uart_putchar(uart1, string[i]);
 	}
+	
+	uartFlow(uart1, UART1_BASE);
 	
 	return 0;
 }

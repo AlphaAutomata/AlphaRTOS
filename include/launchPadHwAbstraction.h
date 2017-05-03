@@ -64,6 +64,8 @@ typedef struct {
 	bool twoStopBits;
 } uartInfo;
 
+int uartManager(uint32_t arg);
+
 bool initUART(eUartController controller, uartInfo *info);
 bool disableUART(eUartController controller);
 

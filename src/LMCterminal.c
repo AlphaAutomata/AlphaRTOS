@@ -8,11 +8,6 @@
 
 #define CONVERSION_BUFFER_SIZE 24
 
-int uart0Flow(uint32_t arg) {
-	uartFlow((int)uart0, UART0_BASE);
-	return 0;
-}
-
 int initLMCterminal(uint32_t arg) {
 	uartInfo usbUART;
 	
@@ -22,9 +17,6 @@ int initLMCterminal(uint32_t arg) {
 	usbUART.parity = false;
 	usbUART.twoStopBits = false;
 	initUART(uart0, &usbUART);
-	
-	// every few milliseconds, poll the UART
-	timerCallbackRegister(5, uart0Flow);
 	
 	return 0;
 }

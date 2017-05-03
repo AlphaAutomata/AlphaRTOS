@@ -54,18 +54,24 @@ int main(void) {
 	// add all the existing tasks
 	initTaskMaster();
 	
-	// the Blinky task toggles the RGB LED once every seconds to indicate the
-	// scheduler is working as intended
-	addTask(blinkyTask, (uint32_t)&wheelPWM);
+	//////////////////
+	// Kernel Tasks //
+	//////////////////
 	
 	// LMC Terminal communicates over USB UART, and we initalize it to1Mbaud
-	addTask(initLMCterminal, 115200);
+	addTask(uartManager, 2);
+	
+	////////////////
+	// User Tasks //
+	////////////////
 	
 	// Read global given speeds and QEI input, run PID loop, set wheel PWMs
-	addTask(ctrlLoop, (uint32_t)&wheelPWM);
-	
+	addTask(ctrlLoop, 0);
 	// parse UART packets and set global state such as given wheel speeds
-	addTask(SerialReader, (uint32_t)&wheelPWM);
+	addTask(SerialReader, 0);
+	// the Blinky task toggles the RGB LED once every seconds to indicate the
+	// scheduler is working as intended
+	addTask(blinkyTask, 0);
 	
 //	addTask(hm10_init, 0);
 	
