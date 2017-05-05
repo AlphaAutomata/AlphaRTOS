@@ -615,6 +615,11 @@
               <FileType>1</FileType>
               <FilePath>.\driverlib\pwm.c</FilePath>
             </File>
+            <File>
+              <FileName>qei.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\driverlib\qei.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -702,6 +707,11 @@
               <FileName>SerialReader.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\tasks\SerialReader.c</FilePath>
+            </File>
+            <File>
+              <FileName>hm10.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\tasks\hm10.c</FilePath>
             </File>
           </Files>
         </Group>

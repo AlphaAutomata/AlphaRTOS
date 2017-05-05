@@ -25,22 +25,18 @@ int main(void) {
 	
 	// Initialize GPIO Port A for UART over USB
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
-	
-	// GPIO Port F needs to be unlocked for use
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
-	
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
-	
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
-	
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+	
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC));
 	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD));
-	
-	
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
 	
 	// initialize LaunchPad RGB LED and push buttons
 	initUIO();
@@ -49,27 +45,35 @@ int main(void) {
 	initPWM(pwm0,pwm_gen1);
 	initPWM(pwm0,pwm_gen2);
 	initPWM(pwm0,pwm_gen3);
+	initPWM(pwm1,pwm_gen0);
+	initPWM(pwm1,pwm_gen1);
 	
 	initQEI(qei0);
-//	initQEI(qei1);
+	initQEI(qei1);
 	
 	// add all the existing tasks
-	// TODO: when booting in debug mode, delay initTask calls until a command
-	// is received over UART
 	initTaskMaster();
 	
-	// the Blinky task just toggles the RGB LED once every seconds to indicate
-	// the scheduler is working as intended
-	addTask(blinkyTask, (uint32_t)&wheelPWM);
+	//////////////////
+	// Kernel Tasks //
+	//////////////////
 	
-	// the LMC Terminal communicates over USB UART, and here we initalize it to 1Mbaud
-	addTask(initLMCterminal, 1000000);
+	// LMC Terminal communicates over USB UART, and we initalize it to1Mbaud
+	addTask(uartManager, 2);
 	
-	// read wheel speed commands from USB UART and set PWMs
-	addTask(ctrlLoop, (uint32_t)&wheelPWM);
+	////////////////
+	// User Tasks //
+	////////////////
 	
-	// parse UART packets
-	addTask(SerialReader, (uint32_t)&wheelPWM);
+	// Read global given speeds and QEI input, run PID loop, set wheel PWMs
+	addTask(ctrlLoop, 0);
+	// parse UART packets and set global state such as given wheel speeds
+	addTask(SerialReader, 0);
+	// the Blinky task toggles the RGB LED once every seconds to indicate the
+	// scheduler is working as intended
+	addTask(blinkyTask, 0);
+	
+//	addTask(hm10_init, 0);
 	
 	while(1) {
 		// SysTick triggers this every millisecond

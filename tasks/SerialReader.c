@@ -19,6 +19,9 @@ int parse(uint32_t arg) {
 	int i;
 #endif
 	
+	// this function should never return, so reset read state on entry
+	byteNum = 0;
+	
 	// continuously read UART bytes
 	// uses getchar(), which yields the CPU when blocking
 	while (byteNum < 16) {
@@ -50,6 +53,11 @@ int parse(uint32_t arg) {
 
 					rightWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)dr.right)+100)) / 200) + ONE_MS_PULSE_WIDTH);
 					wheelPWM.right = rightWidth;
+					break;
+				
+				case QUERY_RSSI_OPCODE :
+					
+					
 					break;
 				
 				default :

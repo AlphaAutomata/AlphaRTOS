@@ -33,6 +33,9 @@ extern "C" {
 #define QUERY_ENCODER_OPCODE                0x50
 #define REPORT_ENCODER_OPCODE               0x47
 
+#define QUERY_RSSI_OPCODE                   0x30
+#define REPORT_RSSI_OPCODE                  0x31
+
 #define QUERY_CAMERA_IMAGE_OPCODE			0x13
 
 #define QUERY_HEARTBEAT_OPCODE				0x14
