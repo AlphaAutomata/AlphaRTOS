@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define LMC_TERMINAL_ECHO
+#define LMC_TERMINAL_CR_LF_CONVERSION
+
 //*****************************************************************************
 //
 //! Initialize the LMC Terminal. Initialize UART0, set up interrupts, and
@@ -50,6 +53,7 @@ int getchar_nonblock(void);
 //
 //*****************************************************************************
 int putchar(int c);
+int putchar_nonblock(int c);
 
 //*****************************************************************************
 //

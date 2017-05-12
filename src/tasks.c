@@ -9,6 +9,7 @@ volatile unsigned int currTasks;
 
 int gpTimerIntVector[NUM_INT_CALLBACKS];
 int uartIntVector[NUM_INT_CALLBACKS];
+int qeiIntVector[NUM_INT_CALLBACKS];
 
 bool initTaskMaster(void) {
 	// Initially, we have no tasks.
@@ -195,6 +196,26 @@ int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt i
 			UARTIntEnable(deviceBase, UART_INT_RX | UART_INT_TX);
 			
 			break;
+		
+		case Quadrature :
+			iVector = qeiIntVector;
+			switch(deviceNumber) {
+				case 0 :
+					deviceBase = QEI0_BASE;
+					isrAddr = qei0ISR;
+					break;
+				case 1 :
+					deviceBase = QEI1_BASE;
+					isrAddr = qei1ISR;
+				default :
+					return -1;
+			}
+			
+			QEIIntRegister(deviceBase, isrAddr);
+			QEIIntEnable(deviceBase, QEI_INTTIMER);
+			
+			break;
+			
 		default :
 			return -1;
 	}
@@ -225,6 +246,8 @@ int interruptCallbackUnregister(eInterrupt interrupt, int callbackID) {
 		case UART :
 			iVector = uartIntVector;
 			break;
+		case Quadrature :
+			iVector = qeiIntVector;
 		default :
 			return -1;
 	}

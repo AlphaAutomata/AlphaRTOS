@@ -4,9 +4,11 @@
 #include "Packet.h"
 #include "global_state.h"
 
+#define PARSE_BUFF_SIZE 16
+
 struct DrivePayload dr;
 
-uint8_t packet[16];
+uint8_t packet[PARSE_BUFF_SIZE];
 uint8_t opcode;
 uint8_t *payload_ptr;
 uint8_t byteNum;
@@ -24,7 +26,7 @@ int parse(uint32_t arg) {
 	
 	// continuously read UART bytes
 	// uses getchar(), which yields the CPU when blocking
-	while (byteNum < 16) {
+	while (byteNum < PARSE_BUFF_SIZE) {
 		packet[byteNum] = getchar();
 		if (packet[byteNum] == 0x00) {
 #ifdef DEBUG_SERIAL_READER
@@ -35,7 +37,7 @@ int parse(uint32_t arg) {
 			kprintf("\n");
 #endif
 			
-			ReadPacketHeader(&packet[0], 16, &opcode, &payload_ptr);
+			ReadPacketHeader(&packet[0], PARSE_BUFF_SIZE, &opcode, &payload_ptr);
 #ifdef DEBUG_SERIAL_READER
 			kprintf("Decoded Packet Dump\n");
 			for (i=0; i<16; i++) {
@@ -48,16 +50,14 @@ int parse(uint32_t arg) {
 				case DRIVE_OPCODE :
 					ParseDrivePayload(payload_ptr, &dr);
 					
-					leftWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)dr.left)+100)) / 200) + ONE_MS_PULSE_WIDTH);
+					leftWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)(dr.left))+100)) / 200) + ONE_MS_PULSE_WIDTH);
 					wheelPWM.left = leftWidth;
 
-					rightWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)dr.right)+100)) / 200) + ONE_MS_PULSE_WIDTH);
+					rightWidth = (unsigned int) (((ONE_MS_PULSE_WIDTH * (((int)(dr.right))+100)) / 200) + ONE_MS_PULSE_WIDTH);
 					wheelPWM.right = rightWidth;
 					break;
 				
 				case QUERY_RSSI_OPCODE :
-					
-					
 					break;
 				
 				default :

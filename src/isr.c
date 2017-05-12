@@ -1,6 +1,7 @@
 #include "inc/hw_memmap.h"
 #include "isr.h"
 #include "uart.h"
+#include "qei.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////// UART ///////////////////////////////////////////////
@@ -39,11 +40,8 @@ void uartFlow(int controller, uint32_t base) {
 		}
 	}
 	
-	if (UARTCharsAvail(base)) {
+	while (UARTCharsAvail(base)) {
 		uartChar = UARTCharGet(base);
-		
-		UARTCharPut(base, uartChar);
-		
 		circularBufferAddItem(&(uart_rxBuffs[controller]), &uartChar);
 	}
 }
@@ -158,4 +156,20 @@ void uart7ISR(void) {
 	if (uartHWErrMask[7]) UARTRxErrorClear(UART7_BASE);
 	
 	return;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////// Quadrature ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+volatile uint32_t qeiIntMask;
+
+void qei0ISR(void) {
+	QEIIntClear(QEI0_BASE, QEI_INTTIMER);
+	qeiIntMask |= 0x00000001;
+}
+
+void qei1ISR(void) {
+	QEIIntClear(QEI1_BASE, QEI_INTTIMER);
+	qeiIntMask |= 0x00000002;
 }

@@ -13,7 +13,7 @@
 #include "circular_buffer.h"
 #include "LMCterminal.h"
 
-bool initPWM(ePwmController controller, ePwmGenerator generator){
+bool initPWM(ePwmController controller, ePwmGenerator generator) {
 	uint32_t Base;
 	uint32_t Gen;	
 	uint32_t rxPinConfigMask;
@@ -144,9 +144,11 @@ bool initQEI(eQuadrature encoder) {
 		(QEI_CONFIG_CAPTURE_A_B | QEI_CONFIG_NO_RESET | QEI_CONFIG_QUADRATURE | QEI_CONFIG_NO_SWAP),
 		1023
 	);
-	QEIEnable(QEIbase);
-	QEIVelocityConfigure(QEIbase, QEI_VELDIV_1, 5000000);
+	QEIFilterConfigure(QEIbase, QEI_FILTCNT_17);
+	QEIFilterEnable(QEIbase);
+	QEIVelocityConfigure(QEIbase, QEI_VELDIV_1, 2500000);
 	QEIVelocityEnable(QEIbase);
+	QEIEnable(QEIbase);
 	
 	return true;
 }
@@ -403,19 +405,13 @@ int uart_getchar_nonblock(eUartController controller) {
 }
 
 int uart_putchar(eUartController controller, int c) {
-	char in;
-	
-	in = c;
-	while (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &in)) taskYield();
+	while (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &c)) taskYield();
 	
 	return c;
 }
 
 int uart_putchar_nonblock(eUartController controller, int c) {
-	char in;
-	
-	in = c;
-	if (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &in)) {
+	if (!circularBufferAddItem(&(uart_txBuffs[(int)controller]), &c)) {
 		return -1;
 	} else {
 		return c;

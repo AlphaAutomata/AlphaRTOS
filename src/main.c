@@ -58,7 +58,7 @@ int main(void) {
 	// Kernel Tasks //
 	//////////////////
 	
-	// LMC Terminal communicates over USB UART, and we initalize it to1Mbaud
+	// The UART Manager processes all UART I/O
 	addTask(uartManager, 2);
 	
 	////////////////
@@ -72,8 +72,8 @@ int main(void) {
 	// the Blinky task toggles the RGB LED once every seconds to indicate the
 	// scheduler is working as intended
 	addTask(blinkyTask, 0);
-	
-//	addTask(hm10_init, 0);
+	// Bluetooth radio used for localization
+	addTask(radio_init, 0);
 	
 	while(1) {
 		// SysTick triggers this every millisecond
@@ -101,6 +101,20 @@ int main(void) {
 				}
 				uartIntMask = 0;
 			}
+		}
+		
+		if (qeiIntMask != 0) {
+			for (i=0; i<NUM_INT_CALLBACKS; i++) {
+				if (qeiIntVector[i] != 0 && taskTable[qeiIntVector[i]].interruptCallback != 0) {
+					currTaskID = qeiIntVector[i];
+					currTask.frame.R0 = (uint32_t)Quadrature;
+					currTask.frame.R1 = qeiIntMask;
+					currTask.frame.LR = (uint32_t)userReturn;
+					currTask.frame.SP = (uint32_t)(frameBase(i));
+					runTask(&(currTask.frame), &kframe, (int (*)(uint32_t))currTask.interruptCallback);
+				}
+			}
+			qeiIntMask = 0;
 		}
 	}
 }

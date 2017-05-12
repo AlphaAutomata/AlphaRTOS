@@ -14,6 +14,7 @@
 #include "gpio.h"
 #include "pin_map.h"
 #include "uart.h"
+#include "qei.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////// General Purpose Input/Output Ports and Pins /////////////////
@@ -116,8 +117,9 @@ int32_t getQEIPosition(eQuadrature encoder);
 
 // explicitly define the values, since these get passed through context switches
 typedef enum {
-	gpTimer = 0x00000000,
-	UART    = 0x00000001
+	gpTimer    = 0x00000000,
+	UART       = 0x00000001,
+	Quadrature = 0x00000002
 } eInterrupt;
 
 #endif

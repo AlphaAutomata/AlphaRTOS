@@ -15,6 +15,7 @@ extern volatile unsigned int currTasks;
 // vector of tasks to alert when certain interrupts happen
 extern int gpTimerIntVector[NUM_INT_CALLBACKS];
 extern int uartIntVector[NUM_INT_CALLBACKS];
+extern int qeiIntVector[NUM_INT_CALLBACKS];
 
 //*****************************************************************************
 //

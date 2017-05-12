@@ -31,11 +31,36 @@ int initLMCterminal(uint32_t arg) {
 //
 // *****************************************************************************
 int getchar(void) {
+#ifdef LMC_TERMINAL_ECHO
+	int c;
+	
+	c = uart_getchar(uart0);
+	uart_putchar(uart0, c);
+#ifdef LMC_TERMINAL_CR_LF_CONVERSION
+	if (c == '\r') uart_putchar(uart0, '\n');
+#endif
+	
+	return c;
+#else
 	return uart_getchar(uart0);
+#endif
 }
 
 int getchar_nonblock(void){
+#ifdef LMC_TERMINAL_ECHO
+	int c;
+	
+	c = uart_getchar_nonblock(uart0);
+	if (c == -1) return -1;
+	uart_putchar_nonblock(uart0, c);
+#ifdef LMC_TERMINAL_CR_LF_CONVERSION
+	if (c == '\r') uart_putchar_nonblock(uart0, '\n');
+#endif
+	
+	return c;
+#else
 	return uart_getchar_nonblock(uart0);
+#endif
 }
 
 //*****************************************************************************
@@ -50,6 +75,9 @@ int getchar_nonblock(void){
 int putchar(int c) {
 	return uart_putchar(uart0, c);
 }
+int putchar_nonblock(int c) {
+	return uart_putchar_nonblock(uart0, c);
+}
 
 int printlit(const char *strlit) {
 	int numChars;
@@ -58,10 +86,12 @@ int printlit(const char *strlit) {
 	while (*strlit != '\0') {
 		putchar(*strlit);
 		numChars++;
+#ifdef LMC_TERMINAL_CR_LF_CONVERSION
 		if (*strlit == '\n') {
 			putchar('\r');
 			numChars++;
 		}
+#endif
 		strlit++;
 	}
 	
@@ -92,8 +122,12 @@ int kprintf(const char *format, ...) {
 			// special character considerations
 			case '\n' :
 				putchar(*rdChar);
+#ifdef LMC_TERMINAL_CR_LF_CONVERSION
 				putchar('\r');
 				charCnt += 2;
+#else
+				charCnt++;
+#endif
 				break;
 			// number literal conversions
 			case '%' :

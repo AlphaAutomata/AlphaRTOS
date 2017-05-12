@@ -14,6 +14,8 @@ extern volatile uint32_t uartHWIntMask[8];
 // Hardware error mask from last interrupt
 extern volatile uint32_t uartHWErrMask[8];
 
+extern volatile uint32_t qeiIntMask;
+
 #define BUFF_SIZE 32
 
 extern circularBuffer_t uart_txBuffs[8];
@@ -31,5 +33,8 @@ void uart4ISR(void);
 void uart5ISR(void);
 void uart6ISR(void);
 void uart7ISR(void);
+
+void qei0ISR(void);
+void qei1ISR(void);
 
 #endif
