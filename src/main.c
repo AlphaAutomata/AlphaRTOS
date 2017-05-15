@@ -99,8 +99,8 @@ int main(void) {
 					// have the SysTick ISR return into the kernel at userReturn() when preempting tasks
 					runTask(&(currTask.frame), &kframe, (int (*)(uint32_t))currTask.interruptCallback);
 				}
-				uartIntMask = 0;
 			}
+			uartIntMask = 0;
 		}
 		
 		if (qeiIntMask != 0) {

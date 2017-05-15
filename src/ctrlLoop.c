@@ -65,91 +65,51 @@ int32_t pidLoop(pidParams_t *params, int32_t measured, int32_t target) {
 	return deltaCtrlVar;
 }
 
-int SetWheels(uint32_t arg) {
-	wheelActual.left += pidLoop(&fastLoopParams, wheelQEI.leftSpd, wheelIntermediate.left);
-	wheelActual.right += pidLoop(&fastLoopParams, wheelQEI.rightSpd, wheelIntermediate.right);
-	
-	wheelActual.left = scale(
-		wheelActual.left,
-		2*QEI_RANGE,
-		-QEI_RANGE,
-		PWM_RANGE,
-		PWM_BASE
-	);
-	wheelActual.right = scale(
-		wheelActual.right,
-		2*QEI_RANGE,
-		-QEI_RANGE,
-		PWM_RANGE,
-		PWM_BASE
-	);
-	
-	clamp(
-		wheelActual.left,
-		STOP_PULSE_WIDTH + PWM_RANGE/2,
-		STOP_PULSE_WIDTH - PWM_RANGE/2
-	);
-	clamp(
-		wheelActual.right,
-		STOP_PULSE_WIDTH + PWM_RANGE/2,
-		STOP_PULSE_WIDTH - PWM_RANGE/2
-	);
-	
-	setPWM(pwm0, pwm_gen0, wheelActual.left);
-	setPWM(pwm0, pwm_gen1, wheelActual.right);
-	
-	return 0;
-}
-
-int setFastLoopTarget(eInterrupt intType, uint32_t devMask) {
+int runLoop(eInterrupt intType, uint32_t devMask) {
 	int32_t leftTarget;
 	int32_t rightTarget;
 	int32_t deltaCtrlVar;
 	
-//	if ((devMask & 0x00000001) != 0) {
-		if (wheelActual.left < STOP_PULSE_WIDTH) {
-			wheelQEI.leftSpd = -getQEISpeed(qei0);
-		} else {
-			wheelQEI.leftSpd = getQEISpeed(qei0);
-		}
-		leftTarget = scale(
-			wheelPWM.left,
-			PWM_RANGE,
-			PWM_BASE,
-			2*QEI_RANGE,
-			-QEI_RANGE
-		);
-		deltaCtrlVar = pidLoop(&slowLoopLeftParams, wheelQEI.leftSpd, leftTarget);
-		wheelActual.left += scale(
-			deltaCtrlVar,
-			2*QEI_RANGE,
-			0,
-			PWM_RANGE,
-			0
-		);
-//	}
-//	if ((devMask & 0x00000002) != 0) {
-		if (wheelActual.right < STOP_PULSE_WIDTH) {
-			wheelQEI.rightSpd = -getQEISpeed(qei1);
-		} else {
-			wheelQEI.rightSpd = getQEISpeed(qei1);
-		}
-		rightTarget = scale(
-			wheelPWM.right,
-			PWM_RANGE,
-			PWM_BASE,
-			2*QEI_RANGE,
-			-QEI_RANGE
-		);
-		deltaCtrlVar = pidLoop(&slowLoopRightParams, wheelQEI.rightSpd, rightTarget);
-		wheelActual.right += scale(
-			deltaCtrlVar,
-			2*QEI_RANGE,
-			0,
-			PWM_RANGE,
-			0
-		);
-//	}
+	if (wheelActual.left < STOP_PULSE_WIDTH) {
+		wheelQEI.leftSpd = -getQEISpeed(qei0);
+	} else {
+		wheelQEI.leftSpd = getQEISpeed(qei0);
+	}
+	leftTarget = scale(
+		wheelPWM.left,
+		PWM_RANGE,
+		PWM_BASE,
+		2*QEI_RANGE,
+		-QEI_RANGE
+	);
+	deltaCtrlVar = pidLoop(&slowLoopLeftParams, wheelQEI.leftSpd, leftTarget);
+	wheelActual.left += scale(
+		deltaCtrlVar,
+		2*QEI_RANGE,
+		0,
+		PWM_RANGE,
+		0
+	);
+	if (wheelActual.right < STOP_PULSE_WIDTH) {
+		wheelQEI.rightSpd = -getQEISpeed(qei1);
+	} else {
+		wheelQEI.rightSpd = getQEISpeed(qei1);
+	}
+	rightTarget = scale(
+		wheelPWM.right,
+		PWM_RANGE,
+		PWM_BASE,
+		2*QEI_RANGE,
+		-QEI_RANGE
+	);
+	deltaCtrlVar = pidLoop(&slowLoopRightParams, wheelQEI.rightSpd, rightTarget);
+	wheelActual.right += scale(
+		deltaCtrlVar,
+		2*QEI_RANGE,
+		0,
+		PWM_RANGE,
+		0
+	);
 	
 	clamp(
 		wheelActual.left,
@@ -164,17 +124,13 @@ int setFastLoopTarget(eInterrupt intType, uint32_t devMask) {
 	
 	setPWM(pwm0, pwm_gen0, wheelActual.left);
 	setPWM(pwm0, pwm_gen1, wheelActual.right);
-//	setPWM(pwm0, pwm_gen0, wheelPWM.left);
-//	setPWM(pwm0, pwm_gen1, wheelPWM.right);
 	
 	return 0;
 }
 
 int ctrlLoop(uint32_t arg) {
-	interruptCallbackRegister(Quadrature, setFastLoopTarget, 0);
-	interruptCallbackRegister(Quadrature, setFastLoopTarget, 1);
-	
-	//timerCallbackRegister(3, SetWheels);
+	interruptCallbackRegister(Quadrature, runLoop, 0);
+	interruptCallbackRegister(Quadrature, runLoop, 1);
 	
 	slowLoopLeftParams.kp = 200;
 	slowLoopLeftParams.ki = 1;
@@ -208,27 +164,8 @@ int ctrlLoop(uint32_t arg) {
 		-QEI_RANGE
 	);
 	
-	fastLoopParams.kp = 0;
-	fastLoopParams.ki = 0;
-	fastLoopParams.kd = 0;
-	fastLoopParams.kRange = 1000;
-	fastLoopParams.lastErr = 0;
-	fastLoopParams.sumErr = 0;
-	fastLoopParams.sumErrCeil = QEI_RANGE;
-	fastLoopParams.sumErrFloor = -QEI_RANGE;
-	fastLoopParams.deadZone = scale(
-		ONE_MS_PULSE_WIDTH+1,
-		PWM_RANGE,
-		PWM_BASE,
-		2*QEI_RANGE,
-		-QEI_RANGE
-	);
-	
 	wheelActual.left = STOP_PULSE_WIDTH;
 	wheelActual.right = STOP_PULSE_WIDTH;
-	
-	wheelIntermediate.left = 0;
-	wheelIntermediate.right = 0;
 	
 	setPWM(pwm0, pwm_gen0, STOP_PULSE_WIDTH);
 	setPWM(pwm0, pwm_gen1, STOP_PULSE_WIDTH);

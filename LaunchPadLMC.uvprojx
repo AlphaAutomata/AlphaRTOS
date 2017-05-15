@@ -709,9 +709,9 @@
               <FilePath>.\tasks\SerialReader.c</FilePath>
             </File>
             <File>
-              <FileName>hm10.c</FileName>
+              <FileName>radio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\tasks\hm10.c</FilePath>
+              <FilePath>.\tasks\radio.c</FilePath>
             </File>
           </Files>
         </Group>
