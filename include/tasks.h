@@ -34,13 +34,19 @@ extern void SysTick_Handler(void);
 //! Run a single round of scheduling. Should be called every time runScheduer
 //! is set to true. 
 //!
-//! \param oldTask points to the task that yielded the processor, if any. 
-//! If schedule() is not called from taskYield(), oldTask should be zero/NULL.
-//!
 //! \return none
 //
 //*****************************************************************************
 extern void schedule(void);
+
+//*****************************************************************************
+//
+//! Schedule all tasks that were preempted by the scheduler
+//!
+//! \return none
+//
+//*****************************************************************************
+extern void schedulePreempted(void);
 
 //*****************************************************************************
 //

@@ -38,12 +38,12 @@ int getchar(void) {
 	uart_putchar(uart0, c);
 #ifdef LMC_TERMINAL_CR_LF_CONVERSION
 	if (c == '\r') uart_putchar(uart0, '\n');
-#endif
+#endif // LMC_TERMINAL_CR_LF_CONVERSION
 	
 	return c;
-#else
+#else // LMC_TERMINAL_ECHO
 	return uart_getchar(uart0);
-#endif
+#endif // LMC_TERMINAL_ECHO
 }
 
 int getchar_nonblock(void){
@@ -55,12 +55,12 @@ int getchar_nonblock(void){
 	uart_putchar_nonblock(uart0, c);
 #ifdef LMC_TERMINAL_CR_LF_CONVERSION
 	if (c == '\r') uart_putchar_nonblock(uart0, '\n');
-#endif
+#endif // LMC_TERMINAL_CR_LF_CONVERSION
 	
 	return c;
-#else
+#else // LMC_TERMINAL_ECHO
 	return uart_getchar_nonblock(uart0);
-#endif
+#endif // LMC_TERMINAL_ECHO
 }
 
 //*****************************************************************************

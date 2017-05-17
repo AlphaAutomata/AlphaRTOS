@@ -239,7 +239,7 @@ int uartManager(uint32_t arg) {
 	timerCallbackRegister(arg, flow);
 	
 	// LMC Terminal provides a limited set of stdio functions over USB UART 
-	initLMCterminal(115200);
+	initLMCterminal(9600);
 	
 	return 0;
 }

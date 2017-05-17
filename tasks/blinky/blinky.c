@@ -53,7 +53,7 @@ int taskCallback(uint32_t arg) {
 	}
 	*/
 	
-	if (getUptime() > 200) {
+/*	if (getUptime() > 200) {
 		uart_putchar(uart1, 'A');
 		uart_putchar(uart1, 'T');
 		uart_putchar(uart1, '+');
@@ -64,7 +64,7 @@ int taskCallback(uint32_t arg) {
 		//uart_putchar(uart1, '?');
 		uart_putchar(uart1, '\r');
 		uart_putchar(uart1, '\n');
-	}
+	}*/
 	buttonsPressed(&lbpressed, &rbpressed);
 	if (lbpressed) {
 		if (print) {

@@ -54,6 +54,9 @@ TIMER0_BASE			EQU 0x40030000
 TIMER_TIMA_TIMEOUT	EQU 0x00000001
 TIMER_O_ICR			EQU 0x00000024
 		
+		AREA	VARS, DATA, READWRITE, ALIGN=3
+isrContAddr DCD	0x00000000
+		
 		AREA	FLASH, CODE, READONLY
 		
 runTask PROC
@@ -185,7 +188,6 @@ preempt	PUSH	{R0-R3,R12,LR}			; push caller-save registers
 		; globals. Therefore we simply jump into the SysTick ISR right after global variable update
 TIMER0A_Handler PROC
 		EXPORT TIMER0A_Handler
-		IMPORT TimerIntClear
 		
 		; clear timer timeout interrupt
 		MOV32	R0, #(TIMER0_BASE+TIMER_O_ICR)	; set mem-mapped address of timer interrupt clear

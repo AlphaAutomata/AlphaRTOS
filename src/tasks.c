@@ -1,4 +1,9 @@
 #include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "interrupt.h"
+#include "inc/hw_ints.h"
 
 #include "tasks.h"
 #include "launchPadHwAbstraction.h"
@@ -15,9 +20,10 @@ bool initTaskMaster(void) {
 	// Initially, we have no tasks.
 	currTasks = 0;
 	
-	// clearn the interrupt vectors
+	// clear the interrupt vectors
 	memset(gpTimerIntVector, 0, sizeof(gpTimerIntVector));
 	memset(uartIntVector, 0, sizeof(gpTimerIntVector));
+	memset(qeiIntVector, 0, sizeof(qeiIntVector));
 	
 	// initialize the scheduler
 	initScheduler();
@@ -30,6 +36,9 @@ bool initTaskMaster(void) {
 	
 	// Enable SysTick interrupts
 	SysTickIntEnable();
+	
+	// Set SysTick to lowest priority to facilitate context switch implementation
+	IntPrioritySet(FAULT_SYSTICK, 0xE0);
 	
 	// Start the SysTick
 	SysTickEnable();

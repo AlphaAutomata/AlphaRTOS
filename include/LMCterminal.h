@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LMC_TERMINAL_ECHO
+//#define LMC_TERMINAL_ECHO
 #define LMC_TERMINAL_CR_LF_CONVERSION
 
 //*****************************************************************************

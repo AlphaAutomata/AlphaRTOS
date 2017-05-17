@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 #include "timer.h"
+#include "interrupt.h"
+#include "inc/hw_ints.h"
 
 #include "scheduler.h"
 #include "launchPadUIO.h"
@@ -32,10 +34,11 @@ void initScheduler(void) {
 	// set up a General Purpose Timer which will be used to ensure each task only runs for a
 	// limited amount of time. The time slots are set and the interrupts enabled at the beginning
 	// of each scheduling round, and disabled at the end of each scheduling round. 
-	// Set timer to be periodic, and have no additional actions other than triggering and interrupt
+	// Set timer to be periodic, and have no additional actions other than triggering an interrupt
 	// when timing out. 
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT);
 	TimerIntRegister(TIMER0_BASE, TIMER_A, TIMER0A_Handler);
+	IntPrioritySet(INT_TIMER0A_TM4C123, 0xE0);
 }
 
 void schedule(void) {
@@ -82,7 +85,6 @@ void schedule(void) {
 				}
 				break;
 			case TASK_STATUS_YIELDING :
-			case TASK_STATUS_PREEMPTED :
 					// if the task had previously yielded the processor, let it run again
 					currTaskID = i;
 					currTask.status = TASK_STATUS_RUNNING;
@@ -91,6 +93,32 @@ void schedule(void) {
 				break;
 			default :
 				break;
+		}
+	}
+	
+	// disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
+	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+}
+
+void schedulePreempted(void) {
+	int i;
+	
+	// enable the interrupt right before entering the scheduling loop
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	
+	for (i=1; i<=currTasks; i++) {
+		// set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
+		// aside time for OS operations. Reload the timer at the start of each task. 
+		TimerLoadSet(TIMER0_BASE, TIMER_A, SYSTICK_INTERVAL / (currTasks+1));
+		TimerEnable(TIMER0_BASE, TIMER_A);
+		
+		// For each task, determine action based on its status
+		if (taskTable[i].status == TASK_STATUS_PREEMPTED) {
+			// if the task had been preempted, let it run again
+			currTaskID = i;
+			currTask.status = TASK_STATUS_RUNNING;
+			switchContext(&(currTask.frame), &kframe);
+			currTaskID = 0;
 		}
 	}
 	

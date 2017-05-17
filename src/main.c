@@ -73,7 +73,7 @@ int main(void) {
 	// scheduler is working as intended
 	addTask(blinkyTask, 0);
 	// Bluetooth radio used for localization
-	addTask(radio_init, 0);
+	//addTask(radio_init, 0);
 	
 	while(1) {
 		// SysTick triggers this every millisecond
@@ -81,6 +81,8 @@ int main(void) {
 			schedule();
 			runScheduler = false;
 		}
+		
+		schedulePreempted();
 		
 		// triggered from isr.c by UART interrupts
 		if (uartIntMask != 0) {

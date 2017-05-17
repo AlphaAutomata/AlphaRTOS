@@ -124,13 +124,22 @@ int runLoop(eInterrupt intType, uint32_t devMask) {
 	
 	setPWM(pwm0, pwm_gen0, wheelActual.left);
 	setPWM(pwm0, pwm_gen1, wheelActual.right);
+	//setPWM(pwm0, pwm_gen0, wheelPWM.left);
+	//setPWM(pwm0, pwm_gen1, wheelPWM.right);
 	
 	return 0;
+}
+
+int setWheels(uint32_t arg) {
+	setPWM(pwm0, pwm_gen0, wheelPWM.left);
+	setPWM(pwm0, pwm_gen1, wheelPWM.right);
 }
 
 int ctrlLoop(uint32_t arg) {
 	interruptCallbackRegister(Quadrature, runLoop, 0);
 	interruptCallbackRegister(Quadrature, runLoop, 1);
+	
+	//timerCallbackRegister(10, setWheels);
 	
 	slowLoopLeftParams.kp = 200;
 	slowLoopLeftParams.ki = 1;
@@ -149,7 +158,7 @@ int ctrlLoop(uint32_t arg) {
 	);
 	
 	slowLoopRightParams.kp = 200;
-	slowLoopRightParams.ki = 10;
+	slowLoopRightParams.ki = 5;
 	slowLoopRightParams.kd = 10;
 	slowLoopRightParams.kRange = 1000;
 	slowLoopRightParams.lastErr = 0;
