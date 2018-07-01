@@ -17,6 +17,7 @@
 
 #else
 
+#include <fcntl.h>
 #include <unistd.h>
 
 #define MAX_PATH PATH_MAX
