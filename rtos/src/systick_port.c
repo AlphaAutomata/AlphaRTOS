@@ -18,7 +18,6 @@ void systick_init(void* timerBase, void* intCtrlBase, void* sysTickHandler, int 
 	// Set timer to count milliseconds
 	scu_config = XScuTimer_LookupConfig(XPAR_XSCUTIMER_0_DEVICE_ID);
 	XScuTimer_CfgInitialize(&scuTimer, scu_config, scu_config->BaseAddr);
-	sysTicks = 0;
 	XScuTimer_LoadTimer(&scuTimer, sysTickInterval);
 	XScuTimer_EnableAutoReload(&scuTimer);
 	XScuTimer_Start(&scuTimer);
@@ -26,7 +25,6 @@ void systick_init(void* timerBase, void* intCtrlBase, void* sysTickHandler, int 
 	// Initialize generic interrupt controller
 	intCtrl_config = XScuGic_LookupConfig(XPAR_SCUGIC_0_DEVICE_ID);
 	XScuGic_CfgInitialize(&intCtrl, intCtrl_config, intCtrl_config->CpuBaseAddress);
-	//XScuGic_Enable(&intCtrl, XPAR_SCUGIC_0_DEVICE_ID);
 
 	// Register systick handler with the interrupt controller
 	Xil_ExceptionInit();
@@ -36,9 +34,11 @@ void systick_init(void* timerBase, void* intCtrlBase, void* sysTickHandler, int 
 		&intCtrl
 	);
 
-	// Enable timer interrupts
+	// Enable interrupt controller
 	XScuGic_Connect(&intCtrl, XPAR_SCUTIMER_INTR, sysTickHandler, &scuTimer);
 	XScuGic_Enable(&intCtrl, XPAR_SCUTIMER_INTR);
+	
+	// Set timer to interrupt on timeout
 	XScuTimer_EnableInterrupt(&scuTimer);
 
 	// Enable processor interrupts
