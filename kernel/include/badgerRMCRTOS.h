@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "launchPadHwAbstraction.h"
-
 //*****************************************************************************
 //
 //! Register a periodic callback. This function will be automatically called
