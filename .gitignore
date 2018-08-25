@@ -6,3 +6,4 @@ RTE/
 *.diff
 *.scvd
 *.TMP
+*.vscode/

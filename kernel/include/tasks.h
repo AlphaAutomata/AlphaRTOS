@@ -17,16 +17,9 @@ extern int gpTimerIntVector[NUM_INT_CALLBACKS];
 extern int uartIntVector[NUM_INT_CALLBACKS];
 extern int qeiIntVector[NUM_INT_CALLBACKS];
 
-//*****************************************************************************
-//
-//! SysTick interrupt service routine that periodically runs a scheduling
-//! algorithm
-//!
-//! \param none
-//!
-//! \return none
-//
-//*****************************************************************************
+/**
+ * @brief System tick interrupt service routine that periodically runs a scheduling algorithm.
+ */
 extern void SysTick_Handler(void);
 
 //*****************************************************************************
