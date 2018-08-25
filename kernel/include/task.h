@@ -1,5 +1,5 @@
-#ifndef __BADGERLMC_TASKS_H__
-#define __BADGERLMC_TASKS_H__
+#ifndef ARTOS_TASK_H
+#define ARTOS_TASK_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -102,4 +102,4 @@ bool killTask(unsigned int taskNum);
 //*****************************************************************************
 uint32_t getTaskStatus(unsigned int taskNum);
 
-#endif
+#endif // #ifndef ARTOS_TASK_H
