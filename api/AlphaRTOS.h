@@ -1,14 +1,11 @@
-#ifndef ALPHA_RTOS_H
-#define ALPHA_RTOS_H
-
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdnoreturn.h>
 
 #include "event_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif // #ifdef __cplusplus
+#ifndef ALPHA_RTOS_H
+#define ALPHA_RTOS_H
 
 /**
  * \brief Alpha RTOS API status codes.
@@ -43,6 +40,10 @@ typedef ARTOS_eStatus (*pFn_taskMain)(int argc, char** argv);
  */
 typedef ARTOS_eStatus (*pFn_taskFunction)(void* arg);
 
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
+
 /**
  * \brief Register a periodic service.
  *
@@ -58,7 +59,7 @@ typedef ARTOS_eStatus (*pFn_taskFunction)(void* arg);
  * \retval ::ARTOS_eStatus_NO_RSRC  The maximum number of periodic services have already been
  *                                  registered.
  */
-ARTOS_eStatus ARTOS_timedServiceRegister(
+ARTOS_eStatus ARTOS_timedService_register(
 	int*             handlerID,
 	unsigned int     interval,
 	pFn_taskFunction handler,
@@ -68,33 +69,33 @@ ARTOS_eStatus ARTOS_timedServiceRegister(
 /**
  * \brief Unregister a periodic service.
  *
- * \param handlerID The ID assigned by ::ARTOS_timedServiceRegister() when the handler was first
+ * \param handlerID The ID assigned by ::ARTOS_timedService_register() when the handler was first
  *                  registered.
  *
  * \retval ::ARTOS_eStatus_OK       The specified handler was successfully unregistered.
  * \retval ::ARTOS_eStatus_BAD_ARGS No handler with the specified ID was found.
  */
-ARTOS_eStatus ARTOS_timedServiceUnregister(int handlerID);
+ARTOS_eStatus ARTOS_timedService_unregister(int handlerID);
 
 /**
  * \brief Set the periodic interval between successive invocations of a periodic service handler.
  *
  * The new interval takes effect after the handler is next invoked. To force the handler to be
- * invoked immediately, use ::ARTOS_timedServiceIntervalSync().
+ * invoked immediately, use ::ARTOS_timedService_intervalSync().
  *
- * \param handlerID The ID returned by ::ARTOS_timedServiceRegister() when the handler was first
+ * \param handlerID The ID returned by ::ARTOS_timedService_register() when the handler was first
  *                  registered.
  * \param interval  The system tick interval at which the handler should be invoked.
  *
  * \retval ::ARTOS_eStatus_OK       The specified handler's invocation interval has been updated.
  * \retval ::ARTOS_eStatus_BAD_ARGS No handler with the specified ID was found.
  */
-ARTOS_eStatus ARTOS_timedServiceIntervalSet(int handlerID, unsigned int interval);
+ARTOS_eStatus ARTOS_timedService_intervalSet(int handlerID, unsigned int interval);
 
 /**
  * \brief Get the periodic interval between successive invocations of a service handler.
  *
- * \param       handlerID The ID returned by ::ARTOS_timedServiceRegister() when the handler was
+ * \param       handlerID The ID returned by ::ARTOS_timedService_register() when the handler was
  *                        first registered.
  * \param [out] interval  The number of system tick interval at which the handler is invoked is
  *                        written here.
@@ -102,7 +103,7 @@ ARTOS_eStatus ARTOS_timedServiceIntervalSet(int handlerID, unsigned int interval
  * \retval ::ARTOS_eStatus_OK       The specified handler's invocation interval has been retrieved.
  * \retval ::ARTOS_eStatus_BAD_ARGS No handler with the specified ID was found.
  */
-ARTOS_eStatus ARTOS_timedServiceIntervalGet(int handlerID, unsigned int* interval);
+ARTOS_eStatus ARTOS_timedService_intervalGet(int handlerID, unsigned int* interval);
 
 /**
  * \brief Synchronize the specified periodic service invocation interval to the current system tick.
@@ -111,11 +112,11 @@ ARTOS_eStatus ARTOS_timedServiceIntervalGet(int handlerID, unsigned int* interva
  * `(current system tick) + (offset)` system tick. Calling this function on a number of periodic
  * callbacks in the same system tick synchronizes their service intervals with each other.
  *
- * \param handlerID The ID returned by ::ARTOS_timedServiceRegister() when the handler was first
+ * \param handlerID The ID returned by ::ARTOS_timedService_register() when the handler was first
  *                  registered.
  * \param offset    The number of system ticks to wait before invoking the specified handler.
  */
-ARTOS_eStatus ARTOS_timedServiceIntervalSync(int handlerID, unsigned int offset);
+ARTOS_eStatus ARTOS_timedService_intervalSync(int handlerID, unsigned int offset);
 
 /**
  * \brief Register an event service handler.
@@ -130,7 +131,7 @@ ARTOS_eStatus ARTOS_timedServiceIntervalSync(int handlerID, unsigned int offset)
  * \retval ::ARTOS_eStatus_UNSUPPORTED Event service handlers for the requested event are not
  *                                     supported.
  */
-ARTOS_eStatus ARTOS_eventServiceRegister(
+ARTOS_eStatus ARTOS_eventService_register(
 	int*             handlerID,
 	ARTOS_Event*     event,
 	pFn_taskFunction handler,
@@ -140,13 +141,13 @@ ARTOS_eStatus ARTOS_eventServiceRegister(
 /**
  * \brief Unregister an event service.
  *
- * \param handlerID The ID assigned by ::ARTOS_eventServiceRegister() when the handler was first
+ * \param handlerID The ID assigned by ::ARTOS_eventService_register() when the handler was first
  *                  registered.
  *
  * \retval ::ARTOS_eStatus_OK       The specified handler was successfully unregistered.
  * \retval ::ARTOS_eStatus_BAD_ARGS No handler with the specified ID was found.
  */
-ARTOS_eStatus ARTOS_eventServiceUnregister(int handlerID);
+ARTOS_eStatus ARTOS_eventService_unregister(int handlerID);
 
 /**
  * \brief Yield the processor for the remainder of the scheduling cycle.
@@ -175,6 +176,11 @@ ARTOS_eStatus ARTOS_taskSleep(unsigned int time);
  *                                  function has been called.
  */
 ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime);
+
+/**
+ * \brief Start the RTOS.
+ */
+noreturn void ARTOS_start(void);
 
 #ifdef __cplusplus
 }
