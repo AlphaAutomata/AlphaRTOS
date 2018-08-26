@@ -3,9 +3,14 @@
 #include <stdnoreturn.h>
 
 #include "event_types.h"
+#include "service_types.h"
 
 #ifndef ALPHA_RTOS_H
 #define ALPHA_RTOS_H
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// AlphaRTOS API Common Types /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Alpha RTOS API status codes.
@@ -30,19 +35,34 @@ typedef enum {
  */
 typedef ARTOS_eStatus (*pFn_taskMain)(int argc, char** argv);
 
-/**
- * \brief Alpha RTOS generic handler.
- *
- * \param [in,out] arg Usage-defined argument.
- *
- * \retval ::ARTOS_eStatus_OK          Function completed with no errors.
- * \retval ::ARTOS_eStatus_GENERIC_ERR Function did not exit properly.
- */
-typedef ARTOS_eStatus (*pFn_taskFunction)(void* arg);
-
 #ifdef __cplusplus
 extern "C" {
 #endif // #ifdef __cplusplus
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// AlphaRTOS Common API ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Get the number of system ticks the RTOS has been running for.
+ *
+ * \param [out] uptime The number of system ticks since startup will be written here.
+ *
+ * \retval ::ARTOS_eStatus_OK       Successfully retrieved the number of system ticks since startup.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a uptime is `NULL`.
+ * \retval ::ARTOS_eStatus_OVERRUN  The system tick counter has overflowed since the last time this
+ *                                  function has been called.
+ */
+ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime);
+
+/**
+ * \brief Start the RTOS.
+ */
+noreturn void ARTOS_start(void);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Timer-Based Services API /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Register a periodic service.
@@ -60,10 +80,10 @@ extern "C" {
  *                                  registered.
  */
 ARTOS_eStatus ARTOS_timedService_register(
-	int*             handlerID,
-	unsigned int     interval,
-	pFn_taskFunction handler,
-	void*            arg
+	int*               handlerID,
+	unsigned int       interval,
+	pFn_serviceHandler handler,
+	void*              arg
 );
 
 /**
@@ -118,6 +138,10 @@ ARTOS_eStatus ARTOS_timedService_intervalGet(int handlerID, unsigned int* interv
  */
 ARTOS_eStatus ARTOS_timedService_intervalSync(int handlerID, unsigned int offset);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Event-Based Services API /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Register an event service handler.
  *
@@ -132,10 +156,10 @@ ARTOS_eStatus ARTOS_timedService_intervalSync(int handlerID, unsigned int offset
  *                                     supported.
  */
 ARTOS_eStatus ARTOS_eventService_register(
-	int*             handlerID,
-	ARTOS_Event*     event,
-	pFn_taskFunction handler,
-	void*            arg
+	int*               handlerID,
+	ARTOS_Event*       event,
+	pFn_serviceHandler handler,
+	void*              arg
 );
 
 /**
@@ -149,12 +173,51 @@ ARTOS_eStatus ARTOS_eventService_register(
  */
 ARTOS_eStatus ARTOS_eventService_unregister(int handlerID);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////// Task API /////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Register a task.
+ * 
+ * \param [out] taskID   The unique ID assigned to this task will be written here.
+ * \param       taskMain The task entry point.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully registered the task.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a taskID or \a taskMain is `NULL`.
+ * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to register another task.
+ */
+ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain);
+
+/**
+ * \brief Execute the specified task.
+ * 
+ * \param      taskID The ID, assigned by ::ARTOS_task_register(), of the task to execute.
+ * \param      argc   The number of elements in the arguments vector \a argv.
+ * \param [in] argv   A vector of C-string arguments to pass to the task.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully started task execution.
+ * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given ID was not found.
+ * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to execute another task.
+ */
+ARTOS_eStatus ARTOS_task_exec(int taskID, int argc, char** argv);
+
+/**
+ * \brief Kill the specified task.
+ * 
+ * \param taskID The ID, assigned by ::ARTOS_task_register(), of the task to kill.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully killed the specified task.
+ * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given ID was not found.
+ */
+ARTOS_eStatus ARTOS_task_kill(int taskID);
+
 /**
  * \brief Yield the processor for the remainder of the scheduling cycle.
  *
  * \retval ::ARTOS_eStatus_OK Always.
  */
-ARTOS_eStatus ARTOS_taskYield(void);
+ARTOS_eStatus ARTOS_task_yield(void);
 
 /**
  * \brief Sleep for the specified number of system ticks.
@@ -163,24 +226,7 @@ ARTOS_eStatus ARTOS_taskYield(void);
  *
  * \return ::ARTOS_eStatus_OK Always.
  */
-ARTOS_eStatus ARTOS_taskSleep(unsigned int time);
-
-/**
- * \brief Get the number of system ticks the RTOS has been running for.
- *
- * \param [out] uptime The number of system ticks since startup will be written here.
- *
- * \retval ::ARTOS_eStatus_OK       Successfully retrieved the number of system ticks since startup.
- * \retval ::ARTOS_eStatus_BAD_ARGS \a uptime is `NULL`.
- * \retval ::ARTOS_eStatus_OVERRUN  The system tick counter has overflowed since the last time this
- *                                  function has been called.
- */
-ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime);
-
-/**
- * \brief Start the RTOS.
- */
-noreturn void ARTOS_start(void);
+ARTOS_eStatus ARTOS_task_sleep(unsigned int time);
 
 #ifdef __cplusplus
 }
