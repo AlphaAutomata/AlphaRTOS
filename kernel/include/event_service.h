@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include "event_types.h"
-#include "service_types.h"
+#include "artos_event_types.h"
+#include "artos_service_types.h"
 
 bool isEventActive(ARTOS_Event* event);
 

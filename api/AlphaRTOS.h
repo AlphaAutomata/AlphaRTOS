@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stdnoreturn.h>
 
-#include "event_types.h"
-#include "service_types.h"
+#include "artos_event_types.h"
+#include "artos_service_types.h"
 
 #ifndef ALPHA_RTOS_H
 #define ALPHA_RTOS_H

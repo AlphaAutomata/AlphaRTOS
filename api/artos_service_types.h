@@ -9,6 +9,6 @@
  * \retval ::ARTOS_eStatus_OK          Function completed with no errors.
  * \retval ::ARTOS_eStatus_GENERIC_ERR Function did not exit properly.
  */
-typedef ARTOS_eStatus (*pFn_serviceHandler)(void* arg);
+typedef void (*pFn_serviceHandler)(void* arg);
 
 #endif // #ifndef ARTOS_SERVICE_TYPES_H

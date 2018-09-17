@@ -1,0 +1,4 @@
+#ifndef ARTOS_EVENT_TYPES_H
+#define ARTOS_EVENT_TYPES_H
+
+#endif // #ifndef ARTOS_EVENT_TYPES_H

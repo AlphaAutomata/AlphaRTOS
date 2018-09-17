@@ -19,10 +19,10 @@ noreturn void ARTOS_start(void) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ARTOS_eStatus ARTOS_timedService_register(
-	int*             handlerID,
-	unsigned int     interval,
-	pFn_taskFunction handler,
-	void*            arg
+	int*               handlerID,
+	unsigned int       interval,
+	pFn_serviceHandler handler,
+	void*              arg
 ) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
@@ -48,10 +48,10 @@ ARTOS_eStatus ARTOS_timedService_intervalSync(int handlerID, unsigned int offset
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ARTOS_eStatus ARTOS_eventService_register(
-	int*             handlerID,
-	ARTOS_Event*     event,
-	pFn_taskFunction handler,
-	void*            arg
+	int*               handlerID,
+	ARTOS_Event*       event,
+	pFn_serviceHandler handler,
+	void*              arg
 ) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
