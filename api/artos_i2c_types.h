@@ -6,9 +6,9 @@
  */
 typedef enum ARTOS_eI2C_ {
     ARTOS_eI2C_00 = 0,
-    ARTOS_eI2C_00 = 1,
-    ARTOS_eI2C_00 = 2,
-    ARTOS_eI2C_00 = 3
+    ARTOS_eI2C_01 = 1,
+    ARTOS_eI2C_02 = 2,
+    ARTOS_eI2C_03 = 3
 } ARTOS_eI2C;
 
 /**

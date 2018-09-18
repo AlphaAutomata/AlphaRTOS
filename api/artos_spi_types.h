@@ -6,14 +6,14 @@
  */
 typedef enum ARTOS_eSPI_ {
     ARTOS_eSPI_00 = 0,
-    ARTOS_eSPI_00 = 1,
-    ARTOS_eSPI_00 = 2,
-    ARTOS_eSPI_00 = 3,
-    ARTOS_eSPI_00 = 4,
-    ARTOS_eSPI_00 = 5,
-    ARTOS_eSPI_00 = 6,
-    ARTOS_eSPI_00 = 7
-} ARTOS_eI2C;
+    ARTOS_eSPI_01 = 1,
+    ARTOS_eSPI_02 = 2,
+    ARTOS_eSPI_03 = 3,
+    ARTOS_eSPI_04 = 4,
+    ARTOS_eSPI_05 = 5,
+    ARTOS_eSPI_06 = 6,
+    ARTOS_eSPI_07 = 7
+} ARTOS_eSPI;
 
 /**
  * \brief Alpha RTOS SPI event type identifiers.
