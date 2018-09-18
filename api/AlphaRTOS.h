@@ -15,7 +15,7 @@
 /**
  * \brief Alpha RTOS API status codes.
  */
-typedef enum {
+typedef enum ARTOS_eStatus_ {
 	ARTOS_eStatus_OK          =   0, //!< Operation completed successfully.
 	ARTOS_eStatus_BAD_ARGS    =   1, //!< Invalid arguments to RTOS API function.
 	ARTOS_eStatus_NO_RSRC     =   2, //!< Not enough resources to complete the requested operation.

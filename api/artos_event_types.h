@@ -6,22 +6,20 @@
 /**
  * \brief Alpha RTOS event categories.
  */
-typedef enum {
+typedef enum ARTOS_eEventCat_ {
 	ARTOS_eEventCat_RESERVED_00 = 0, //!< Reserved.
-	ARTOS_eEventCat_HW_INT      = 1, //!< A hardware interrupt event.
-	ARTOS_eEventCat_UART        = 2, //!< A UART event.
-	ARTOS_eEventCat_I2C         = 3, //!< An I2C event.
-	ARTOS_eEventCat_SPI         = 4, //!< A SPI event.
-	ARTOS_eEventCat_GPIO        = 5, //!< A GPIO event.
-	ARTOS_eEventCat_TIMER_HW_GP = 6, //!< A general-purpose hardware timer event.
-	ARTOS_eEventCat_TASK_MSG    = 7  //!< A message received from another task.
+	ARTOS_eEventCat_UART        = 1, //!< A UART event.
+	ARTOS_eEventCat_I2C         = 2, //!< An I2C event.
+	ARTOS_eEventCat_SPI         = 3, //!< A SPI event.
+	ARTOS_eEventCat_GPIO        = 4, //!< A GPIO event.
+	ARTOS_eEventCat_TIMER_HW_GP = 5, //!< A general-purpose hardware timer event.
+	ARTOS_eEventCat_TASK_MSG    = 6  //!< A message received from another task.
 } ARTOS_eEventCat;
 
 /**
  * \brief Alpha RTOS detailed event information.
  */
-typedef union {
-	ARTOS_Event_HW_INT      hw_int;   //!< A hardware interrupt event.
+typedef union ARTOS_EventInfo_ {
 	ARTOS_Event_UART        uart;     //!< A UART event.
 	ARTOS_Event_I2C         i2c;      //!< An I2C event.
 	ARTOS_Event_SPI         spi;      //!< A SPI event.
@@ -33,7 +31,7 @@ typedef union {
 /**
  * \brief An Alpha RTOS event descriptor.
  */
-typedef struct {
+typedef struct ARTOS_Event_ {
 	ARTOS_eEventCat category; //!< The event category.
 	ARTOS_EventInfo info;     //!< Detailed event specifications.
 } ARTOS_Event;
