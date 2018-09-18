@@ -35,7 +35,7 @@ typedef struct ARTOS_Event_UART_ {
     ARTOS_eUART      dev;      //!< The identifier of the device that triggered the event.
     ARTOS_eUARTEvent event;    //!< The type of event that occurred.
     size_t           data_len; //!< The length of the data buffer.
-    uint8_t          data[];   //!< The buffer containing data received over UART.
+    uint8_t          data[];   //!< The buffer containing data transceived over UART.
 } ARTOS_Event_UART;
 
 #endif // #ifndef ARTOS_UART_TYPES_H
