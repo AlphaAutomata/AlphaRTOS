@@ -1,46 +1,51 @@
-#ifndef _CIRCULAR_BUFFER_H_
-#define _CIRCULAR_BUFFER_H_
+#ifndef CIRCULAR_BUFFER_H
+#define CIRCULAR_BUFFER_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <assert.h>
 
-typedef struct {
-	unsigned int itemSize;
+/**
+ * \brief An atomic circular buffer.
+ */
+typedef struct circularBuffer_t_ {
+	size_t       itemSize;
 	unsigned int numItems;
 	unsigned int rdCnt;
 	unsigned int wrCnt;
-	uint8_t *data;
+	void*        data;
 } circularBuffer_t;
 
-//*****************************************************************************
-//
-//! Initialize a circular buffer located at buffAddr. The buffer has a capacity
-//! of numItems number of items, each of which is itemSize number of bytes.
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \param itemSize is the size of a single item in bytes
-//!
-//! \param numItems is the capacity of the buffer in number of items
-//!
-//! \param buffAddr is the address of the data buffer where the data will
-//! actually be stored
-//!
-//! \return false if any parameters are out of bounds, true otherwise
-//
-//*****************************************************************************
-bool initCircularBuffer(circularBuffer_t *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr);
+/**
+ * \brief Initialize a circular buffer.
+ *
+ * \hideinitializer
+ *
+ * \param [in] buff     Pointer to the circular buffer to initialize.
+ * \param      itemType The type of items to store in the buffer.
+ * \param      numItems The capacity of the buffer, in number of items.
+ * \param [in] buffAddr Pointer to the user-supplied data buffer where the data will actually be
+ *                      stored.
+ *
+ * \retval void
+ */
+#define initCircularBuffer(buff,itemType,numItems,buffAddr) {                                      \
+	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL));              \
+	buff->itemSize = sizeof(itemType);                                                             \
+	buff->numItems = (unsigned int)numItems;                                                       \
+	buff->rdCnt = 0;                                                                               \
+	buff->wrCnt = 0;                                                                               \
+	buff->data = (void*)buffAddr;                                                                  \
+}
 
-//*****************************************************************************
-//
-//! Check to see if a buffer is full
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \return true if the buffer is full, false otherwise
-//
-//*****************************************************************************
-bool circularBufferFull(circularBuffer_t *buff);
+/**
+ * \brief Check to see if a buffer is full
+ *
+ * \param buff The buffer to check.
+ *
+ * \return true if the buffer is full, false otherwise
+ */
+bool circularBufferFull(circularBuffer_t* buff);
 
 //*****************************************************************************
 //
@@ -116,4 +121,4 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
 //*****************************************************************************
 unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems);
 
-#endif
+#endif // #ifndef CIRCULAR_BUFFER_H

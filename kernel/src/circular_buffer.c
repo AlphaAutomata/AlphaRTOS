@@ -1,19 +1,4 @@
 #include "circular_buffer.h"
-#include "interrupt.h"
-
-#include "launchPadUIO.h"
-
-bool initCircularBuffer(circularBuffer_t *buff, unsigned int itemSize, unsigned int numItems, void *buffAddr) {
-	if (buff == 0 || buffAddr == 0 || itemSize == 0 || numItems == 0) return false;
-	
-	buff->itemSize = itemSize;
-	buff->numItems = numItems;
-	buff->rdCnt = 0;
-	buff->wrCnt = 0;
-	buff->data = buffAddr;
-	
-	return true;
-}
 
 bool circularBufferFull(circularBuffer_t *buff) {
 	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
