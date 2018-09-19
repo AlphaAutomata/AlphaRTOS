@@ -92,11 +92,11 @@
 
     #define concurr_mutex atomic_bool
 
-    #define concurr_mutex_init(mutex) atomic_init(mutex, 0)
-    #define concurr_mutex_lock(mutex) do {               \
-        atomic_bool old_val = atomic_exchange(mutex, 1); \
+    #define concurr_mutex_init(mutex) atomic_init(&(mutex), 0)
+    #define concurr_mutex_lock(mutex) do {                  \
+        atomic_bool old_val = atomic_exchange(&(mutex), 1); \
     } while (old_val)
-    #define concurr_mutex_unlock(mutex) atomic_store(mutex, 0)
+    #define concurr_mutex_unlock(mutex) atomic_store(&(mutex), 0)
     #define concurr_mutex_destroy(mutex)
 
 // POSIX threads are the next-most-portable, so look for that next.
@@ -106,10 +106,10 @@
 
     #define concurr_mutex pthread_mutex_t
 
-    #define concurr_mutex_init(mutex)    pthread_mutex_init(&mutex, NULL)
-    #define concurr_mutex_lock(mutex)    pthread_mutex_lock(&mutex)
-    #define concurr_mutex_unlock(mutex)  pthread_mutex_unlock(&mutex)
-    #define concurr_mutex_destroy(mutex) pthread_mutex_destroy(&mutex)
+    #define concurr_mutex_init(mutex)    pthread_mutex_init(&(mutex), NULL)
+    #define concurr_mutex_lock(mutex)    pthread_mutex_lock(&(mutex))
+    #define concurr_mutex_unlock(mutex)  pthread_mutex_unlock(&(mutex))
+    #define concurr_mutex_destroy(mutex) pthread_mutex_destroy(&(mutex))
 
 // Support Windows threads since they are widely used.
 #elif defined _WIN32 // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
