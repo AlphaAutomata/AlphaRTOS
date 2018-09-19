@@ -2,6 +2,8 @@
 
 #include "circular_buffer.h"
 
+#define BUFF_SIZED(sized_type,buff) ((sized_type*)((buff).data))
+
 bool circularBufferFull(circularBuffer_t *buff) {
 	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
 		return true;
@@ -33,16 +35,16 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 	index = buff->wrCnt % buff->numItems;
 	switch (buff->itemSize) {
 		case 1 :
-			buff->data[index] = *((uint8_t *)item);
+			BUFF_SIZED(uint8_t, *buff)[index] = *((uint8_t *)item);
 			break;
 		case 2 :
-			((uint16_t *)(buff->data))[index] = *((uint16_t *)item);
+			BUFF_SIZED(uint16_t, *buff)[index] = *((uint16_t *)item);
 			break;
 		case 4 :
-			((uint32_t *)(buff->data))[index] = *((uint32_t *)item);
+			BUFF_SIZED(uint32_t, *buff)[index] = *((uint32_t *)item);
 			break;
 		case 8 :
-			((uint64_t *)(buff->data))[index] = *((uint64_t *)item);
+			BUFF_SIZED(uint64_t, *buff)[index] = *((uint64_t *)item);
 			break;
 		default :
 			// if the item size is a non-standard number of bytes, first copy
@@ -50,14 +52,14 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 			bytesLeft = buff->itemSize;
 			dataPtr64 = item;
 			while (bytesLeft >= 8) {
-				((uint64_t *)(buff->data))[index] = *dataPtr64;
+				BUFF_SIZED(uint64_t, *buff)[index] = *dataPtr64;
 				index += 8;
 				dataPtr64++;
 				bytesLeft -= 8;
 			}
 			dataPtr8 = (uint8_t *)dataPtr64;
 			while (bytesLeft > 0) {
-				buff->data[index] = *dataPtr8;
+				BUFF_SIZED(uint8_t, *buff)[index] = *dataPtr8;
 				index++;
 				bytesLeft--;
 			}
@@ -152,16 +154,16 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 	index = buff->rdCnt % buff->numItems;
 	switch (buff->itemSize) {
 		case 1 :
-			*((uint8_t *)data) = buff->data[index];
+			*((uint8_t *)data) = BUFF_SIZED(uint8_t, *buff)[index];
 			break;
 		case 2 :
-			*((uint16_t *)data) = ((uint16_t *)(buff->data))[index];
+			*((uint16_t *)data) = BUFF_SIZED(uint16_t, *buff)[index];
 			break;
 		case 4 :
-			*((uint32_t *)data) = ((uint32_t *)(buff->data))[index];
+			*((uint32_t *)data) = BUFF_SIZED(uint32_t, *buff)[index];
 			break;
 		case 8 :
-			*((uint64_t *)data) = ((uint64_t *)(buff->data))[index];
+			*((uint64_t *)data) = BUFF_SIZED(uint64_t, *buff)[index];
 			break;
 		default :
 			// if the item size is a non-standard number of bytes, first copy
@@ -169,14 +171,14 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 			bytesLeft = buff->itemSize;
 			dataPtr64 = data;
 			while (bytesLeft >= 8) {
-				*dataPtr64 = buff->data[index];
+				*dataPtr64 = BUFF_SIZED(uint8_t, *buff)[index];
 				dataPtr64++;
 				index += 8;
 				bytesLeft -= 8;
 			}
 			dataPtr8 = (uint8_t *)dataPtr64;
 			while (bytesLeft > 0) {
-				*dataPtr8 = buff->data[index];
+				*dataPtr8 = BUFF_SIZED(uint8_t, *buff)[index];
 				dataPtr8++;
 				index++;
 				bytesLeft--;

@@ -11,12 +11,12 @@
  * \brief An atomic circular buffer.
  */
 typedef struct circularBuffer_t_ {
-	mutex        lock;
-	size_t       itemSize;
-	unsigned int numItems;
-	unsigned int rdCnt;
-	unsigned int wrCnt;
-	void*        data;
+	concurr_mutex lock;     //!< Mutex controlling buffer access.
+	size_t        itemSize; //!< Size of items held in buffer.
+	unsigned int  numItems; //!< Number of items the buffer can hold.
+	unsigned int  rdCnt;    //!< Buffer read count.
+	unsigned int  wrCnt;    //!< Buffer write count.
+	void*         data;     //!< Pointer to buffer data array.
 } circularBuffer_t;
 
 /**
@@ -34,7 +34,7 @@ typedef struct circularBuffer_t_ {
  */
 #define initCircularBuffer(buff,itemType,numItems,buffAddr) {                                      \
 	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL));              \
-	mutex_init(&(buff->lock));                                                                     \
+	concurr_mutex_init(buff->lock);                                                                \
 	buff->itemSize = sizeof(itemType);                                                             \
 	buff->numItems = (unsigned int)numItems;                                                       \
 	buff->rdCnt = 0;                                                                               \
