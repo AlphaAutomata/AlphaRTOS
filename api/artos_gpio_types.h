@@ -26,10 +26,10 @@ typedef enum ARTOS_eGPIOEvent_ {
 /**
  * \brief Alpha RTOS GPIO event information.
  */
-typedef struct ARTOS_eEventCat_GPIO_ {
+typedef struct ARTOS_Event_GPIO_ {
     ARTOS_eGPIO      bank;  //!< The GPIO bank that triggered the event.
     ARTOS_eGPIOEvent event; //!< The type of event that occurred.
     uint32_t         pins;  //!< The GPIO pin states after the triggering event.
-} ARTOS_eEventCat_GPIO;
+} ARTOS_Event_GPIO;
 
 #endif // #ifndef ARTOS_GPIO_TYPES_H
