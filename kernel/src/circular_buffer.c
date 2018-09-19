@@ -114,14 +114,6 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
 	return numItems;
 }
 
-bool circularBufferEmpty(circularBuffer_t *buff) {
-	if (buff->wrCnt - buff->rdCnt == 0) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 //*****************************************************************************
 //
 //! Remove a single item from the buffer without performing any parameter

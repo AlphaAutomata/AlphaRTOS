@@ -43,7 +43,9 @@ typedef struct circularBuffer_t_ {
 }
 
 /**
- * \brief Check to see if a buffer is full
+ * \brief Check to see if a buffer is full.
+ *
+ * \hideinitializer
  *
  * \param [in] buff Pointer to the buffer to check.
  *
@@ -74,16 +76,15 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item);
  */
 unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems);
 
-//*****************************************************************************
-//
-//! Check to see if a buffer is empty
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \return true if the buffer is empty, false otherwise
-//
-//*****************************************************************************
-bool circularBufferEmpty(circularBuffer_t *buff);
+/**
+ * @brief Check to see if a buffer is empty.
+ *
+ * \param buff Pointer to the buffer to check.
+ *
+ * \retval true  The buffer is empty.
+ * \retval false The buffer is not empty.
+ */
+#define circularBufferEmpty(buff) (buff->wrCnt - buff->rdCnt == 0)
 
 //*****************************************************************************
 //
