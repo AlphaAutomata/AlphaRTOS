@@ -24,6 +24,10 @@ typedef enum ARTOS_eStatus_ {
 	ARTOS_eStatus_GENERIC_ERR = 255  //!< Operation encountered an error.
 } ARTOS_eStatus;
 
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
+
 /**
  * \brief Alpha RTOS task entry point.
  *
@@ -34,10 +38,6 @@ typedef enum ARTOS_eStatus_ {
  * \retval ::ARTOS_eStatus_GENERIC_ERR Task did not exit properly.
  */
 typedef ARTOS_eStatus (*pFn_taskMain)(int argc, char** argv);
-
-#ifdef __cplusplus
-extern "C" {
-#endif // #ifdef __cplusplus
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// AlphaRTOS Common API ///////////////////////////////////////
