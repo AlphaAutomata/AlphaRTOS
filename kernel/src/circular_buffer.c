@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "circular_buffer.h"
 
 bool circularBufferFull(circularBuffer_t *buff) {

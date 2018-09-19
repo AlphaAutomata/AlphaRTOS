@@ -5,10 +5,13 @@
 #include <stddef.h>
 #include <assert.h>
 
+#include "port_concurrent.h"
+
 /**
  * \brief An atomic circular buffer.
  */
 typedef struct circularBuffer_t_ {
+	mutex        lock;
 	size_t       itemSize;
 	unsigned int numItems;
 	unsigned int rdCnt;
@@ -31,6 +34,7 @@ typedef struct circularBuffer_t_ {
  */
 #define initCircularBuffer(buff,itemType,numItems,buffAddr) {                                      \
 	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL));              \
+	mutex_init(buff->lock);                                                                        \
 	buff->itemSize = sizeof(itemType);                                                             \
 	buff->numItems = (unsigned int)numItems;                                                       \
 	buff->rdCnt = 0;                                                                               \
