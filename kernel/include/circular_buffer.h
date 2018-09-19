@@ -63,21 +63,15 @@ typedef struct circularBuffer_t_ {
  */
 bool circularBufferAddItem(circularBuffer_t *buff, void *item);
 
-//*****************************************************************************
-//
-//! This insert multiple elements into a circular buffer. 
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \param item is the data to store into the buffer. It is treated as a packed
-//! array where each item is buff.itemSize bytes. For circularBufferAddItem(),
-//! this array is assumed to be a single element long.
-//!
-//! \param numItems is the number of items to add to the buffer
-//!
-//! \return the number of items actually added to the buffer
-//
-//*****************************************************************************
+/**
+ * @brief Insert an array of elements into a circular buffer.
+ *
+ * \param [in] buff     The buffer to push into.
+ * \param [in] item     Array of elements to push into the buffer.
+ * \param      numItems Number of items in the array.
+ *
+ * \return Returns the number of items actually added to the buffer.
+ */
 unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems);
 
 //*****************************************************************************

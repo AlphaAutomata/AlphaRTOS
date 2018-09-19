@@ -84,21 +84,18 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 }
 
 unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems) {
+	assert((buff != NULL) && (item != NULL));
+
 	unsigned int itemsRemaining;
 	
-	IntMasterDisable();
+	concurr_mutex_lock(buff->lock);
 	
-	if (buff == 0 || item == 0) {
-		IntMasterEnable();
-		return 0;
-	}
-	
-	// if the buffer doesn't have enough room, only add enough elements to fill
-	// the buffer
+	// if the buffer doesn't have enough room, only add enough elements to fill the buffer
 	if (buff->numItems - (buff->wrCnt - buff->rdCnt) < numItems) {
-		numItems = buff->numItems - (buff->wrCnt - buff->rdCnt);
+		itemsRemaining = buff->numItems - (buff->wrCnt - buff->rdCnt);
+	} else {
+		itemsRemaining = numItems;
 	}
-	itemsRemaining = numItems;
 	
 	// increment the buffer's write count
 	buff->wrCnt += itemsRemaining;
@@ -113,8 +110,7 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
 		itemsRemaining--;
 	}
 	
-	IntMasterEnable();
-	
+	concurr_mutex_unlock(buff->lock);
 	return numItems;
 }
 
