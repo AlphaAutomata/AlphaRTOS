@@ -34,7 +34,7 @@ typedef struct circularBuffer_t_ {
  */
 #define initCircularBuffer(buff,itemType,numItems,buffAddr) {                                      \
 	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL));              \
-	mutex_init(buff->lock);                                                                        \
+	mutex_init(&(buff->lock));                                                                     \
 	buff->itemSize = sizeof(itemType);                                                             \
 	buff->numItems = (unsigned int)numItems;                                                       \
 	buff->rdCnt = 0;                                                                               \
