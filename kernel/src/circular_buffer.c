@@ -173,11 +173,13 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 }
 
 bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
-	IntMasterDisable();
+	assert((buff != NULL) && (data != NULL));
+
+	concurr_mutex_lock(buff->lock);
 	
 	// if the buffer is empty, return false
-	if (buff == 0 || data == 0 || buff->rdCnt >= buff->wrCnt) {
-		IntMasterEnable();
+	if (buff->rdCnt >= buff->wrCnt) {
+		concurr_mutex_unlock(buff->lock);
 		return false;
 	}
 	
@@ -187,16 +189,14 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 	// increment the read counter
 	buff->rdCnt++;
 	
-	// do a rollover check to avoid eventual overflows in the counters.
-	// presumably the write count is always larger than the read count, so it
-	// doesn't need to be checked.
+	// Do a rollover check to avoid eventual overflows in the counters. Presumably the write count
+	// is always larger than the read count, so it doesn't need to be checked.
 	if (buff->rdCnt >= buff->numItems) {
 		buff->rdCnt -= buff->numItems;
 		buff->wrCnt -= buff->numItems;
 	}
 	
-	IntMasterEnable();
-	
+	concurr_mutex_unlock(buff->lock);
 	return true;
 }
 

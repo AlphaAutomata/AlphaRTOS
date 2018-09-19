@@ -60,13 +60,13 @@ typedef struct circularBuffer_t_ {
  * \param [in] buff The buffer to push into.
  * \param [in] item The data item to store into the buffer.
  *
- * \retval true  Item has been added to the buffer. Buffer is unmodified.
- * \retval false There is not enough room in the buffer to add the item.
+ * \retval true  Item has been added to the buffer.
+ * \retval false There is not enough room in the buffer to add the item. Buffer is unmodified.
  */
 bool circularBufferAddItem(circularBuffer_t *buff, void *item);
 
 /**
- * @brief Insert an array of elements into a circular buffer.
+ * \brief Insert an array of elements into a circular buffer.
  *
  * \param [in] buff     The buffer to push into.
  * \param [in] item     Array of elements to push into the buffer.
@@ -77,7 +77,7 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item);
 unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsigned int numItems);
 
 /**
- * @brief Check to see if a buffer is empty.
+ * \brief Check to see if a buffer is empty.
  *
  * \param buff Pointer to the buffer to check.
  *
@@ -86,17 +86,15 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
  */
 #define circularBufferEmpty(buff) (buff->wrCnt - buff->rdCnt == 0)
 
-//*****************************************************************************
-//
-//! Remove a single item from the circular buffer
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \param data is a pointer to the memory location to store the data
-//!
-//! \return false if the buffer is empty, true otherwise
-//
-//*****************************************************************************
+/**
+ * \brief Remove a single item from the circular buffer.
+ *
+ * \param [in] buff The buffer to read from.
+ * \param [in] item Pointer to memory location to receive data form the buffer.
+ *
+ * \retval true  Item has been removed from the buffer.
+ * \retval false No items in buffer.
+ */
 bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
 
 //*****************************************************************************
