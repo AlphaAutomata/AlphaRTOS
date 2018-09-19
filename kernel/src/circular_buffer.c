@@ -1,16 +1,9 @@
 #include <stdint.h>
+#include <assert.h>
 
 #include "circular_buffer.h"
 
-#define BUFF_SIZED(sized_type,buff) ((sized_type*)((buff).data))
-
-bool circularBufferFull(circularBuffer_t *buff) {
-	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
-		return true;
-	} else {
-		return false;
-	}
-}
+#define CBUFF_TO_TYPED_ARRAY(sized_type,buff) ((sized_type*)((buff).data))
 
 //*****************************************************************************
 //
@@ -35,16 +28,16 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 	index = buff->wrCnt % buff->numItems;
 	switch (buff->itemSize) {
 		case 1 :
-			BUFF_SIZED(uint8_t, *buff)[index] = *((uint8_t *)item);
+			CBUFF_TO_TYPED_ARRAY(uint8_t, *buff)[index] = *((uint8_t *)item);
 			break;
 		case 2 :
-			BUFF_SIZED(uint16_t, *buff)[index] = *((uint16_t *)item);
+			CBUFF_TO_TYPED_ARRAY(uint16_t, *buff)[index] = *((uint16_t *)item);
 			break;
 		case 4 :
-			BUFF_SIZED(uint32_t, *buff)[index] = *((uint32_t *)item);
+			CBUFF_TO_TYPED_ARRAY(uint32_t, *buff)[index] = *((uint32_t *)item);
 			break;
 		case 8 :
-			BUFF_SIZED(uint64_t, *buff)[index] = *((uint64_t *)item);
+			CBUFF_TO_TYPED_ARRAY(uint64_t, *buff)[index] = *((uint64_t *)item);
 			break;
 		default :
 			// if the item size is a non-standard number of bytes, first copy
@@ -52,14 +45,14 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 			bytesLeft = buff->itemSize;
 			dataPtr64 = item;
 			while (bytesLeft >= 8) {
-				BUFF_SIZED(uint64_t, *buff)[index] = *dataPtr64;
+				CBUFF_TO_TYPED_ARRAY(uint64_t, *buff)[index] = *dataPtr64;
 				index += 8;
 				dataPtr64++;
 				bytesLeft -= 8;
 			}
 			dataPtr8 = (uint8_t *)dataPtr64;
 			while (bytesLeft > 0) {
-				BUFF_SIZED(uint8_t, *buff)[index] = *dataPtr8;
+				CBUFF_TO_TYPED_ARRAY(uint8_t, *buff)[index] = *dataPtr8;
 				index++;
 				bytesLeft--;
 			}
@@ -70,12 +63,15 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 }
 
 bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
-	// if the buffer doesn't have any more space, return false
-	if (buff == 0 || item == 0 || buff->wrCnt - buff->rdCnt >= buff->numItems) {
+	assert((buff != NULL) && (item != NULL));
+
+	concurr_mutex_lock(buff->lock);
+
+	// Buffer is full, do not add.
+	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
+		concurr_mutex_unlock(buff->lock);
 		return false;
 	}
-	
-	IntMasterDisable();
 	
 	// use the unsafe internal function to add a single item
 	addSingleItemUnsafe(buff, item);
@@ -83,8 +79,7 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	// increment the write counter
 	buff->wrCnt++;
 	
-	IntMasterEnable();
-	
+	concurr_mutex_unlock(buff->lock);
 	return true;
 }
 
@@ -154,16 +149,16 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 	index = buff->rdCnt % buff->numItems;
 	switch (buff->itemSize) {
 		case 1 :
-			*((uint8_t *)data) = BUFF_SIZED(uint8_t, *buff)[index];
+			*((uint8_t *)data) = CBUFF_TO_TYPED_ARRAY(uint8_t, *buff)[index];
 			break;
 		case 2 :
-			*((uint16_t *)data) = BUFF_SIZED(uint16_t, *buff)[index];
+			*((uint16_t *)data) = CBUFF_TO_TYPED_ARRAY(uint16_t, *buff)[index];
 			break;
 		case 4 :
-			*((uint32_t *)data) = BUFF_SIZED(uint32_t, *buff)[index];
+			*((uint32_t *)data) = CBUFF_TO_TYPED_ARRAY(uint32_t, *buff)[index];
 			break;
 		case 8 :
-			*((uint64_t *)data) = BUFF_SIZED(uint64_t, *buff)[index];
+			*((uint64_t *)data) = CBUFF_TO_TYPED_ARRAY(uint64_t, *buff)[index];
 			break;
 		default :
 			// if the item size is a non-standard number of bytes, first copy
@@ -171,14 +166,14 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 			bytesLeft = buff->itemSize;
 			dataPtr64 = data;
 			while (bytesLeft >= 8) {
-				*dataPtr64 = BUFF_SIZED(uint8_t, *buff)[index];
+				*dataPtr64 = CBUFF_TO_TYPED_ARRAY(uint8_t, *buff)[index];
 				dataPtr64++;
 				index += 8;
 				bytesLeft -= 8;
 			}
 			dataPtr8 = (uint8_t *)dataPtr64;
 			while (bytesLeft > 0) {
-				*dataPtr8 = BUFF_SIZED(uint8_t, *buff)[index];
+				*dataPtr8 = CBUFF_TO_TYPED_ARRAY(uint8_t, *buff)[index];
 				dataPtr8++;
 				index++;
 				bytesLeft--;

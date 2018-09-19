@@ -32,40 +32,35 @@ typedef struct circularBuffer_t_ {
  *
  * \retval void
  */
-#define initCircularBuffer(buff,itemType,numItems,buffAddr) {                                      \
-	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL));              \
-	concurr_mutex_init(buff->lock);                                                                \
-	buff->itemSize = sizeof(itemType);                                                             \
-	buff->numItems = (unsigned int)numItems;                                                       \
-	buff->rdCnt = 0;                                                                               \
-	buff->wrCnt = 0;                                                                               \
-	buff->data = (void*)buffAddr;                                                                  \
+#define initCircularBuffer(buff,itemType,numItems,buffAddr) {                         \
+	ASSERT((buff != NULL) && (itemSize > 0) && (numItems > 0) && (buffAddr != NULL)); \
+	concurr_mutex_init(buff->lock);                                                   \
+	buff->itemSize = sizeof(itemType);                                                \
+	buff->numItems = (unsigned int)numItems;                                          \
+	buff->rdCnt = 0;                                                                  \
+	buff->wrCnt = 0;                                                                  \
+	buff->data = (void*)buffAddr;                                                     \
 }
 
 /**
  * \brief Check to see if a buffer is full
  *
- * \param buff The buffer to check.
+ * \param [in] buff Pointer to the buffer to check.
  *
- * \return true if the buffer is full, false otherwise
+ * \retval true  The buffer is full.
+ * \retval false The buffer is not full.
  */
-bool circularBufferFull(circularBuffer_t* buff);
+#define circularBufferFull(buff) (buff->wrCnt - buff->rdCnt >= buff->numItems)
 
-//*****************************************************************************
-//
-//! This function inserts a single element into a circular buffer. 
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \param item is the data to store into the buffer. It is treated as a packed
-//! array where each item is buff.itemSize bytes. For circularBufferAddItem(),
-//! this array is assumed to be a single element long.
-//!
-//! \return false if any parameters are invalid or the data cannot fit in the
-//! buffer, true otherwise. The buffer is not modified at all if the function
-//! returns false. 
-//
-//*****************************************************************************
+/**
+ * \brief Insert a single element into a circular buffer. 
+ *
+ * \param [in] buff The buffer to push into.
+ * \param [in] item The data item to store into the buffer.
+ *
+ * \retval true  Item has been added to the buffer. Buffer is unmodified.
+ * \retval false There is not enough room in the buffer to add the item.
+ */
 bool circularBufferAddItem(circularBuffer_t *buff, void *item);
 
 //*****************************************************************************
