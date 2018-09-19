@@ -97,20 +97,16 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
  */
 bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
 
-//*****************************************************************************
-//
-//! Remove numItems number of items from the circular buffer. Writes into the
-//! location pointed to by *data as if it were a packed array of items of size
-//! buff.itemSize. For example, if buff.itemSize == 3, the call
-//! circularBufferRemoveMultiple(buff, data, 3) will write 9 consecutive bytes.
-//!
-//! \param buff is a pointer to a circularBuffer struct
-//!
-//! \param data is a pointer to the memory location to store the data
-//!
-//! \return the number of items removed
-//
-//*****************************************************************************
+/**
+ * \brief Move multiple items from the circular buffer into the given data array.
+ *
+ * \param [in]  buff     The buffer to remove data from.
+ * \param [out] data     The array to receive data from the circular buffer.
+ * \param       numItems The number of items to remove. Cannot be more than the number of elements
+ *                       the given receiver array can hold.
+ *
+ * \return Returns the number of items removed.
+ */
 unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems);
 
 #endif // #ifndef CIRCULAR_BUFFER_H

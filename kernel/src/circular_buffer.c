@@ -201,12 +201,14 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 }
 
 unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems) {
+	assert((buff != NULL) && (data != NULL));
+	
 	unsigned int itemsRemaining;
 	
-	IntMasterDisable();
+	concurr_mutex_lock(buff->lock);
 	
-	if (buff == 0 || data == 0 || numItems == 0) {
-		IntMasterEnable();
+	if (numItems == 0) {
+		concurr_mutex_unlock(buff->lock);
 		return 0;
 	}
 	
@@ -239,7 +241,6 @@ unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, un
 		buff->wrCnt -= buff->numItems;
 	}
 	
-	IntMasterEnable();
-	
+	concurr_mutex_unlock(buff->lock);
 	return numItems;
 }
