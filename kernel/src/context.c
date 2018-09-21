@@ -1,3 +1,3 @@
-#include "memory.h"
+#include "arm_types.h"
 
 regframe_t kframe;
