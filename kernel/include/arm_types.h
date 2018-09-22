@@ -1,8 +1,7 @@
 #ifndef _MEMORY_H_
 #define _MEMORY_H_
 
-#include "TM4C123GH6PM.h"
-#include "core_cm4.h"
+#include <stdint.h>
 
 // change these macros depending on how memory is allocated
 #define VECTOR_TABLE_BASE 0x00000000
@@ -17,7 +16,7 @@
 #define frameBase(taskID) RW_MEM_BASE + RW_MEM_SIZE - STACK_SIZE * (taskID+1)
 
 // contains 17 elements, summing to 68 bytes
-// if size or arrangement changes, must update memoryS.s macros
+// if size or arrangement changes, must update arm_context.s macros
 typedef struct {
 	uint32_t R0;
 	uint32_t R1;

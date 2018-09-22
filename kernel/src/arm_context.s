@@ -1,5 +1,5 @@
 // offset macros to access registers in regframe_t
-// must update if regframe_t definition in memory.h is changed
+// must update if regframe_t definition in arm_types.h is changed
 .equ __R0  ,            0
 .equ __R1  ,            4
 .equ __R2  ,            8
@@ -32,7 +32,7 @@
 // size macros for regframe_t and sizeof(struct task)
 // must change if struct task or regframe_t definitions change
 // struct task	defined in scheduler.h
-// regframe_t	defined in memory.h
+// regframe_t	defined in arm_types.h
 .equ regframe_t_offset, 24
 .equ regframe_t_size  , 68
 .equ structTaskSize   , regframe_t_offset+regframe_t_size

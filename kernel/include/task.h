@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "systick.h"
-
 #include "scheduler.h"
 
 #define NUM_INT_CALLBACKS NUM_TASKS

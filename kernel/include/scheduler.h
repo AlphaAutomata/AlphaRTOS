@@ -4,8 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "launchPadHwAbstraction.h"
-#include "memory.h"
+#include "arm_types.h"
+
+#include "artos_service_types.h"
 
 // number of clock cycles between SysTick interrupts. For LaunchPad at 50MHz,
 // this sets the SysTick interval to 1ms. 
@@ -31,7 +32,7 @@ struct task {
 	uint32_t initArg;
 	int (*taskEntry)(uint32_t);
 	int (*timerCallback)(uint32_t);
-	int (*interruptCallback)(eInterrupt interruptType, uint32_t deviceMask);
+	pFn_serviceHandler interruptCallback;
 	regframe_t frame;
 };
 

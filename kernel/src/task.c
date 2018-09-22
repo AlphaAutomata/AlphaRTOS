@@ -2,13 +2,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "interrupt.h"
-#include "inc/hw_ints.h"
+#include "systick_port.h"
 
 #include "task.h"
-#include "launchPadHwAbstraction.h"
-#include "isr.h"
-#include "memory.h"
 
 volatile unsigned int currTasks;
 
@@ -28,20 +24,8 @@ bool initTaskMaster(void) {
 	// initialize the scheduler
 	initScheduler();
 	
-	// Set SysTick to 1ms
-	SysTickPeriodSet(SYSTICK_INTERVAL);
-	
-	// Register our scheduler
-	SysTickIntRegister(&SysTick_Handler);
-	
-	// Enable SysTick interrupts
-	SysTickIntEnable();
-	
-	// Set SysTick to lowest priority to facilitate context switch implementation
-	IntPrioritySet(FAULT_SYSTICK, 0xE0);
-	
-	// Start the SysTick
-	SysTickEnable();
+	// Initialize the system tick timer to 1ms intervals, and register the handler.
+	systick_init(&SysTick_Handler, SYSTICK_INTERVAL);
 	
 	return true;
 }
@@ -129,141 +113,6 @@ uint32_t getTimerCallbackInterval(int callbackID) {
 	if (currTaskID == 0) return 0;
 	
 	return currTask.ticksInterval;
-}
-
-int interruptCallbackRegister(eInterrupt interrupt, int (*callback)(eInterrupt interruptType, uint32_t deviceMask), int deviceNumber) {
-	int *iVector;
-	int i;
-	uint32_t deviceBase;
-	void (*isrAddr)(void);
-	
-	if (currTaskID == 0) return -1;
-	
-	// select the appropriate interrupt vector to search through
-	switch (interrupt) {
-		case gpTimer :
-			iVector = gpTimerIntVector;
-			switch (deviceNumber) {
-				case 0 :
-					deviceBase = TIMER0_BASE;
-					break;
-				case 1 :
-					deviceBase = TIMER1_BASE;
-					break;
-				default :
-					return -1;
-			}
-			break;
-		case UART :
-			iVector = uartIntVector;
-			switch (deviceNumber) {
-				case 0 :
-					deviceBase = UART0_BASE;
-					isrAddr = uart0ISR;
-					break;
-				case 1 :
-					deviceBase = UART1_BASE;
-					isrAddr = uart1ISR;
-					break;
-				case 2 :
-					deviceBase = UART2_BASE;
-					isrAddr = uart2ISR;
-					break;
-				case 3 :
-					deviceBase = UART3_BASE;
-					isrAddr = uart3ISR;
-					break;
-				case 4 :
-					deviceBase = UART4_BASE;
-					isrAddr = uart4ISR;
-					break;
-				case 5 :
-					deviceBase = UART5_BASE;
-					isrAddr = uart5ISR;
-					break;
-				case 6 :
-					deviceBase = UART6_BASE;
-					isrAddr = uart6ISR;
-					break;
-				case 7 :
-					deviceBase = UART7_BASE;
-					isrAddr = uart7ISR;
-					break;
-				default :
-					return -1;
-			}
-			
-			// enable the UART transmit and receive FIFOs
-			UARTFIFOEnable(deviceBase);
-			// register the appropririate UART interrupt service routine
-			UARTIntRegister(deviceBase, isrAddr);
-			// Set the trasmit FIFO to trigger on FIFO level
-			UARTTxIntModeSet(deviceBase, UART_TXINT_MODE_FIFO);
-			// set both FIFOs levels. Tx interrupts when almost empty, Rx interrupts when almost full.
-			UARTFIFOLevelSet(deviceBase, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
-			// enable interrupts for receive and transmit
-			UARTIntEnable(deviceBase, UART_INT_RX | UART_INT_TX);
-			
-			break;
-		
-		case Quadrature :
-			iVector = qeiIntVector;
-			switch(deviceNumber) {
-				case 0 :
-					deviceBase = QEI0_BASE;
-					isrAddr = qei0ISR;
-					break;
-				case 1 :
-					deviceBase = QEI1_BASE;
-					isrAddr = qei1ISR;
-				default :
-					return -1;
-			}
-			
-			QEIIntRegister(deviceBase, isrAddr);
-			QEIIntEnable(deviceBase, QEI_INTTIMER);
-			
-			break;
-			
-		default :
-			return -1;
-	}
-	
-	// locate an empty slot in the vector
-	for (i=0; i<NUM_INT_CALLBACKS; i++) {
-		if (iVector[i] == 0) {
-			// put the callback in the empty slot
-			iVector[i] = currTaskID;
-			currTask.interruptCallback = callback;
-			
-			return i;
-		}
-	}
-	
-	return -1;
-}
-
-int interruptCallbackUnregister(eInterrupt interrupt, int callbackID) {
-	int *iVector;
-	
-	if (currTaskID == 0) return -1;
-	
-	switch (interrupt) {
-		case gpTimer :
-			iVector = gpTimerIntVector;
-			break;
-		case UART :
-			iVector = uartIntVector;
-			break;
-		case Quadrature :
-			iVector = qeiIntVector;
-		default :
-			return -1;
-	}
-	
-	iVector[callbackID] = 0;
-	
-	return callbackID;
 }
 
 void taskYield(void) {

@@ -2,15 +2,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "timer.h"
-#include "interrupt.h"
-#include "inc/hw_ints.h"
+#include "gp_timer_port.h"
+
+#include "task.h"
 
 #include "scheduler.h"
-#include "launchPadUIO.h"
-
-#include "tasks.h"
-#include "isr.h"
 
 int currTaskID;
 
@@ -27,18 +23,17 @@ void initScheduler(void) {
 	
 	memset(taskTable, 0, sizeof(taskTable));
 	
-	// turn on clock for Timer0 peripheral device
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_TIMER0));
-	
-	// set up a General Purpose Timer which will be used to ensure each task only runs for a
-	// limited amount of time. The time slots are set and the interrupts enabled at the beginning
-	// of each scheduling round, and disabled at the end of each scheduling round. 
-	// Set timer to be periodic, and have no additional actions other than triggering an interrupt
-	// when timing out. 
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT);
-	TimerIntRegister(TIMER0_BASE, TIMER_A, TIMER0A_Handler);
-	IntPrioritySet(INT_TIMER0A_TM4C123, 0xE0);
+	// Set up a General Purpose Timer which will be used to ensure each task only runs for a limited
+	// amount of time. The time slots are set and the interrupts enabled at the beginning of each
+	// scheduling round, and the timer is disabled at the end of each scheduling round.
+	gpTimer_info info = {
+		.loadValue         = SYSTICK_INTERVAL,
+		.tripValue         = 0,
+		.cntDir            = gpTimer_cntDir_DOWN,
+		.rpt               = gpTimer_rpt_ONESHOT,
+		.start_immediately = false
+	};
+	gpTimer_init(gpTimer_inst_00, TIMER0A_Handler, &info);
 }
 
 void schedule(void) {
@@ -46,18 +41,23 @@ void schedule(void) {
 	
 	if (currTaskID != 0) {
 		// Should never enter the scheduler when there is already a task running
-		setLED(magenta);
 		while(1);
 	}
-	
-	// enable the interrupt right before entering the scheduling loop
-	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+	// Set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
+	// aside time for OS operations.
+	gpTimer_info info = {
+		.loadValue         = SYSTICK_INTERVAL / (currTasks+1),
+		.tripValue         = 0,
+		.cntDir            = gpTimer_cntDir_DOWN,
+		.rpt               = gpTimer_rpt_ONESHOT,
+		.start_immediately = false
+	};
+	gpTimer_cfg_info(gpTimer_inst_00, &info);
 	
 	for (i=1; i<=currTasks; i++) {
-		// set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
-		// aside time for OS operations. Reload the timer at the start of each task. 
-		TimerLoadSet(TIMER0_BASE, TIMER_A, SYSTICK_INTERVAL / (currTasks+1));
-		TimerEnable(TIMER0_BASE, TIMER_A);
+		// Reload the timer at the start of each task.
+		gpTimer_arm(gpTimer_inst_00);
 		
 		// For each task, determine action based on its status
 		switch (taskTable[i].status) {
@@ -96,21 +96,27 @@ void schedule(void) {
 		}
 	}
 	
-	// disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
-	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	// Disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
+	gpTimer_disarm(gpTimer_inst_00);
 }
 
 void schedulePreempted(void) {
 	int i;
-	
-	// enable the interrupt right before entering the scheduling loop
-	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+	// Set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
+	// aside time for OS operations.
+	gpTimer_info info = {
+		.loadValue         = SYSTICK_INTERVAL / (currTasks+1),
+		.tripValue         = 0,
+		.cntDir            = gpTimer_cntDir_DOWN,
+		.rpt               = gpTimer_rpt_ONESHOT,
+		.start_immediately = false
+	};
+	gpTimer_cfg_info(gpTimer_inst_00, &info);
 	
 	for (i=1; i<=currTasks; i++) {
-		// set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
-		// aside time for OS operations. Reload the timer at the start of each task. 
-		TimerLoadSet(TIMER0_BASE, TIMER_A, SYSTICK_INTERVAL / (currTasks+1));
-		TimerEnable(TIMER0_BASE, TIMER_A);
+		// Reload the timer at the start of each task.
+		gpTimer_arm(gpTimer_inst_00);
 		
 		// For each task, determine action based on its status
 		if (taskTable[i].status == TASK_STATUS_PREEMPTED) {
@@ -123,5 +129,5 @@ void schedulePreempted(void) {
 	}
 	
 	// disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
-	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	gpTimer_disarm(gpTimer_inst_00);
 }
