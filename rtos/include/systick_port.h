@@ -1,23 +1,27 @@
-#ifndef _SYSTICK_PORT_H_
-#define _SYSTICK_PORT_H_
+#ifndef SYSTICK_PORT_H
+#define SYSTICK_PORT_H
 
-#define SYSTICK_PLATFORM XSCU
+#define SYSTICK_PLATFORM_NONE  0
+#define SYSTICK_PLATFORM_XSCU  1
+
+#ifndef SYSTICK_PLATFORM
+#define SYSTICK_PLATFORM SYSTICK_PLATFORM_NONE
+#endif // #ifndef SYSTICK_PLATFORM
+
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 /**
- * Initialize the System Tick timer.
+ * \brief Initialize the System Tick timer.
  *
- * Each platform vendor provides access to their timers and interrupt controllers differently, and
- * not all platforms require passing device base addresses.
- *
- * | Platform | timerBase | intCtrlBase |
- * |:--------:|:---------:|:-----------:|
- * | XSCU     | NULL      | NULL        |
- *
- * @param [in] timerBase       Base address of the system timer peripheral device.
- * @param [in] intCtrlBase     Base address of the system interrupt controller device.
- * @param [in] sysTickHandler  Pointer to the System Tick interrupt handler.
- * @param [in] sysTickInterval System tick interval.
+ * \param [in] sysTickHandler  Pointer to the System Tick interrupt handler.
+ * \param [in] sysTickInterval System tick interval.
  */
-void systick_init(void* timerBase, void* intCtrlBase, void* sysTickHandler, int sysTickInterval);
+void systick_init(void* sysTickHandler, int sysTickInterval);
 
-#endif
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+#endif // #ifndef SYSTICK_PORT_H
