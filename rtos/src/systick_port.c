@@ -1,6 +1,6 @@
 #include "systick_port.h"
 
-#if (SYSTICK_PLATFORM == XSCU)
+#if (SYSTICK_PLATFORM == SYSTICK_PLATFORM_XSCU)
 
 #include "xscutimer.h"
 #include "xscugic.h"
@@ -10,8 +10,8 @@ XScuGic   intCtrl;
 
 #endif
 
-void systick_init(void* timerBase, void* intCtrlBase, void* sysTickHandler, int sysTickInterval) {
-#if (SYSTICK_PLATFORM == XSCU)
+void systick_init(void* sysTickHandler, int sysTickInterval) {
+#if (SYSTICK_PLATFORM == SYSTICK_PLATFORM_XSCU)
 	XScuTimer_Config* scu_config;
 	XScuGic_Config*   intCtrl_config;
 
