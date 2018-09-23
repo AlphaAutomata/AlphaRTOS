@@ -4,17 +4,22 @@
 
 #include "systick_port.h"
 
+#include "scheduler.h"
+
 #include "task.h"
 
-volatile unsigned int currTasks;
+taskTable_t taskTable;
 
 int gpTimerIntVector[NUM_INT_CALLBACKS];
 int uartIntVector[NUM_INT_CALLBACKS];
 int qeiIntVector[NUM_INT_CALLBACKS];
 
 bool initTaskMaster(void) {
-	// Initially, we have no tasks.
-	currTasks = 0;
+	// Initialize the task table.
+	concurr_mutex_init(taskTable.mutex);
+	taskTable.currNumTasks = 0;
+	taskTable.currTaskID = -1;
+	memset(&(taskTable.tasks[0]), 0, sizeof(taskTable.tasks));
 	
 	// clear the interrupt vectors
 	memset(gpTimerIntVector, 0, sizeof(gpTimerIntVector));
@@ -22,7 +27,7 @@ bool initTaskMaster(void) {
 	memset(qeiIntVector, 0, sizeof(qeiIntVector));
 	
 	// initialize the scheduler
-	initScheduler();
+	initScheduler(&taskTable);
 	
 	// Initialize the system tick timer to 1ms intervals, and register the handler.
 	systick_init(&SysTick_Handler, SYSTICK_INTERVAL);
@@ -41,18 +46,14 @@ void userReturn(void) {
 	switchContext(&kframe, &((taskTable[ID]).frame));
 }
 
-unsigned int addTask(int (*taskEntry)(uint32_t), uint32_t initArg) {
-	if (taskEntry == 0 || currTasks >= NUM_TASKS) {
-		return 0;
-	}
+int addTask(pFn_taskMain taskEntry, char taskName[]) {
+	concurr_mutex_lock(taskTable.mutex);
 	
-	currTasks++;
+	taskTable[old_num_tasks].status = TASK_STATUS_UNINITIALIZED;
+	taskTable[old_num_tasks].taskEntry = taskEntry;
 	
-	taskTable[currTasks].status = TASK_STATUS_UNINITIALIZED;
-	taskTable[currTasks].initArg = initArg;
-	taskTable[currTasks].taskEntry = taskEntry;
-	
-	return currTasks;
+	concurr_mutex_unlock(taskTable.mutex);
+	return old_num_tasks + 1;
 }
 
 int initTask(unsigned int taskNum, uint32_t arg) {

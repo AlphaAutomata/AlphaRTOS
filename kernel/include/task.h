@@ -4,65 +4,47 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "scheduler.h"
+#include "arm_types.h"
 
-#define NUM_INT_CALLBACKS NUM_TASKS
+#include "port_concurrent.h"
 
-extern volatile unsigned int currTasks;
+#include "AlphaRTOS.h"
 
-// vector of tasks to alert when certain interrupts happen
-extern int gpTimerIntVector[NUM_INT_CALLBACKS];
-extern int uartIntVector[NUM_INT_CALLBACKS];
-extern int qeiIntVector[NUM_INT_CALLBACKS];
+#define TASK_STATUS_UNINITIALIZED 0x00000000
+#define TASK_STATUS_RUNNING       0x00000001
+#define TASK_STATUS_SLEEPING      0x00000002
+#define TASK_STATUS_RETURNED      0x00000004
+#define TASK_STATUS_YIELDING      0x00000008
+#define TASK_STATUS_PREEMPTED     0x00000010
+
+// has six 32-bit elements plus regframe_t, aka 24+sizeof(regframe_t)
+// if this changes, must update arm_context.s assembly macros
+typedef struct task_ {
+	volatile uint32_t status;
+	pFn_taskMain      taskEntry;
+	regframe_t        frame;
+} task_t;
 
 /**
  * @brief System tick interrupt service routine that periodically runs a scheduling algorithm.
  */
 extern void SysTick_Handler(void);
 
-//*****************************************************************************
-//
-//! Run a single round of scheduling. Should be called every time runScheduer
-//! is set to true. 
-//!
-//! \return none
-//
-//*****************************************************************************
-extern void schedule(void);
-
-//*****************************************************************************
-//
-//! Schedule all tasks that were preempted by the scheduler
-//!
-//! \return none
-//
-//*****************************************************************************
-extern void schedulePreempted(void);
-
-//*****************************************************************************
-//
-//! Start the Task Master, setting up the SysTick interrupt
-//!
-//! \param none
-//!
-//! \return none
-//
-//*****************************************************************************
+/**
+ * \brief Initialize, but not start, the task master for the current processor.
+ */
 bool initTaskMaster(void);
 
-//*****************************************************************************
-//
-//! Register a task
-//!
-//! \param taskEntry is a pointer to a function to be called to start running
-//! the task
-//!
-//! \param initArg is the argument to pass to the task on initialization
-//!
-//! \return the task ID assigned to the task, or 0 if registration failed
-//
-//*****************************************************************************
-unsigned int addTask(int (*taskEntry)(uint32_t), uint32_t initArg);
+/**
+ * \brief Register a new RTOS task with the operating system.
+ *
+ * \param      taskEntry Function to be called to start running the task.
+ * \param [in] taskName  Human-readable, non-unique name of the new task.
+ *
+ * \retval 0  Failed to register the task.
+ * \retval ID Returns the unique task ID assigned to the new task.
+ */
+int addTask(pFn_taskMain taskEntry, char taskName[]);
 
 //*****************************************************************************
 //

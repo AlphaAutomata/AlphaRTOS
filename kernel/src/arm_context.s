@@ -20,20 +20,15 @@
 
 // offset macros to access fields in struct task
 // must change if struct task definition changes in scheduler.h
-.equ taskTicksInterval, 0
-.equ taskTickRemaining, 4
-.equ taskStatus       , 8
-.equ taskInitArg      , 12
-.equ taskTaskEntry    , 16
-.equ taskTimerCallback, 20
-.equ taskIntCallback  , 24
-.equ taskFrame        , 28
+.equ taskStatus       , 0
+.equ taskTaskEntry    , 4
+.equ taskFrame        , 8
 
 // size macros for regframe_t and sizeof(struct task)
 // must change if struct task or regframe_t definitions change
-// struct task	defined in scheduler.h
+// struct task	defined in task.h
 // regframe_t	defined in arm_types.h
-.equ regframe_t_offset, 24
+.equ regframe_t_offset, 8
 .equ regframe_t_size  , 68
 .equ structTaskSize   , regframe_t_offset+regframe_t_size
 
@@ -103,9 +98,9 @@ switchContext:
 	LDR		SP, [R0,#(__SP-__R2)]	// load the new stack pointer
 	LDR		LR, [R0,#(__LR-__R2)]	// load the link register
 	LDR		R1, [R0,#(__xPSR-__R2)]	// load the xPSR into R1
-	MSR		APSR_nzcvq, R1				// store the APSR
+	MSR		APSR_nzcvq, R1			// store the APSR
 	SUB		R0, #__R2				// go back to the beginning of the struct to load R0
-	LDMIA	R0, {R0-R1}				// load R0 from struct
+	LDMIA	R0, {R0-R1}				// load R0 and R1 from struct
 	
 	BX		LR						// execute return
 .switchContext_end:
@@ -133,6 +128,7 @@ SysTick_Handler:
 	
 	// if a user task is running, preempt with context switch
 IRQ_prep_preempt:
+	// Check for a running task
 	LDR		R0, =currTaskID
 	LDR		R1, [R0]
 	CMP		R1, #0
@@ -154,7 +150,7 @@ IRQ_prep_preempt:
 	STR		R1, [SP,#(__IRQPC)]		// point return PC in shifted IRQ stack to preempt label
 	STR		R2, [SP,#(__IRQxPSR)]	// store the xPSR into shifted IRQ stack location
 	
-		// return from IRQ
+	// return from IRQ
 return:
 	BX		LR						// execute return from ISR
 		
