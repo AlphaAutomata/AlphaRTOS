@@ -2,42 +2,14 @@
 #include <stdbool.h>
 #include <stdnoreturn.h>
 
-#include "artos_event_types.h"
-#include "artos_service_types.h"
+#include "AlphaRTOS_types.h"
 
-#ifndef ALPHA_RTOS_H
-#define ALPHA_RTOS_H
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////// AlphaRTOS API Common Types /////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief Alpha RTOS API status codes.
- */
-typedef enum ARTOS_eStatus_ {
-	ARTOS_eStatus_OK          =   0, //!< Operation completed successfully.
-	ARTOS_eStatus_BAD_ARGS    =   1, //!< Invalid arguments to RTOS API function.
-	ARTOS_eStatus_NO_RSRC     =   2, //!< Not enough resources to complete the requested operation.
-	ARTOS_eStatus_UNSUPPORTED =   3, //!< The requested operation is not supported.
-	ARTOS_eStatus_OVERRUN     =   4, //!< An overflow or overrun occurred.
-	ARTOS_eStatus_GENERIC_ERR = 255  //!< Operation encountered an error.
-} ARTOS_eStatus;
+#ifndef ALPHARTOS_H
+#define ALPHARTOS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif // #ifdef __cplusplus
-
-/**
- * \brief Alpha RTOS task entry point.
- *
- * \param      argc The number of elements in the arguments vector \a argv.
- * \param [in] argv A vector of C-string arguments. Arguments usage is task-defined.
- *
- * \retval ::ARTOS_eStatus_OK          Task completed with no errors.
- * \retval ::ARTOS_eStatus_GENERIC_ERR Task did not exit properly.
- */
-typedef ARTOS_eStatus (*pFn_taskMain)(int argc, char** argv);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// AlphaRTOS Common API ///////////////////////////////////////
@@ -182,12 +154,13 @@ ARTOS_eStatus ARTOS_eventService_unregister(int handlerID);
  * 
  * \param [out] taskID   The unique ID assigned to this task will be written here.
  * \param       taskMain The task entry point.
+ * \param [in]  taskName The human-readable name for the new task.
  * 
  * \retval ::ARTOS_eStatus_OK       Successfully registered the task.
  * \retval ::ARTOS_eStatus_BAD_ARGS \a taskID or \a taskMain is `NULL`.
  * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to register another task.
  */
-ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain);
+ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain, const char* taskName);
 
 /**
  * \brief Execute the specified task.
@@ -224,12 +197,22 @@ ARTOS_eStatus ARTOS_task_yield(void);
  *
  * \param time The number of system ticks to sleep for.
  *
- * \return ::ARTOS_eStatus_OK Always.
+ * \retval ::ARTOS_eStatus_OK Always.
  */
 ARTOS_eStatus ARTOS_task_sleep(unsigned int time);
+
+/**
+ * \brief Get the current task's task ID.
+ * 
+ * \param [out] taskID The variable to store the retrieved task ID.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully wrote the current task's ID to the given variable.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a taskID is `NULL`.
+ */
+ARTOS_eStatus ARTOS_task_getID(int* taskID);
 
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
 
-#endif // #ifndef ALPHA_RTOS_H
+#endif // #ifndef ALPHARTOS_H
