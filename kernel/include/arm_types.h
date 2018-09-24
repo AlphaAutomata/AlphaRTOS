@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "AlphaRTOS.h"
+#include "AlphaRTOS_types.h"
 
 // change these macros depending on how memory is allocated
 #define VECTOR_TABLE_BASE 0x00000000

@@ -7,8 +7,7 @@
 #include "arm_types.h"
 
 #include "port_concurrent.h"
-
-#include "AlphaRTOS.h"
+#include "AlphaRTOS_types.h"
 
 #define TASK_STATUS_UNINITIALIZED 0x00000000
 #define TASK_STATUS_RUNNING       0x00000001

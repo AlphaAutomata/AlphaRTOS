@@ -8,7 +8,7 @@
 
 #include "artos_service_types.h"
 
-#include "AlphaRTOS.h"
+#include "AlphaRTOS_types.h"
 
 // number of clock cycles between SysTick interrupts. For LaunchPad at 50MHz,
 // this sets the SysTick interval to 1ms. 
