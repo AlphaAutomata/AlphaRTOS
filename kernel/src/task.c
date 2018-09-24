@@ -10,10 +10,6 @@
 
 taskTable_t taskTable;
 
-int gpTimerIntVector[NUM_INT_CALLBACKS];
-int uartIntVector[NUM_INT_CALLBACKS];
-int qeiIntVector[NUM_INT_CALLBACKS];
-
 bool initTaskMaster(void) {
 	// Initialize the task table.
 	concurr_mutex_init(taskTable.mutex);
@@ -74,61 +70,4 @@ int initTask(unsigned int taskNum, uint32_t arg) {
 	);
 	
 	return taskTable[taskNum].frame.R0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Badger RMC RTOS API /////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-int timerCallbackRegister(uint32_t interval, int (*callback)(uint32_t)) {
-	if (currTaskID == 0 || callback == 0 || interval == 0) {
-		return 0;
-	}
-	
-	currTask.timerCallback = callback;
-	currTask.ticksInterval = interval - 1;
-	currTask.ticksRemaining = interval - 1;
-	
-	return 1;
-}
-
-int timerCallbackUnregister(int callbackID) {
-	if (currTaskID == 0 || callbackID == 0) {
-		return -1;
-	}
-	
-	currTask.timerCallback = 0;
-	
-	return callbackID;
-}
-
-int setTimerCallbackInterval(int callbackID, uint32_t interval) {
-	if (currTaskID == 0 || callbackID != 1) return -1;
-	
-	currTask.ticksInterval = interval;
-	
-	return callbackID;
-}
-
-uint32_t getTimerCallbackInterval(int callbackID) {
-	if (currTaskID == 0) return 0;
-	
-	return currTask.ticksInterval;
-}
-
-void taskYield(void) {
-	unsigned int ID;
-	
-	currTask.status = TASK_STATUS_YIELDING;
-	
-	ID = currTaskID;
-	currTaskID = 0;
-	
-	switchContext(&kframe, &((taskTable[ID]).frame));
-	
-	return;
-}
-
-uint64_t getUptime(void) {
-	return uptime;
 }
