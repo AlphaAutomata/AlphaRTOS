@@ -1,5 +1,5 @@
-#ifndef __BADGERLMC_SCHEDULER_H__
-#define __BADGERLMC_SCHEDULER_H__
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,17 +14,25 @@
 // this sets the SysTick interval to 1ms. 
 #define SYSTICK_INTERVAL 50000
 
-#define NUM_TASKS NUM_FRAMES
+#define NUM_UNITS NUM_FRAMES
+
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 /**
- * \brief A schedulable task table.
+ * \brief A table of schedulable unit entities.
  */
-typedef struct taskTable_ {
+typedef struct schedTable_ {
 	concurr_mutex mutex;
-	int           currNumTasks;
-	int           currTaskID;
-	task_t        tasks[NUM_TASKS];
-} taskTable_t;
+	tcb_t         units[NUM_UNITS];
+} schedTable_t;
+
+#define SCHEDTABLE_CONTAINS_THREAD(pSchedTable_t,tid) (                                    \
+	( (tcb_t*)tid >= &(pSchedTable_t->units[0]          ) )                             && \
+	( (tcb_t*)tid <= &(pSchedTable_t->units[NUM_UNITS-1]) )                             && \
+	( ( (intptr_t)tid - (intptr_t)(&(pSchedTable_t->units[0])) ) % sizeof(tcb_t) == 0 )    \
+)
 
 /**
  * \brief Initialize a scheduler table instance.
@@ -42,4 +50,8 @@ void initScheduler(taskTable_t* tasks);
  */
 void schedule(taskTable_t* tasks);
 
-#endif
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+#endif // #ifndef SCHEDULER_H
