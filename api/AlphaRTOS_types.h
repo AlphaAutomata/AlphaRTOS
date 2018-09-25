@@ -33,7 +33,27 @@ typedef enum ARTOS_eStatus_ {
  * \retval ::ARTOS_eStatus_OK          Task completed with no errors.
  * \retval ::ARTOS_eStatus_GENERIC_ERR Task did not exit properly.
  */
-typedef ARTOS_eStatus (*pFn_taskMain)(int argc, char** argv);
+typedef ARTOS_eStatus (*ARTOS_pFn_taskMain)(int argc, char** argv);
+
+/**
+ * \brief User handle to an Alpha RTOS task.
+ */
+typedef void* ARTOS_hTask_t;
+
+/**
+ * \brief Alpha RTOS thread entry point.
+ *
+ * \param [in] arg User-defined argument.
+ *
+ * \retval ::ARTOS_eStatus_OK          Thread completed with no errors.
+ * \retval ::ARTOS_eStatus_GENERIC_ERR Thread did not exit properly.
+ */
+typedef ARTOS_eStatus (*ARTOS_pFn_threadEntry)(void* arg);
+
+/**
+ * \brief User handle to an Alpha RTOS thread.
+ */
+typedef void* ARTOS_hThread_t;
 
 #ifdef __cplusplus
 }

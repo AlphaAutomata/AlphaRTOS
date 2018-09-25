@@ -152,45 +152,93 @@ ARTOS_eStatus ARTOS_eventService_unregister(int handlerID);
 /**
  * \brief Register a task.
  * 
- * \param [out] taskID   The unique ID assigned to this task will be written here.
+ * \param [out] pHandle  The handle to this task will be written here.
  * \param       taskMain The task entry point.
  * \param [in]  taskName The human-readable name for the new task.
  * 
  * \retval ::ARTOS_eStatus_OK       Successfully registered the task.
- * \retval ::ARTOS_eStatus_BAD_ARGS \a taskID or \a taskMain is `NULL`.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a pHandle or \a taskMain is `NULL`.
  * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to register another task.
  */
-ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain, const char* taskName);
+ARTOS_eStatus ARTOS_task_register(
+	ARTOS_hTask_t*     pHandle,
+	ARTOS_pFn_taskMain taskMain,
+	const char*        taskName
+);
 
 /**
  * \brief Execute the specified task.
  * 
- * \param      taskID The ID, assigned by ::ARTOS_task_register(), of the task to execute.
+ * \param      handle The handle, assigned by ::ARTOS_task_register(), of the task to execute.
  * \param      argc   The number of elements in the arguments vector \a argv.
  * \param [in] argv   A vector of C-string arguments to pass to the task.
  * 
  * \retval ::ARTOS_eStatus_OK       Successfully started task execution.
- * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given ID was not found.
+ * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given handle was not found.
  * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to execute another task.
  */
-ARTOS_eStatus ARTOS_task_exec(int taskID, int argc, char** argv);
+ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv);
 
 /**
  * \brief Kill the specified task.
  * 
- * \param taskID The ID, assigned by ::ARTOS_task_register(), of the task to kill.
+ * \param handle The handle, assigned by ::ARTOS_task_register(), of the task to kill.
  * 
  * \retval ::ARTOS_eStatus_OK       Successfully killed the specified task.
  * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given ID was not found.
  */
-ARTOS_eStatus ARTOS_task_kill(int taskID);
+ARTOS_eStatus ARTOS_task_kill(ARTOS_hTask_t handle);
+
+/**
+ * \brief Get the current task's handle.
+ * 
+ * \param [out] pHandle The variable to store the retrieved task handle.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully wrote the current task's handle to the given
+ *                                  variable.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a pHandle is `NULL`.
+ */
+ARTOS_eStatus ARTOS_task_getHandle(ARTOS_hTask_t* pHandle);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////// Thread API ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Create a new thread within the current task.
+ * 
+ * \param [out] pHandle     The handle to the new thread will be written here.
+ * \param [in]  attributes  Attributes to create the new thread with.
+ * \param [in]  threadEntry The thread entry point.
+ * \param [in]  arg         Argument to pass to the new thread.
+ * 
+ * \retval ::ARTOS_eStatus_OK       Successfully created the thread.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a pHandle or \a threadEntry is `NULL`.
+ * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to register another task.
+ */
+ARTOS_eStatus ARTOS_thread_create(
+	ARTOS_hThread_t*      pHandle,
+	ARTOS_thread_attr_t*  attributes,
+	ARTOS_pFn_threadEntry threadEntry,
+	void*                 arg
+);
+
+/**
+ * \brief Wait for the given thread to exit.
+ * 
+ * \param thread The thread to wait on.
+ * 
+ * \retval ::ARTOS_eStatus_OK       The given thread has exited.
+ * \retval ::ARTOS_eStatus_BAD_ARGS The given thread handle is invalid.
+ */
+ARTOS_eStatus ARTOS_thread_join(ARTOS_hThread_t thread);
 
 /**
  * \brief Yield the processor for the remainder of the scheduling cycle.
  *
  * \retval ::ARTOS_eStatus_OK Always.
  */
-ARTOS_eStatus ARTOS_task_yield(void);
+ARTOS_eStatus ARTOS_thread_yield(void);
 
 /**
  * \brief Sleep for the specified number of system ticks.
@@ -199,17 +247,18 @@ ARTOS_eStatus ARTOS_task_yield(void);
  *
  * \retval ::ARTOS_eStatus_OK Always.
  */
-ARTOS_eStatus ARTOS_task_sleep(unsigned int time);
+ARTOS_eStatus ARTOS_thread_sleep(unsigned int time);
 
 /**
- * \brief Get the current task's task ID.
+ * \brief Get the current thread's handle.
  * 
- * \param [out] taskID The variable to store the retrieved task ID.
+ * \param [out] pHandle The variable to store the retrieved thread handle.
  * 
- * \retval ::ARTOS_eStatus_OK       Successfully wrote the current task's ID to the given variable.
- * \retval ::ARTOS_eStatus_BAD_ARGS \a taskID is `NULL`.
+ * \retval ::ARTOS_eStatus_OK       Successfully wrote the current thread's handle to the given
+ *                                  variable.
+ * \retval ::ARTOS_eStatus_BAD_ARGS \a pHandle is `NULL`.
  */
-ARTOS_eStatus ARTOS_task_getID(int* taskID);
+ARTOS_eStatus ARTOS_thread_getHandle(ARTOS_hThread_t* pHandle);
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,8 @@
 
 #include "arm_types.h"
 
+#include "cmsis_os2.h"
+
 #include "port_concurrent.h"
 #include "AlphaRTOS_types.h"
 
@@ -16,18 +18,20 @@
 #define TASK_STATUS_YIELDING      0x00000008
 #define TASK_STATUS_PREEMPTED     0x00000010
 
-// has six 32-bit elements plus regframe_t, aka 24+sizeof(regframe_t)
-// if this changes, must update arm_context.s assembly macros
-typedef struct task_ {
-	volatile uint32_t status;
-	pFn_taskMain      taskEntry;
-	regframe_t        frame;
-} task_t;
+typedef struct tcb_ tcb_t;
 
-/**
- * @brief System tick interrupt service routine that periodically runs a scheduling algorithm.
- */
-extern void SysTick_Handler(void);
+struct tcb_ {
+    osThreadAttr_t  attributes;
+    osThreadState_t state;
+    regframe_t      context;
+    tcb_t*          parent;
+    union {
+        osThreadFunc_t     thread;
+        ARTOS_pFn_taskMain task;
+    } entryFn;
+};
+
+#define TCB_T_IS_TASK(pTCB) ((pTCB->parent == NULL) && (pTCB->entryFn.task != NULL))
 
 /**
  * \brief Initialize, but not start, the task master for the current processor.
@@ -43,7 +47,7 @@ bool initTaskMaster(void);
  * \retval 0  Failed to register the task.
  * \retval ID Returns the unique task ID assigned to the new task.
  */
-int addTask(pFn_taskMain taskEntry, char taskName[]);
+int addTask(ARTOS_pFn_taskMain taskEntry, const char* taskName);
 
 //*****************************************************************************
 //

@@ -42,7 +42,7 @@ void userReturn(void) {
 	switchContext(&kframe, &((taskTable[ID]).frame));
 }
 
-int addTask(pFn_taskMain taskEntry, char taskName[]) {
+int addTask(ARTOS_pFn_taskMain taskEntry, const char* taskName) {
 	concurr_mutex_lock(taskTable.mutex);
 	
 	taskTable[old_num_tasks].status = TASK_STATUS_UNINITIALIZED;

@@ -64,7 +64,7 @@ extern regframe_t kframe;
 //! performed an EABI return. 
 //
 //*****************************************************************************
-void runTask(regframe_t *newframe, regframe_t *oldframe, pFn_taskMain taskEntry);
+void runTask(regframe_t *newframe, regframe_t *oldframe, ARTOS_pFn_taskMain taskEntry);
 
 //*****************************************************************************
 //

@@ -2,6 +2,8 @@
 
 #include "task.h"
 
+#include "api_contract.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// AlphaRTOS Common API ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,12 +68,14 @@ ARTOS_eStatus ARTOS_eventService_unregister(int handlerID) {
 ///////////////////////////////////////////// Task API /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain, const char* taskName) {
+ARTOS_eStatus ARTOS_task_register(
+	ARTOS_hTask_t*     pHandle,
+	ARTOS_pFn_taskMain taskMain,
+	const char*        taskName
+) {
     int temp_id;
 
-    if (taskID == NULL || taskMain == NULL) {
-        return ARTOS_eStatus_BAD_ARGS;
-    }
+    CONTRACT_VERIFY(pHandle != NULL && taskMain != NULL && taskName != NULL);
 
     temp_id = addTask(taskMain, taskName);
     if (temp_id == 0) {
@@ -81,22 +85,43 @@ ARTOS_eStatus ARTOS_task_register(int* taskID, pFn_taskMain taskMain, const char
     return ARTOS_eStatus_OK;
 }
 
-ARTOS_eStatus ARTOS_task_exec(int taskID, int argc, char** argv) {
+ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
-ARTOS_eStatus ARTOS_task_kill(int taskID) {
+ARTOS_eStatus ARTOS_task_kill(ARTOS_hTask_t handle) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
-ARTOS_eStatus ARTOS_task_yield(void) {
+ARTOS_eStatus ARTOS_task_getHandle(ARTOS_hTask_t* pHandle) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
-ARTOS_eStatus ARTOS_task_sleep(unsigned int time) {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////// Thread API ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ARTOS_eStatus ARTOS_thread_create(
+	ARTOS_hThread_t*      pHandle,
+	ARTOS_thread_attr_t*  attributes,
+	ARTOS_pFn_threadEntry threadEntry,
+	void*                 arg
+) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
-ARTOS_eStatus ARTOS_task_getID(int* taskID) {
+ARTOS_eStatus ARTOS_thread_join(ARTOS_hThread_t thread) {
+    return ARTOS_eStatus_UNSUPPORTED;
+}
+
+ARTOS_eStatus ARTOS_thread_yield(void) {
+    return ARTOS_eStatus_UNSUPPORTED;
+}
+
+ARTOS_eStatus ARTOS_thread_sleep(unsigned int time) {
+    return ARTOS_eStatus_UNSUPPORTED;
+}
+
+ARTOS_eStatus ARTOS_thread_getHandle(ARTOS_hThread_t* pHandle) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
