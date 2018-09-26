@@ -13,6 +13,8 @@
 // statically allocate space for global memory by limiting the number of stacks
 #define NUM_FRAMES ((RW_MEM_SIZE)/(STACK_SIZE))-4
 
+#define NUM_CORES 4
+
 #define KFRAMEBase __Vectors[0]
 // taskID+1 ensures that the kernel stack size is double the task stack size
 #define frameBase(taskID) RW_MEM_BASE + RW_MEM_SIZE - STACK_SIZE * (taskID+1)

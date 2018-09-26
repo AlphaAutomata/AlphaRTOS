@@ -37,18 +37,20 @@ typedef struct schedTable_ {
 /**
  * \brief Initialize a scheduler table instance.
  *
- * \param [in] tasks The task table to initialize for scheduling.
+ * \param [in] table The task table to initialize for scheduling.
  */
-void initScheduler(taskTable_t* tasks);
+void initScheduler(schedTable_t* table);
 
 /**
- * \brief Run every task in the given table that is ready to run.
+ * \brief Run every schedulable unit in the given table that is ready to run.
  *
- * All tasks in the table that are not currently waiting on any events are run exactly once.
+ * All schedulable units in the table that are not currently waiting on any events are run exactly
+ * once. Waited-on conditions are tested for all waiting schedulable units, and waiting units whose
+ * waited-on conditions have been met are also run.
  *
- * \param [in] tasks The table of tasks to schedule.
+ * \param [in] table The table of tasks to schedule.
  */
-void schedule(taskTable_t* tasks);
+void schedule(schedTable_t* table);
 
 #ifdef __cplusplus
 }

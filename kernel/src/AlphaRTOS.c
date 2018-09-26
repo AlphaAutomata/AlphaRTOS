@@ -86,6 +86,8 @@ ARTOS_eStatus ARTOS_task_register(
 }
 
 ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
+    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)handle)->schedGroup, handle));
+
     return ARTOS_eStatus_UNSUPPORTED;
 }
 

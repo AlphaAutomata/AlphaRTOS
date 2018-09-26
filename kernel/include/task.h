@@ -11,25 +11,45 @@
 #include "port_concurrent.h"
 #include "AlphaRTOS_types.h"
 
-#define TASK_STATUS_UNINITIALIZED 0x00000000
-#define TASK_STATUS_RUNNING       0x00000001
-#define TASK_STATUS_SLEEPING      0x00000002
-#define TASK_STATUS_RETURNED      0x00000004
-#define TASK_STATUS_YIELDING      0x00000008
-#define TASK_STATUS_PREEMPTED     0x00000010
+#ifdef osCMSIS
 
-typedef struct tcb_ tcb_t;
+#define task_state_t osThreadState_t
 
-struct tcb_ {
-    osThreadAttr_t  attributes;
-    osThreadState_t state;
-    regframe_t      context;
-    tcb_t*          parent;
+#define task_state_UNINITIALIZED osThreadInactive
+#define task_state_READY         osThreadReady
+#define task_state_RUNNING       osThreadRunning
+#define task_state_BLOCKED       osThreadBlocked
+#define task_state_ZOMBIE        osThreadTerminated
+#define task_state_ERROR         osThreadError
+#define task_state_RESERVED      osThreadReserved
+
+#else
+
+typedef enum task_state_ {
+	task_state_UNINITIALIZED = 0,
+	task_state_READY         = 1,
+	task_state_RUNNING       = 2,
+	task_state_BLOCKED       = 3,
+	task_state_ZOMBIE        = 4,
+	task_state_ERROR         = -1,
+	task_state_RESERVED      = 0x7FFFFFFF
+} task_state_t;
+
+#endif
+
+struct schedTable_;
+
+typedef struct tcb_ {
+    osThreadAttr_t      attributes;
+    task_state_t        state;
+    regframe_t          context;
+    struct tcb_*        parent;
+    struct schedTable_* schedGroup;
     union {
         osThreadFunc_t     thread;
         ARTOS_pFn_taskMain task;
     } entryFn;
-};
+} tcb_t;
 
 #define TCB_T_IS_TASK(pTCB) ((pTCB->parent == NULL) && (pTCB->entryFn.task != NULL))
 
