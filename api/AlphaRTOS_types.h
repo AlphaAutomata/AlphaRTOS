@@ -55,6 +55,29 @@ typedef ARTOS_eStatus (*ARTOS_pFn_threadEntry)(void* arg);
  */
 typedef void* ARTOS_hThread_t;
 
+/**
+ * \brief Thread priority levels.
+ */
+typedef enum ARTOS_thread_priority_ {
+	ARTOS_thread_priority_NONE     =  0,
+	ARTOS_thread_priority_IDLE     =  1,
+	ARTOS_thread_priority_LOW      =  8,
+	ARTOS_thread_priority_NORMAL   = 24,
+	ARTOS_thread_priority_HIGH     = 40,
+	ARTOS_thread_priority_REALTIME = 48,
+	ARTOS_thread_priority_ISR      = 56,
+	ARTOS_thread_priority_ERROR    = -1,
+	ARTOS_thread_priority_RESERVED = 0x7FFFFFFF
+} ARTOS_thread_priority_t;
+
+/**
+ * \brief Thread attributes.
+ */
+typedef struct ARTOS_thread_attr_ {
+	const char*             name;     //!< Human-readable name.
+	ARTOS_thread_priority_t priority; //!< Thread creation priority.
+} ARTOS_thread_attr_t;
+
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
