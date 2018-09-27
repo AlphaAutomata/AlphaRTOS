@@ -3,19 +3,32 @@
 #include <stdbool.h>
 
 #include "gp_timer_port.h"
+#include "port_concurrent.h"
 
 #include "core_ca.h"
 
-#include "task.h"
-
 #include "scheduler.h"
+
+/**
+ * \brief A table of schedulable unit entities.
+ */
+typedef struct schedTable_ {
+	concurr_mutex mutex;
+	tcb_t         units[NUM_UNITS];
+} schedTable_t;
+
+#define SCHEDTABLE_CONTAINS_THREAD(pSchedTable_t,tid) (                                    \
+	( (tcb_t*)tid >= &(pSchedTable_t->units[0]          ) )                             && \
+	( (tcb_t*)tid <= &(pSchedTable_t->units[NUM_UNITS-1]) )                             && \
+	( ( (intptr_t)tid - (intptr_t)(&(pSchedTable_t->units[0])) ) % sizeof(tcb_t) == 0 )    \
+)
 
 static volatile uint64_t uptime;
 
 static schedTable_t allTables[NUM_CORES];
 static regframe_t   kInstFrames[NUM_CORES];
 
-static inline regframe_t* getKernelContext(void) {
+regframe_t* getKernelContext(void) {
 	uint32_t coreID;
 	
 	coreID = __get_MPIDR();
@@ -23,7 +36,7 @@ static inline regframe_t* getKernelContext(void) {
 	return &(kInstFrames[coreID]);
 }
 
-static inline regframe_t* getMyContext(void) {
+regframe_t* getMyContext(void) {
 	uint32_t coreID;
 	uint32_t mySP;
 	
@@ -52,9 +65,45 @@ static void schedWatchdog_handler(void) {
 	switchContext(kContext, myContext);
 }
 
-void initScheduler(schedTable_t* table) {
-	uptime = 0;
-	
+void userReturn(void) {
+	// run the kernel context
+	regframe_t* kContext = getKernelContext();
+	regframe_t* myContext = getMyContext();
+	switchContext(kContext, myContext);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// Unchecked Task API ////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void task_register(ARTOS_hTask_t* pHandle, ARTOS_pFn_taskMain taskMain, const char* taskName) {
+	return;
+}
+
+void task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
+	return;
+}
+
+void task_kill(ARTOS_hTask_t handle) {
+	return;
+}
+
+void task_getHandle(ARTOS_hTask_t* pHandle) {
+	return;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Unchecked Thread API ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void initScheduler(int cpu) {
+	schedTable_t* table;
+
+	table = &(allTables[cpu]);
+
+	concurr_mutex_init(table->mutex);
+	memset(table->units, 0, sizeof(table->units));
+
 	// Set up a General Purpose Timer which will be used to ensure each task only runs for a limited
 	// amount of time. The time slots are set and the interrupts enabled at the beginning of each
 	// scheduling round, and the timer is disabled at the end of each scheduling round.
@@ -68,8 +117,11 @@ void initScheduler(schedTable_t* table) {
 	gpTimer_init(gpTimer_inst_00, schedWatchdog_handler, &info);
 }
 
-void schedule(schedTable_t* table) {
-	unsigned int i;
+void schedule(int cpu) {
+	schedTable_t* table;
+	unsigned int  i;
+
+	table = &(allTables[cpu]);
 	
 	// Set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
 	// aside time for OS operations.
@@ -82,7 +134,7 @@ void schedule(schedTable_t* table) {
 	};
 	gpTimer_cfg_info(gpTimer_inst_00, &info);
 	
-	for (i=1; i<=NUM_UNITS; i++) {
+	for (i=0; i<=NUM_UNITS; i++) {
 		// Reload the timer at the start of each task.
 		gpTimer_arm(gpTimer_inst_00);
 		
