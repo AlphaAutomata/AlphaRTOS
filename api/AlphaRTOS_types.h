@@ -58,24 +58,24 @@ typedef void* ARTOS_hThread_t;
 /**
  * \brief Thread priority levels.
  */
-typedef enum ARTOS_thread_priority_ {
-	ARTOS_thread_priority_NONE     =  0,
-	ARTOS_thread_priority_IDLE     =  1,
-	ARTOS_thread_priority_LOW      =  8,
-	ARTOS_thread_priority_NORMAL   = 24,
-	ARTOS_thread_priority_HIGH     = 40,
-	ARTOS_thread_priority_REALTIME = 48,
-	ARTOS_thread_priority_ISR      = 56,
-	ARTOS_thread_priority_ERROR    = -1,
-	ARTOS_thread_priority_RESERVED = 0x7FFFFFFF
-} ARTOS_thread_priority_t;
+typedef enum ARTOS_thread_pri_ {
+	ARTOS_thread_pri_NONE     =  0,
+	ARTOS_thread_pri_IDLE     =  1,
+	ARTOS_thread_pri_LOW      =  8,
+	ARTOS_thread_pri_NORMAL   = 24,
+	ARTOS_thread_pri_HIGH     = 40,
+	ARTOS_thread_pri_REALTIME = 48,
+	ARTOS_thread_pri_ISR      = 56,
+	ARTOS_thread_pri_ERROR    = -1,
+	ARTOS_thread_pri_RESERVED = 0x7FFFFFFF
+} ARTOS_thread_pri_t;
 
 /**
  * \brief Thread attributes.
  */
 typedef struct ARTOS_thread_attr_ {
-	const char*             name;     //!< Human-readable name.
-	ARTOS_thread_priority_t priority; //!< Thread creation priority.
+	const char*        name;     //!< Human-readable name.
+	ARTOS_thread_pri_t priority; //!< Thread creation priority.
 } ARTOS_thread_attr_t;
 
 #ifdef __cplusplus

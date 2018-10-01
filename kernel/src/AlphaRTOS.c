@@ -73,12 +73,13 @@ ARTOS_eStatus ARTOS_task_register(
 	ARTOS_pFn_taskMain taskMain,
 	const char*        taskName
 ) {
-    int temp_id;
+    intptr_t* frame;
 
-    CONTRACT_VERIFY(pHandle != NULL && taskMain != NULL && taskName != NULL);
+    CONTRACT_VERIFY((pHandle != NULL) && (taskMain != NULL) && (taskName != NULL));
 
-    temp_id = addTask(taskMain, taskName);
-    if (temp_id == 0) {
+    frame = (intptr_t*)pHandle;
+    task_register(frame, taskMain, taskName);
+    if (frame == NULL) {
         return ARTOS_eStatus_NO_RSRC;
     }
 
@@ -86,16 +87,35 @@ ARTOS_eStatus ARTOS_task_register(
 }
 
 ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
+    intptr_t frame;
+
     CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)handle)->schedGroup, handle));
 
-    return ARTOS_eStatus_UNSUPPORTED;
+    frame = (intptr_t)handle;
+    task_exec(frame, argc, argv);
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_task_kill(ARTOS_hTask_t handle) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    intptr_t frame;
+
+    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)handle)->schedGroup, handle));
+
+    frame = (intptr_t)handle;
+    task_kill(frame);
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_task_getHandle(ARTOS_hTask_t* pHandle) {
+    intptr_t* frame;
+
+    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)(*handle))->schedGroup, handle));
+
+    frame = (intptr_t*)pHandle;
+	task_getHandle(frame);
+
     return ARTOS_eStatus_UNSUPPORTED;
 }
 

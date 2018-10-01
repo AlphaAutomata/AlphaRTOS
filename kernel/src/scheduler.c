@@ -9,13 +9,8 @@
 
 #include "scheduler.h"
 
-/**
- * \brief A table of schedulable unit entities.
- */
-typedef struct schedTable_ {
-	concurr_mutex mutex;
-	tcb_t         units[NUM_UNITS];
-} schedTable_t;
+#define STACK_SIZE (__STACK_SIZE)
+#define STACK_BASE (__RAM_BASE+__RAM_SIZE)
 
 #define SCHEDTABLE_CONTAINS_THREAD(pSchedTable_t,tid) (                                    \
 	( (tcb_t*)tid >= &(pSchedTable_t->units[0]          ) )                             && \
@@ -23,10 +18,22 @@ typedef struct schedTable_ {
 	( ( (intptr_t)tid - (intptr_t)(&(pSchedTable_t->units[0])) ) % sizeof(tcb_t) == 0 )    \
 )
 
+#define NUM_THREADS (NUM_CORES*NUM_UNITS)
+
+/**
+ * \brief A table of schedulable unit entities.
+ */
+typedef struct schedTable_ {
+	concurr_mutex mutex;
+	tcb_t*        units[NUM_UNITS];
+} schedTable_t;
+
 static volatile uint64_t uptime;
 
-static schedTable_t allTables[NUM_CORES];
-static regframe_t   kInstFrames[NUM_CORES];
+static schedTable_t cpuThreadTables[NUM_CORES];
+static regframe_t   cpuKernelFrames[NUM_CORES];
+static tcb_t        threadVector[NUM_THREADS];
+static int          lastRegisteredThreadIndex;
 
 regframe_t* getKernelContext(void) {
 	uint32_t coreID;
@@ -46,10 +53,10 @@ regframe_t* getMyContext(void) {
 	for (int i=0; i<NUM_UNITS; i++) {
 		intptr_t myStackBase;
 
-		myStackBase = (intptr_t)(allTables[coreID].units[i].attributes.stack_mem);
+		myStackBase = (intptr_t)(allTables[coreID].units[i]->attributes.stack_mem);
 
 		if (mySP >= myStackBase && mySP <= myStackBase+STACK_SIZE) {
-			return &(allTables[coreID].units[i].context);
+			return &(allTables[coreID].units[i]->context);
 		}
 	}
 
@@ -76,19 +83,38 @@ void userReturn(void) {
 //////////////////////////////////////// Unchecked Task API ////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void task_register(ARTOS_hTask_t* pHandle, ARTOS_pFn_taskMain taskMain, const char* taskName) {
+void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* taskName) {
+	intptr_t i;
+
+	for (i=0; i<NUM_THREADS; i++) {
+		if (threadVector[i].stack == NULL) {
+			threadVector[i].name       = taskName;
+			threadVector[i].stack      = STACK_BASE + (i+1)*STACK_SIZE;
+			threadVector[i].priority   = ARTOS_thread_pri_NORMAL;
+			threadVector[i].state      = thread_state_UNINITIALIZED;
+			threadVector[i].context.SP = threadVector[i].stack;
+			threadVector[i].context.LR = (uint32_t)taskMain;
+			threadVector[i].parent     = NULL;
+			threadVector[i].schedGroup = NULL;
+
+			*tcbIndex = i;
+
+			return;
+		}
+	}
+
+	*tcbIndex = NULL;
+}
+
+void task_exec(intptr_t tcbIndex, int argc, char** argv) {
 	return;
 }
 
-void task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
+void task_kill(intptr_t tcbIndex) {
 	return;
 }
 
-void task_kill(ARTOS_hTask_t handle) {
-	return;
-}
-
-void task_getHandle(ARTOS_hTask_t* pHandle) {
+void task_getHandle(intptr_t* tcbIndex) {
 	return;
 }
 
@@ -102,7 +128,7 @@ void initScheduler(int cpu) {
 	table = &(allTables[cpu]);
 
 	concurr_mutex_init(table->mutex);
-	memset(table->units, 0, sizeof(table->units));
+	memset(&(table->units), 0, sizeof(table->units));
 
 	// Set up a General Purpose Timer which will be used to ensure each task only runs for a limited
 	// amount of time. The time slots are set and the interrupts enabled at the beginning of each
@@ -139,13 +165,13 @@ void schedule(int cpu) {
 		gpTimer_arm(gpTimer_inst_00);
 		
 		// For each task, determine action based on its status
-		if (table->units[i].state == task_state_READY) {
-			table->units[i].state = task_state_RUNNING;
+		if (table->units[i]->state == task_state_READY) {
+			table->units[i]->state = task_state_RUNNING;
 			// perform context switch and run the task
-			table->units[i].context.LR = (uint32_t)userReturn;
-			table->units[i].context.SP = (uint32_t)(frameBase(i));
-			switchContext(getKernelContext(), &(table->units[i].context));
-			table->units[i].state = task_state_READY;
+			table->units[i]->context.LR = (uint32_t)userReturn;
+			table->units[i]->context.SP = (uint32_t)(frameBase(i));
+			switchContext(getKernelContext(), &(table->units[i]->context));
+			table->units[i]->state = task_state_READY;
 		}
 	}
 	

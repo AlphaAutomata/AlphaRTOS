@@ -175,7 +175,6 @@ ARTOS_eStatus ARTOS_task_register(
  * 
  * \retval ::ARTOS_eStatus_OK       Successfully started task execution.
  * \retval ::ARTOS_eStatus_BAD_ARGS The task with the given handle was not found.
- * \retval ::ARTOS_eStatus_NO_RSRC  Insufficient resources to execute another task.
  */
 ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv);
 

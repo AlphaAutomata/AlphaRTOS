@@ -24,33 +24,35 @@ extern "C" {
 
 #define task_state_t osThreadState_t
 
-#define task_state_UNINITIALIZED osThreadInactive
-#define task_state_READY         osThreadReady
-#define task_state_RUNNING       osThreadRunning
-#define task_state_BLOCKED       osThreadBlocked
-#define task_state_ZOMBIE        osThreadTerminated
-#define task_state_ERROR         osThreadError
-#define task_state_RESERVED      osThreadReserved
+#define thread_state_UNINITIALIZED osThreadInactive
+#define thread_state_READY         osThreadReady
+#define thread_state_RUNNING       osThreadRunning
+#define thread_state_BLOCKED       osThreadBlocked
+#define thread_state_ZOMBIE        osThreadTerminated
+#define thread_state_ERROR         osThreadError
+#define thread_state_RESERVED      osThreadReserved
 
 #else
 
-typedef enum task_state_ {
-	task_state_UNINITIALIZED = 0,
-	task_state_READY         = 1,
-	task_state_RUNNING       = 2,
-	task_state_BLOCKED       = 3,
-	task_state_ZOMBIE        = 4,
-	task_state_ERROR         = -1,
-	task_state_RESERVED      = 0x7FFFFFFF
-} task_state_t;
+typedef enum thread_state_ {
+	thread_state_UNINITIALIZED = 0,
+	thread_state_READY         = 1,
+	thread_state_RUNNING       = 2,
+	thread_state_BLOCKED       = 3,
+	thread_state_ZOMBIE        = 4,
+	thread_state_ERROR         = -1,
+	thread_state_RESERVED      = 0x7FFFFFFF
+} thread_state_t;
 
 #endif
 
 struct schedTable_;
 
 typedef struct tcb_ {
-    osThreadAttr_t      attributes;
-    task_state_t        state;
+    const char*         name;
+	void*               stack;
+	ARTOS_thread_pri_t  priority;
+    thread_state_t      state;
     regframe_t          context;
     struct tcb_*        parent;
     struct schedTable_* schedGroup;
@@ -58,10 +60,6 @@ typedef struct tcb_ {
         osThreadFunc_t     thread;
         ARTOS_pFn_taskMain task;
     } entryFn;
-    union {
-    	ARTOS_hThread_t thread;
-    	ARTOS_hTask_t   task;
-    } handle;
 } tcb_t;
 
 #define TCB_T_IS_TASK(pTCB) ((pTCB->parent == NULL) && (pTCB->entryFn.task != NULL))
@@ -73,34 +71,34 @@ typedef struct tcb_ {
 /**
  * \brief Register a task.
  *
- * \param [out] pHandle  The handle to this task will be written here.
+ * \param [out] tcbIndex The handle to this task will be written here. `NULL` is written on failure.
  * \param       taskMain The task entry point.
  * \param [in]  taskName The human-readable name for the new task.
  */
-void task_register(ARTOS_hTask_t* pHandle, ARTOS_pFn_taskMain taskMain, const char* taskName);
+void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* taskName);
 
 /**
  * \brief Execute the specified task.
  *
- * \param      handle The handle, assigned by ::ARTOS_task_register(), of the task to execute.
- * \param      argc   The number of elements in the arguments vector \a argv.
- * \param [in] argv   A vector of C-string arguments to pass to the task.
+ * \param      tcbIndex The handle, assigned by ::ARTOS_task_register(), of the task to execute.
+ * \param      argc     The number of elements in the arguments vector \a argv.
+ * \param [in] argv     A vector of C-string arguments to pass to the task.
  */
-void task_exec(ARTOS_hTask_t handle, int argc, char** argv);
+void task_exec(intptr_t tcbIndex, int argc, char** argv);
 
 /**
  * \brief Kill the specified task.
  *
- * \param handle The handle, assigned by ::ARTOS_task_register(), of the task to kill.
+ * \param tcbIndex The handle, assigned by ::ARTOS_task_register(), of the task to kill.
  */
-void task_kill(ARTOS_hTask_t handle);
+void task_kill(intptr_t tcbIndex);
 
 /**
  * \brief Get the current task's handle.
  *
- * \param [out] pHandle The variable to store the retrieved task handle.
+ * \param [out] tcbIndex The variable to store the retrieved task handle.
  */
-void task_getHandle(ARTOS_hTask_t* pHandle);
+void task_getHandle(intptr_t* tcbIndex);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// Unchecked Thread API ///////////////////////////////////////
