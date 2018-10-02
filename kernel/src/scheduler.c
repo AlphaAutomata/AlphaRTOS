@@ -5,18 +5,13 @@
 #include "gp_timer_port.h"
 #include "port_concurrent.h"
 
-#include "core_ca.h"
+#include "mem_ARMCA9.h"
+#include "ARMCA9.h"
 
 #include "scheduler.h"
 
 #define STACK_SIZE (__STACK_SIZE)
 #define STACK_BASE (__RAM_BASE+__RAM_SIZE)
-
-#define SCHEDTABLE_CONTAINS_THREAD(pSchedTable_t,tid) (                                    \
-	( (tcb_t*)tid >= &(pSchedTable_t->units[0]          ) )                             && \
-	( (tcb_t*)tid <= &(pSchedTable_t->units[NUM_UNITS-1]) )                             && \
-	( ( (intptr_t)tid - (intptr_t)(&(pSchedTable_t->units[0])) ) % sizeof(tcb_t) == 0 )    \
-)
 
 #define NUM_THREADS (NUM_CORES*NUM_UNITS)
 
@@ -32,35 +27,23 @@ static volatile uint64_t uptime;
 
 static schedTable_t cpuThreadTables[NUM_CORES];
 static regframe_t   cpuKernelFrames[NUM_CORES];
+static intptr_t     cpuActiveThread[NUM_CORES];
 static tcb_t        threadVector[NUM_THREADS];
-static int          lastRegisteredThreadIndex;
 
 regframe_t* getKernelContext(void) {
 	uint32_t coreID;
 	
 	coreID = __get_MPIDR();
 
-	return &(kInstFrames[coreID]);
+	return &(cpuKernelFrames[coreID]);
 }
 
 regframe_t* getMyContext(void) {
 	uint32_t coreID;
-	uint32_t mySP;
 	
 	coreID = __get_MPIDR();
-	mySP = __get_SP();
 
-	for (int i=0; i<NUM_UNITS; i++) {
-		intptr_t myStackBase;
-
-		myStackBase = (intptr_t)(allTables[coreID].units[i]->attributes.stack_mem);
-
-		if (mySP >= myStackBase && mySP <= myStackBase+STACK_SIZE) {
-			return &(allTables[coreID].units[i]->context);
-		}
-	}
-
-	return NULL;
+	return threadVector[cpuActiveThread[coreID]].stack;
 }
 
 /**
@@ -89,10 +72,10 @@ void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* 
 	for (i=0; i<NUM_THREADS; i++) {
 		if (threadVector[i].stack == NULL) {
 			threadVector[i].name       = taskName;
-			threadVector[i].stack      = STACK_BASE + (i+1)*STACK_SIZE;
+			threadVector[i].stack      = (void*)(STACK_BASE + (i+1)*STACK_SIZE);
 			threadVector[i].priority   = ARTOS_thread_pri_NORMAL;
 			threadVector[i].state      = thread_state_UNINITIALIZED;
-			threadVector[i].context.SP = threadVector[i].stack;
+			threadVector[i].context.SP = (uint32_t)(threadVector[i].stack);
 			threadVector[i].context.LR = (uint32_t)taskMain;
 			threadVector[i].parent     = NULL;
 			threadVector[i].schedGroup = NULL;
@@ -103,19 +86,37 @@ void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* 
 		}
 	}
 
-	*tcbIndex = NULL;
+	*tcbIndex = (intptr_t)NULL;
 }
 
 void task_exec(intptr_t tcbIndex, int argc, char** argv) {
-	return;
+	// Pass initial arguments to the task entry point using ARM ABI.
+	threadVector[tcbIndex].context.R0 = argc;
+	threadVector[tcbIndex].context.R1 = (uint32_t)argv;
+	threadVector[tcbIndex].state      = thread_state_READY;
 }
 
 void task_kill(intptr_t tcbIndex) {
-	return;
+	threadVector[tcbIndex].state = thread_state_ZOMBIE;
 }
 
 void task_getHandle(intptr_t* tcbIndex) {
-	return;
+	uint32_t coreID;
+	
+	coreID = __get_MPIDR();
+
+	*tcbIndex = cpuActiveThread[coreID];
+}
+
+bool task_handleValid(intptr_t handle) {
+	return (
+		(threadVector[handle].stack != NULL) &&
+		(
+			(threadVector[handle].state == thread_state_READY  ) ||
+			(threadVector[handle].state == thread_state_RUNNING) ||
+			(threadVector[handle].state == thread_state_BLOCKED)
+		)
+	);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +126,7 @@ void task_getHandle(intptr_t* tcbIndex) {
 void initScheduler(int cpu) {
 	schedTable_t* table;
 
-	table = &(allTables[cpu]);
+	table = &(cpuThreadTables[cpu]);
 
 	concurr_mutex_init(table->mutex);
 	memset(&(table->units), 0, sizeof(table->units));
@@ -147,7 +148,7 @@ void schedule(int cpu) {
 	schedTable_t* table;
 	unsigned int  i;
 
-	table = &(allTables[cpu]);
+	table = &(cpuThreadTables[cpu]);
 	
 	// Set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
 	// aside time for OS operations.
@@ -165,13 +166,13 @@ void schedule(int cpu) {
 		gpTimer_arm(gpTimer_inst_00);
 		
 		// For each task, determine action based on its status
-		if (table->units[i]->state == task_state_READY) {
-			table->units[i]->state = task_state_RUNNING;
+		if (table->units[i]->state == thread_state_READY) {
+			table->units[i]->state = thread_state_RUNNING;
 			// perform context switch and run the task
 			table->units[i]->context.LR = (uint32_t)userReturn;
 			table->units[i]->context.SP = (uint32_t)(frameBase(i));
 			switchContext(getKernelContext(), &(table->units[i]->context));
-			table->units[i]->state = task_state_READY;
+			table->units[i]->state = thread_state_READY;
 		}
 	}
 	

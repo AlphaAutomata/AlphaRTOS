@@ -1,6 +1,6 @@
 #include "AlphaRTOS.h"
 
-#include "task.h"
+#include "scheduler.h"
 
 #include "api_contract.h"
 
@@ -89,7 +89,7 @@ ARTOS_eStatus ARTOS_task_register(
 ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
     intptr_t frame;
 
-    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)handle)->schedGroup, handle));
+    CONTRACT_VERIFY(task_handleValid((intptr_t)handle));
 
     frame = (intptr_t)handle;
     task_exec(frame, argc, argv);
@@ -100,7 +100,7 @@ ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
 ARTOS_eStatus ARTOS_task_kill(ARTOS_hTask_t handle) {
     intptr_t frame;
 
-    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)handle)->schedGroup, handle));
+    CONTRACT_VERIFY(task_handleValid((intptr_t)handle));
 
     frame = (intptr_t)handle;
     task_kill(frame);
@@ -111,7 +111,7 @@ ARTOS_eStatus ARTOS_task_kill(ARTOS_hTask_t handle) {
 ARTOS_eStatus ARTOS_task_getHandle(ARTOS_hTask_t* pHandle) {
     intptr_t* frame;
 
-    CONTRACT_VERIFY(SCHEDTABLE_CONTAINS_THREAD(((tcb_t*)(*handle))->schedGroup, handle));
+    CONTRACT_VERIFY(pHandle != NULL);
 
     frame = (intptr_t*)pHandle;
 	task_getHandle(frame);
