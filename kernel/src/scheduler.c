@@ -15,6 +15,10 @@
 
 #define NUM_THREADS (NUM_CORES*NUM_UNITS)
 
+#define ACTIVE_TID(cpu) (cpuActiveThread[cpu])
+#define ACTIVE_TCB(cpu) (threadVector[ACTIVE_TID(cpu)])
+#define ACTIVE_CTX(cpu) (ACTIVE_TCB(cpu).context)
+
 /**
  * \brief A table of schedulable unit entities.
  */
@@ -38,27 +42,27 @@ regframe_t* getKernelContext(void) {
 	return &(cpuKernelFrames[coreID]);
 }
 
-regframe_t* getMyContext(void) {
+regframe_t* getUserContext(void) {
 	uint32_t coreID;
 	
 	coreID = __get_MPIDR();
 
-	return threadVector[cpuActiveThread[coreID]].stack;
+	return &(ACTIVE_CTX(coreID));
 }
 
 /**
  * \brief Interrupt service routine to make sure no task overruns its allotted scheduling slot.
+ * 
+ * \todo Add supervisor call pending
  */
 static void schedWatchdog_handler(void) {
-	regframe_t* kContext = getKernelContext();
-	regframe_t* myContext = getMyContext();
-	switchContext(kContext, myContext);
+	// pend supervisor call to trigger context switch
 }
 
 void userReturn(void) {
 	// run the kernel context
 	regframe_t* kContext = getKernelContext();
-	regframe_t* myContext = getMyContext();
+	regframe_t* myContext = getUserContext();
 	switchContext(kContext, myContext);
 }
 
@@ -71,14 +75,15 @@ void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* 
 
 	for (i=0; i<NUM_THREADS; i++) {
 		if (threadVector[i].stack == NULL) {
-			threadVector[i].name       = taskName;
-			threadVector[i].stack      = (void*)(STACK_BASE + (i+1)*STACK_SIZE);
-			threadVector[i].priority   = ARTOS_thread_pri_NORMAL;
-			threadVector[i].state      = thread_state_UNINITIALIZED;
-			threadVector[i].context.SP = (uint32_t)(threadVector[i].stack);
-			threadVector[i].context.LR = (uint32_t)taskMain;
-			threadVector[i].parent     = NULL;
-			threadVector[i].schedGroup = NULL;
+			threadVector[i].name         = taskName;
+			threadVector[i].stack        = (void*)(STACK_BASE + (i+1)*STACK_SIZE);
+			threadVector[i].priority     = ARTOS_thread_pri_NORMAL;
+			threadVector[i].state        = thread_state_UNINITIALIZED;
+			threadVector[i].context.SP   = (uint32_t)(threadVector[i].stack);
+			threadVector[i].context.LR   = (uint32_t)taskMain;
+			threadVector[i].parent       = NULL;
+			threadVector[i].schedGroup   = NULL;
+			threadVector[i].entryFn.task = taskMain;
 
 			*tcbIndex = i;
 
@@ -105,7 +110,7 @@ void task_getHandle(intptr_t* tcbIndex) {
 	
 	coreID = __get_MPIDR();
 
-	*tcbIndex = cpuActiveThread[coreID];
+	*tcbIndex = ACTIVE_TID(coreID);
 }
 
 bool task_handleValid(intptr_t handle) {
@@ -121,6 +126,94 @@ bool task_handleValid(intptr_t handle) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// Unchecked Thread API ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void thread_create(
+	intptr_t*             handle,
+	ARTOS_thread_attr_t*  attributes,
+	ARTOS_pFn_threadEntry threadEntry,
+	void*                 arg
+) {
+	intptr_t i;
+	uint32_t coreID;
+	
+	coreID = __get_MPIDR();
+
+	for (i=0; i<NUM_THREADS; i++) {
+		if (threadVector[i].stack == NULL) {
+			threadVector[i].name           = attributes->name;
+			threadVector[i].stack          = (void*)(STACK_BASE + (i+1)*STACK_SIZE);
+			threadVector[i].priority       = attributes->priority;
+			threadVector[i].state          = thread_state_UNINITIALIZED;
+			threadVector[i].context.SP     = (uint32_t)(threadVector[i].stack);
+			threadVector[i].context.LR     = (uint32_t)threadEntry;
+			threadVector[i].parent         = &(ACTIVE_TCB(coreID));
+			threadVector[i].schedGroup     = NULL;
+			threadVector[i].entryFn.thread = threadEntry;
+
+			*handle = i;
+
+			return;
+		}
+	}
+
+	*handle = (intptr_t)NULL;
+}
+
+//! \todo Add indication of what this thread is waiting on
+//! \todo Add supervisor call
+void thread_join(intptr_t handle) {
+	uint32_t coreID;
+	
+	coreID = __get_MPIDR();
+
+	ACTIVE_TCB(coreID).state = thread_state_BLOCKED;
+
+	// set thread wake condition
+
+	// perform supervisor call to trigger context switch
+}
+
+//! \todo Add supervisor call
+void thread_yield(void) {
+	// perform supervisor call to trigger context switch
+}
+
+//! \todo Add indication of what this thread is waiting on
+//! \todo Add supervisor call
+void thread_sleep(unsigned int time) {
+	uint32_t coreID;
+	
+	coreID = __get_MPIDR();
+
+	ACTIVE_TCB(coreID).state = thread_state_BLOCKED;
+
+	// set thread wake condition
+
+	// perform supervisor call to trigger context switch
+}
+
+void thread_getHandle(intptr_t* handle) {
+	uint32_t coreID;
+	
+	coreID = __get_MPIDR();
+
+	*handle = ACTIVE_TID(coreID);
+}
+
+bool thread_handleValid(intptr_t handle) {
+	return (
+		(threadVector[handle].stack != NULL) &&
+		(
+			(threadVector[handle].state == thread_state_READY  ) ||
+			(threadVector[handle].state == thread_state_RUNNING) ||
+			(threadVector[handle].state == thread_state_BLOCKED)
+		)
+	);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// Scheduler Core API ////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void initScheduler(int cpu) {

@@ -57,8 +57,8 @@ typedef struct tcb_ {
     struct tcb_*        parent;
     struct schedTable_* schedGroup;
     union {
-        osThreadFunc_t     thread;
-        ARTOS_pFn_taskMain task;
+    	ARTOS_pFn_threadEntry thread;
+        ARTOS_pFn_taskMain    task;
     } entryFn;
 } tcb_t;
 
@@ -104,11 +104,70 @@ void task_getHandle(intptr_t* tcbIndex);
  * \brief Check if a given task handle is valid.
  * 
  * \param handle The handle to check.
+ *
+ * \retval true  The given handle belongs to an extant task.
+ * \retval false The given handle does not belong to an extant task.
  */
 bool task_handleValid(intptr_t handle);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// Unchecked Thread API ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Create a new thread.
+ * 
+ * \param [out] handle      The handle to the new thread will be written here. `NULL` is written
+ * *                        on failure.
+ * \param [in]  attributes  The attributes to create the thread with.
+ * \param       threadEntry The thread entry point.
+ * \param [in]  arg         The argument to pass to the thread entry point.
+ */
+void thread_create(
+	intptr_t*             handle,
+	ARTOS_thread_attr_t*  attributes,
+	ARTOS_pFn_threadEntry threadEntry,
+	void*                 arg
+);
+
+/**
+ * \brief Wait until the thread with the given handle exits.
+ *
+ * \param handle The handle to the thread to wait for.
+ */
+void thread_join(intptr_t handle);
+
+/**
+ * \brief Yield the processor to higher-priority threads.
+ */
+void thread_yield(void);
+
+/**
+ * \brief Sleep the calling thread for the specified number of system ticks.
+ * 
+ * \param time The number of system ticks to sleep for.
+ */
+void thread_sleep(unsigned int time);
+
+/**
+ * \brief Get the calling thread's handle.
+ * 
+ * \param [out] handle The variable to store the retrieved handle.
+ */
+void thread_getHandle(intptr_t* handle);
+
+/**
+ * \brief Check if a given thread handle is valid.
+ * 
+ * \param handle The handle to check.
+ *
+ * \retval true  The given handle belongs to an extant thread.
+ * \retval false The given handle does not belong to an extant thread.
+ */
+bool thread_handleValid(intptr_t handle);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// Scheduler Core API ////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**

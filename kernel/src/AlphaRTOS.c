@@ -129,21 +129,46 @@ ARTOS_eStatus ARTOS_thread_create(
 	ARTOS_pFn_threadEntry threadEntry,
 	void*                 arg
 ) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    intptr_t* frame;
+
+    CONTRACT_VERIFY((pHandle != NULL) && (threadEntry != NULL));
+
+    frame = (intptr_t*)pHandle;
+    thread_create(frame, attributes, threadEntry, arg);
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_thread_join(ARTOS_hThread_t thread) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    intptr_t frame;
+
+    CONTRACT_VERIFY(thread_handleValid((intptr_t)thread));
+
+    frame = (intptr_t)thread;
+    thread_join(frame);
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_thread_yield(void) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    thread_yield();
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_thread_sleep(unsigned int time) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    thread_sleep(time);
+
+    return ARTOS_eStatus_OK;
 }
 
 ARTOS_eStatus ARTOS_thread_getHandle(ARTOS_hThread_t* pHandle) {
-    return ARTOS_eStatus_UNSUPPORTED;
+    intptr_t* frame;
+
+    CONTRACT_VERIFY(pHandle != NULL);
+
+    frame = (intptr_t*)pHandle;
+    thread_getHandle(frame);
+
+    return ARTOS_eStatus_OK;
 }
