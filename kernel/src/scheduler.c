@@ -2,8 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "gp_timer_port.h"
-#include "port_concurrent.h"
+#include "hal_timer_gp.h"
 
 #include "mem_ARMCA9.h"
 #include "ARMCA9.h"

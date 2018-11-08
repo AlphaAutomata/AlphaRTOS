@@ -65,11 +65,11 @@ void addSingleItemUnsafe(circularBuffer_t *buff, void *item) {
 bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	assert((buff != NULL) && (item != NULL));
 
-	concurr_mutex_lock(buff->lock);
+	mutex_lock(buff->lock);
 
 	// Buffer is full, do not add.
 	if (buff->wrCnt - buff->rdCnt >= buff->numItems) {
-		concurr_mutex_unlock(buff->lock);
+		mutex_unlock(buff->lock);
 		return false;
 	}
 	
@@ -79,7 +79,7 @@ bool circularBufferAddItem(circularBuffer_t *buff, void *item) {
 	// increment the write counter
 	buff->wrCnt++;
 	
-	concurr_mutex_unlock(buff->lock);
+	mutex_unlock(buff->lock);
 	return true;
 }
 
@@ -88,7 +88,7 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
 
 	unsigned int itemsRemaining;
 	
-	concurr_mutex_lock(buff->lock);
+	mutex_lock(buff->lock);
 	
 	// if the buffer doesn't have enough room, only add enough elements to fill the buffer
 	if (buff->numItems - (buff->wrCnt - buff->rdCnt) < numItems) {
@@ -110,7 +110,7 @@ unsigned int circularBufferAddMultiple(circularBuffer_t *buff, void *item, unsig
 		itemsRemaining--;
 	}
 	
-	concurr_mutex_unlock(buff->lock);
+	mutex_unlock(buff->lock);
 	return numItems;
 }
 
@@ -175,11 +175,11 @@ void removeSingleItemUnsafe(circularBuffer_t *buff, void *data) {
 bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 	assert((buff != NULL) && (data != NULL));
 
-	concurr_mutex_lock(buff->lock);
+	mutex_lock(buff->lock);
 	
 	// if the buffer is empty, return false
 	if (buff->rdCnt >= buff->wrCnt) {
-		concurr_mutex_unlock(buff->lock);
+		mutex_unlock(buff->lock);
 		return false;
 	}
 	
@@ -196,7 +196,7 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data) {
 		buff->wrCnt -= buff->numItems;
 	}
 	
-	concurr_mutex_unlock(buff->lock);
+	mutex_unlock(buff->lock);
 	return true;
 }
 
@@ -205,10 +205,10 @@ unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, un
 	
 	unsigned int itemsRemaining;
 	
-	concurr_mutex_lock(buff->lock);
+	mutex_lock(buff->lock);
 	
 	if (numItems == 0) {
-		concurr_mutex_unlock(buff->lock);
+		mutex_unlock(buff->lock);
 		return 0;
 	}
 	
@@ -241,6 +241,6 @@ unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, un
 		buff->wrCnt -= buff->numItems;
 	}
 	
-	concurr_mutex_unlock(buff->lock);
+	mutex_unlock(buff->lock);
 	return numItems;
 }
