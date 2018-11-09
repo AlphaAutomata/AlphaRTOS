@@ -1,5 +1,5 @@
-#ifndef GP_TIMER_PORT_H
-#define GP_TIMER_PORT_H
+#ifndef HAL_TIMER_GP
+#define HAL_TIMER_GP
 
 #include <stdbool.h>
 
@@ -10,44 +10,44 @@ extern "C" {
 /**
  * \brief Available general purpose timer instances.
  */
-typedef enum gpTimer_inst_ {
-    gpTimer_inst_00 = 0,
-    gpTimer_inst_01 = 1,
-    gpTimer_inst_02 = 2,
-    gpTimer_inst_03 = 3,
-    gpTimer_inst_04 = 4,
-    gpTimer_inst_05 = 5,
-    gpTimer_inst_06 = 6,
-    gpTimer_inst_07 = 7
-} gpTimer_inst;
+typedef enum hal_timerGp_inst_ {
+    hal_timerGp_inst_00 = 0,
+    hal_timerGp_inst_01 = 1,
+    hal_timerGp_inst_02 = 2,
+    hal_timerGp_inst_03 = 3,
+    hal_timerGp_inst_04 = 4,
+    hal_timerGp_inst_05 = 5,
+    hal_timerGp_inst_06 = 6,
+    hal_timerGp_inst_07 = 7
+} hal_timerGp_inst;
 
 /**
  * \brief Timer count direction.
  */
-typedef enum gpTimer_cntDir_ {
-    gpTimer_cntDir_DOWN = 0, //!< Count down.
-    gpTimer_cntDir_UP   = 1  //!< Count up.
-} gpTimer_cntDir;
+typedef enum hal_timerGp_cntDir_ {
+    hal_timerGp_cntDir_DOWN = 0, //!< Count down.
+    hal_timerGp_cntDir_UP   = 1  //!< Count up.
+} hal_timerGp_cntDir;
 
 /**
  * \brief Timer repeat options.
  */
-typedef enum gpTimer_rpt_ {
-    gpTimer_rpt_ONESHOT  = 0, //!< Do not automatically reload the timer.
-    gpTimer_rpt_REPEATED = 1  //!< Automatically reload the timer when it trips.
-} gpTimer_rpt;
+typedef enum hal_timerGp_rpt_ {
+    hal_timerGp_rpt_ONESHOT  = 0, //!< Do not automatically reload the timer.
+    hal_timerGp_rpt_REPEATED = 1  //!< Automatically reload the timer when it trips.
+} hal_timerGp_rpt;
 
 /**
  * \brief Timer configuration information.
  */
-typedef struct gpTimer_info_ {
+typedef struct hal_timerGp_info_ {
     int            loadValue;         //!< The value to load the timer with, in timer clock ticks.
     int            tripValue;         //!< The value the timer should trip at.
-    gpTimer_cntDir cntDir;            //!< The timer count direction.
-    gpTimer_rpt    rpt;               //!< The timer automatic reload configuration.
+    hal_timerGp_cntDir cntDir;            //!< The timer count direction.
+    hal_timerGp_rpt    rpt;               //!< The timer automatic reload configuration.
     bool           start_immediately; //!< Flag to start the timer immediately when configuration
                                       //!< completes.
-} gpTimer_info;
+} hal_timerGp_info;
 
 /**
  * \brief Initialize a general-purpose hardware timer.
@@ -58,7 +58,7 @@ typedef struct gpTimer_info_ {
  * \param [in] gpTimerHandler Pointer to the general purpose timer interrupt handler.
  * \param [in] info           General purpose timer information.
  */
-void gpTimer_init(gpTimer_inst instance, void* gpTimerHandler, gpTimer_info* info);
+void hal_timerGp_init(hal_timerGp_inst instance, void* gpTimerHandler, hal_timerGp_info* info);
 
 /**
  * \brief Configure an initialized general-purpose hardware timer.
@@ -69,7 +69,7 @@ void gpTimer_init(gpTimer_inst instance, void* gpTimerHandler, gpTimer_info* inf
  * \param [in] gpTimerHandler Pointer to the general purpose timer interrupt handler to assign.
  * \param [in] info           General purpose timer information.
  */
-void gpTimer_cfg(gpTimer_inst instance, void* gpTimerHandler, gpTimer_info* info);
+void hal_timerGp_cfg(hal_timerGp_inst instance, void* gpTimerHandler, hal_timerGp_info* info);
 
 /**
  * \brief Configure an initialized general-purpose hardware timer with a new trip handler.
@@ -79,7 +79,7 @@ void gpTimer_cfg(gpTimer_inst instance, void* gpTimerHandler, gpTimer_info* info
  * \param      instance       The timer peripheral to configure.
  * \param [in] gpTimerHandler Pointer to the general purpose timer interrupt handler to assign.
  */
-void gpTimer_cfg_handler(gpTimer_inst instance, void* gpTimerHandler);
+void hal_timerGp_cfg_handler(hal_timerGp_inst instance, void* gpTimerHandler);
 
 /**
  * \brief Configure an initialized general-purpose hardware timer with new settings.
@@ -89,7 +89,7 @@ void gpTimer_cfg_handler(gpTimer_inst instance, void* gpTimerHandler);
  * \param      instance The timer peripheral to configure.
  * \param [in] info     General purpose timer information.
  */
-void gpTimer_cfg_info(gpTimer_inst instance, gpTimer_info* info);
+void hal_timerGp_cfg_info(hal_timerGp_inst instance, hal_timerGp_info* info);
 
 /**
  * \brief Start a configured timer.
@@ -98,17 +98,17 @@ void gpTimer_cfg_info(gpTimer_inst instance, gpTimer_info* info);
  *
  * \param instance The timer peripheral to initialize.
  */
-void gpTimer_arm(gpTimer_inst instance);
+void hal_timerGp_arm(hal_timerGp_inst instance);
 
 /**
  * \brief Stop a configured timer.
  *
  * \param instance The timer peripheral to initialize.
  */
-void gpTimer_disarm(gpTimer_inst instance);
+void hal_timerGp_disarm(hal_timerGp_inst instance);
 
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
 
-#endif // #ifndef GP_TIMER_PORT_H
+#endif // #ifndef HAL_TIMER_GP
