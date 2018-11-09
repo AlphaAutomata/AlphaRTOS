@@ -1,24 +1,59 @@
+########################
+# Configurable Options #
+########################
+
+# Xilinx SDK version
+set(XSDK_VERSION "NONE" CACHE STRING "Xilinx SDK version.")
+set(XSDK_VERSION_OPTS 2018.2)
+
+# Xilinx SDK installation location
+set(XSDK_INSTALL_PATH "NONE" CACHE STRING "Xilinx SDK installation path.")
+
+#######################
+# Configure Toolchain #
+#######################
+
 # compile for bare metal ARM
 set(CMAKE_SYSTEM_NAME      Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
-# toolchain binary path and toolchain exacutable prefix
-if(WIN32)
-	set(TC_PATH       "C:/CC_TC/gcc-arm-8.2-2018.08-i686-mingw32-arm-eabi/bin/")
-	set(EXTENSION     ".exe")
-	set(CROSS_COMPILE arm-eabi-)
+# configure variables based on Xilinx SDK version
+if(XSDK_VERSION STREQUAL "NONE")
+	# inform the user that they are cross-compiling without Xilinx SDK
+	message(STATUS "Cross-compiling without Xilinx SDK.")
 else()
-	set(TC_PATH       "")
-	set(CROSS_COMPILE arm-none-eabi-)
-	set(EXTENSION     "")
+	# check if an installation path is specified
+	if(XSDK_INSTALL_PATH STREQUAL "NONE")
+		message(FATAL_ERROR "No Xilinx SDK installed location specified. Set XSDK_INSTALL_PATH.")
+	endif()
+	
+	# set expected Eclipse version based on the Xilinx SDK version
+	if(XSDK_VERSION STREQUAL "2018.2")
+		set(CMAKE_ECLIPSE_VERSION 4.6.1 CACHE PATH "" FORCE)
+	else()
+		message(FATAL_ERROR "Unrecognized Xilinx SDK version: ${XSDK_VERSION}. Set XSDK_VERSION to one of the following: ${XSDK_VERSION_OPTS}")
+	endif()
+	
+	# inform the user of Xilinx SDK configuration
+	message(STATUS "Generating Makefile for cross-compiling with Xilinx SDK ${XSDK_VERSION}.")
+	
+	# set paths to Xilinx-distributed compilers and build tools
+	set(XSDK_ROOT_DIR "${XSDK_INSTALL_PATH}/${XSDK_VERSION}")
+	set(TC_PATH       "${XSDK_ROOT_DIR}/gnu/aarch32/nt/gcc-arm-none-eabi/bin/")
+	set(EXTENSION     ".exe")
+	# use Make from Xilinx
+	set(CMAKE_MAKE_PROGRAM "${XSDK_ROOT_DIR}/gnuwin/bin/make.exe" CACHE PATH "" FORCE)
 endif()
 
+# toolchain binary path and toolchain exacutable prefix
+set(CROSS_COMPILE arm-none-eabi-)
+
 # set compilers, linker, and archiver
-set(CMAKE_ASM_COMPILER "${TC_PATH}${CROSS_COMPILE}as${EXTENSION}")
-set(CMAKE_C_COMPILER   "${TC_PATH}${CROSS_COMPILE}gcc${EXTENSION}")
-set(CMAKE_CXX_COMPILER "${TC_PATH}${CROSS_COMPILE}g++${EXTENSION}")
-set(CMAKE_LINKER       "${TC_PATH}${CROSS_COMPILE}ld${EXTENSION}")
-set(CMAKE_AR           "${TC_PATH}${CROSS_COMPILE}ar${EXTENSION}")
+set(CMAKE_ASM_COMPILER "${TC_PATH}${CROSS_COMPILE}as${EXTENSION}"  CACHE PATH "" FORCE)
+set(CMAKE_C_COMPILER   "${TC_PATH}${CROSS_COMPILE}gcc${EXTENSION}" CACHE PATH "" FORCE)
+set(CMAKE_CXX_COMPILER "${TC_PATH}${CROSS_COMPILE}g++${EXTENSION}" CACHE PATH "" FORCE)
+set(CMAKE_LINKER       "${TC_PATH}${CROSS_COMPILE}ld${EXTENSION}"  CACHE PATH "" FORCE)
+set(CMAKE_AR           "${TC_PATH}${CROSS_COMPILE}ar${EXTENSION}"  CACHE FILEPATH "Archiver")
 
 # force convert .elf executables into .bin raw binary maps
 set(

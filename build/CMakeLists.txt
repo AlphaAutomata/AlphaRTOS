@@ -1,9 +1,35 @@
 # This minimum version ensures that we can enforce C99 standards in a cross-platform way
 cmake_minimum_required(VERSION 3.1)
 
+set(AlphaRTOS_K_VERSION_MAJOR 0)
+set(AlphaRTOS_K_VERSION_MINOR 0)
+
+set(ARTOS_ROOT_DIR ..)
+set(ARTOS_PUBLIC_DIR ${ARTOS_ROOT_DIR}/api/)
+set(ARTOS_KERNEL_DIR ${ARTOS_ROOT_DIR}/kernel/)
+
+set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include/)
+set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src/)
+
+set(HAL_ROOT_DIR ${ARTOS_ROOT_DIR}/../hal)
+set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
+set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include/)
+set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src/)
+
+set(CMSIS_ROOT_DIR ${ARTOS_ROOT_DIR}/../AlphaCMSIS)
+set(CMSIS_RTOS2_DIR ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
+
+set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/include/)
+set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source/)
+
+project(AlphaRTOS)
+
 # include assembly and special optimizations only when cross compiling
 if(CMAKE_CROSSCOMPILING)
-	project(AlphaRTOS CXX C ASM)
+	message(STATUS "Configuring cross-compile build system.")
+	
+	# get the assembly sources
+	set(K_ASM_FILES ${KERNEL_SRC_DIR}/arm_context.s)
 
 	# enable link-time optimization and optimize for size
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -flto -nostartfiles -fno-exceptions")
@@ -12,23 +38,11 @@ if(CMAKE_CROSSCOMPILING)
 	# enable link-time optimization and set the linker script
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 else()
-	project(AlphaRTOS CXX C)
+	message(STATUS "Configuring for compilation targeting the host system.")
+	
+	# set blank assembly sources
+	set(K_ASM_FILES "")
 endif()
-
-set(AlphaRTOS_K_VERSION_MAJOR 0)
-set(AlphaRTOS_K_VERSION_MINOR 0)
-
-set(ARTOS_ROOT_DIR ..)
-set(ARTOS_PUBLIC_DIR ${ARTOS_ROOT_DIR}/api)
-set(ARTOS_KERNEL_DIR ${ARTOS_ROOT_DIR}/kernel)
-
-set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include)
-set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src)
-
-set(HAL_ROOT_DIR ${ARTOS_ROOT_DIR}/../hal)
-set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
-set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
-set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
 
 configure_file(
 	"${ARTOS_ROOT_DIR}/config/cmake_config.h.in"
@@ -77,13 +91,21 @@ set(
 		${HAL_RTOS_SRC_DIR}/hal_timer_gp.c
 )
 
+set(
+	CMSIS_RTOS2_INC_FILES
+		${CMSIS_RTOS2_INC_DIR}/cmsis_os2.h
+		${CMSIS_RTOS2_INC_DIR}/os_tick.h
+)
+
 add_library(
 	artos STATIC
 		${ARTOS_API_HEADERS}
 		${K_INC_FILES}
 		${K_SRC_FILES}
+		${K_ASM_FILES}
 		${HAL_INC_FILES}
 		${HAL_SRC_FILES}
+		${CMSIS_RTOS2_INC_FILES}
 )
 target_include_directories(
 	artos
@@ -92,6 +114,7 @@ target_include_directories(
 	PRIVATE
 		${KERNEL_INC_DIR}
 		${HAL_RTOS_INC_DIR}
+		${CMSIS_RTOS2_INC_DIR}
 )
 set_target_properties(
 	artos PROPERTIES
