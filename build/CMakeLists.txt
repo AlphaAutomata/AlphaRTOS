@@ -1,6 +1,8 @@
 # This minimum version ensures that we can enforce C99 standards in a cross-platform way
 cmake_minimum_required(VERSION 3.1)
 
+project(AlphaRTOS)
+
 set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
 set(AlphaRTOS_K_VERSION_PATCH 0)
@@ -26,8 +28,6 @@ set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
 
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
-
-project(AlphaRTOS)
 
 # include assembly and special optimizations only when cross compiling
 if(CMAKE_CROSSCOMPILING)
