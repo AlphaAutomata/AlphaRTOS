@@ -31,7 +31,10 @@ else()
 	if(XSDK_VERSION STREQUAL "2018.2")
 		set(CMAKE_ECLIPSE_VERSION 4.6.1 CACHE PATH "" FORCE)
 	else()
-		message(FATAL_ERROR "Unrecognized Xilinx SDK version: ${XSDK_VERSION}. Set XSDK_VERSION to one of the following: ${XSDK_VERSION_OPTS}")
+		message(STATUS "Configured Xilinx SDK version: ${XSDK_VERSION}.
+		message(STATUS "Set XSDK_VERSION to one of the following:)
+		message(STATUS "    ${XSDK_VERSION_OPTS}")
+		message(FATAL_ERROR "Unsupported Xilinx SDK version.")
 	endif()
 	
 	# inform the user of Xilinx SDK configuration

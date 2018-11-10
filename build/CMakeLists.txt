@@ -1,26 +1,40 @@
 # This minimum version ensures that we can enforce C99 standards in a cross-platform way
 cmake_minimum_required(VERSION 3.1)
 
+###########################
+# Set Project and Version #
+###########################
+
 project(AlphaRTOS)
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
 set(AlphaRTOS_K_VERSION_PATCH 0)
 
+######################
+# Derive Directories #
+######################
+
+# get the Alpha RTOS repsitory root directory
 get_filename_component(ARTOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+# get the directory this repository, and all related repositories, reside in
 get_filename_component(ARTOS_PARENT_DIR ${ARTOS_ROOT_DIR} DIRECTORY)
 
+# get top level directories containing code
 set(ARTOS_PUBLIC_DIR ${ARTOS_ROOT_DIR}/api)
 set(ARTOS_KERNEL_DIR ${ARTOS_ROOT_DIR}/kernel)
 
+# get directories containing internal code
 set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include)
 set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src)
 
+# get HAL dependency directories
 set(HAL_ROOT_DIR ${ARTOS_PARENT_DIR}/hal)
 set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
 set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
 set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
 
+# get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${ARTOS_PARENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
@@ -28,6 +42,10 @@ set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
 
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
+
+################################
+# Derive Cross-Compile Options #
+################################
 
 # include assembly and special optimizations only when cross compiling
 if(CMAKE_CROSSCOMPILING)
@@ -49,11 +67,20 @@ else()
 	set(K_ASM_FILES "")
 endif()
 
+###########################
+# Generate Version Header #
+###########################
+
 configure_file(
 	"${ARTOS_ROOT_DIR}/config/cmake_config.h.in"
 	"${ARTOS_PUBLIC_DIR}/cmake_config.h"
 )
 
+#########################
+# Gather Target Sources #
+#########################
+
+# all public API headers
 set(
 	ARTOS_API_HEADERS
 		${ARTOS_PUBLIC_DIR}/AlphaRTOS_config.h
@@ -69,6 +96,8 @@ set(
 		${ARTOS_PUBLIC_DIR}/artos_timer_types.h
 		${ARTOS_PUBLIC_DIR}/artos_uart_types.h
 )
+
+# all kernel internal files
 set(
 	K_INC_FILES
 		${KERNEL_INC_DIR}/api_contract.h
@@ -85,6 +114,7 @@ set(
 		${KERNEL_SRC_DIR}/scheduler.c
 )
 
+# all HAL dependency files
 set(
 	HAL_INC_FILES
 		${HAL_RTOS_INC_DIR}/hal_systick.h
@@ -96,6 +126,7 @@ set(
 		${HAL_RTOS_SRC_DIR}/hal_timer_gp.c
 )
 
+# all CMSIS dependency files
 set(
 	CMSIS_Core_A_INC_FILES
 		${CMSIS_Core_A_INC_DIR}/core_ca.h
@@ -112,6 +143,11 @@ set(
 		${CMSIS_DEVICE_INC_DIR}/system_${ARCH}.h
 )
 
+####################
+# Configure Target #
+####################
+
+# compile RTOS kernel as static library
 add_library(
 	artos STATIC
 		${ARTOS_API_HEADERS}
@@ -124,6 +160,7 @@ add_library(
 		${CMSIS_RTOS2_INC_FILES}
 		${CMSIS_DEVICE_INC_FILES}
 )
+# set include directories, making only the public API header directory public
 target_include_directories(
 	artos
 	PUBLIC
@@ -135,6 +172,7 @@ target_include_directories(
 		${CMSIS_RTOS2_INC_DIR}
 		${CMSIS_DEVICE_INC_DIR}
 )
+# use C99
 set_target_properties(
 	artos PROPERTIES
 	C_STANDARD_REQUIRED 99 # Enforce C99 minimum for all sorts of niceties
