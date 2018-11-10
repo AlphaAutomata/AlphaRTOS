@@ -9,6 +9,8 @@
 #define VECTOR_TABLE_BASE 0x00000000
 #define RW_MEM_BASE       0x20000000
 #define RW_MEM_SIZE       0x00008000
+#define STACK_SIZE        (__STACK_SIZE)
+#define STACK_BASE        (__RAM_BASE+__RAM_SIZE)
 // statically allocate space for global memory by limiting the number of stacks
 #define NUM_FRAMES ((RW_MEM_SIZE)/(STACK_SIZE))-4
 

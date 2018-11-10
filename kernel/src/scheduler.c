@@ -7,10 +7,9 @@
 #include "mem_ARMCA9.h"
 #include "ARMCA9.h"
 
-#include "scheduler.h"
+#include "concurrency.h"
 
-#define STACK_SIZE (__STACK_SIZE)
-#define STACK_BASE (__RAM_BASE+__RAM_SIZE)
+#include "scheduler.h"
 
 #define NUM_THREADS (NUM_CORES*NUM_UNITS)
 
@@ -22,8 +21,8 @@
  * \brief A table of schedulable unit entities.
  */
 typedef struct schedTable_ {
-	concurr_mutex mutex;
-	tcb_t*        units[NUM_UNITS];
+	mutex_t mutex;
+	tcb_t*  units[NUM_UNITS];
 } schedTable_t;
 
 static volatile uint64_t uptime;
@@ -220,20 +219,20 @@ void initScheduler(int cpu) {
 
 	table = &(cpuThreadTables[cpu]);
 
-	concurr_mutex_init(table->mutex);
+	mutex_init(table->mutex);
 	memset(&(table->units), 0, sizeof(table->units));
 
 	// Set up a General Purpose Timer which will be used to ensure each task only runs for a limited
 	// amount of time. The time slots are set and the interrupts enabled at the beginning of each
 	// scheduling round, and the timer is disabled at the end of each scheduling round.
-	gpTimer_info info = {
+	hal_timerGp_info info = {
 		.loadValue         = SYSTICK_INTERVAL,
 		.tripValue         = 0,
-		.cntDir            = gpTimer_cntDir_DOWN,
-		.rpt               = gpTimer_rpt_ONESHOT,
+		.cntDir            = hal_timerGp_cntDir_DOWN,
+		.rpt               = hal_timerGp_rpt_ONESHOT,
 		.start_immediately = false
 	};
-	gpTimer_init(gpTimer_inst_00, schedWatchdog_handler, &info);
+	hal_timerGp_init(hal_timerGp_inst_00, schedWatchdog_handler, &info);
 }
 
 void schedule(int cpu) {
@@ -244,18 +243,18 @@ void schedule(int cpu) {
 	
 	// Set timer so each task has the same amount of time scheduled for it. currTasks+1 sets
 	// aside time for OS operations.
-	gpTimer_info info = {
+	hal_timerGp_info info = {
 		.loadValue         = SYSTICK_INTERVAL / NUM_UNITS,
 		.tripValue         = 0,
-		.cntDir            = gpTimer_cntDir_DOWN,
-		.rpt               = gpTimer_rpt_ONESHOT,
+		.cntDir            = hal_timerGp_cntDir_DOWN,
+		.rpt               = hal_timerGp_rpt_ONESHOT,
 		.start_immediately = false
 	};
-	gpTimer_cfg_info(gpTimer_inst_00, &info);
+	hal_timerGp_cfg_info(hal_timerGp_inst_00, &info);
 	
 	for (i=0; i<=NUM_UNITS; i++) {
 		// Reload the timer at the start of each task.
-		gpTimer_arm(gpTimer_inst_00);
+		hal_timerGp_arm(hal_timerGp_inst_00);
 		
 		// For each task, determine action based on its status
 		if (table->units[i]->state == thread_state_READY) {
@@ -269,5 +268,5 @@ void schedule(int cpu) {
 	}
 	
 	// Disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
-	gpTimer_disarm(gpTimer_inst_00);
+	hal_timerGp_disarm(hal_timerGp_inst_00);
 }
