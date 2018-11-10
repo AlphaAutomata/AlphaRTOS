@@ -11,6 +11,11 @@ set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
 set(AlphaRTOS_K_VERSION_PATCH 0)
 
+# The toolchain script sets ARCH. If not cross compiling, we still need a value here.
+if(NOT DEFINED ARCH)
+	set(ARCH ARMCA9)
+endif()
+
 ######################
 # Derive Directories #
 ######################
@@ -177,3 +182,66 @@ set_target_properties(
 	artos PROPERTIES
 	C_STANDARD_REQUIRED 99 # Enforce C99 minimum for all sorts of niceties
 )
+
+############################
+# Configure Doxygen Target #
+############################
+
+# check if Doxygen is installed
+find_program(DOXYGEN doxygen)
+
+# configure documentation target
+if(DOXYGEN STREQUAL "DOXYGEN-NOTFOUND")
+	message(STATUS "No Doxygen installation found. Documentation target will not be created.")
+else()
+	message(STATUS "Doxygen installation found. A documentation target will be created.")
+	
+	# get documentation directory
+	set(DOCS_ROOT_DIR ${ARTOS_ROOT_DIR}/docs)
+	set(DOCS_HTML_DIR ${DOCS_ROOT_DIR}/html)
+	
+	# set files to generated documentation from
+	set(
+		DOCUMENTED_FILES
+			${ARTOS_API_HEADERS}
+			${K_INC_FILES}
+			${K_SRC_FILES}
+	)
+	# convert CMake files list to a space-separated list for Doxygen
+	string(REPLACE ";" " " DOX_INPUT "${DOCUMENTED_FILES}")
+	
+	# check if GraphViz dot is installed
+	find_program(DOT dot)
+	# set dot existence flag and dot installation path
+	if(DOT STREQUAL "DOT-NOTFOUND")
+		message(STATUS "GraphViz dot tool not found. Configuring Doxygen to use native graphs.")
+		set(DOX_HAVE_DOT NO)
+		set(DOX_DOT_PATH "")
+	else()
+		message(STATUS "GraphViz dot tool found. Configuring Doxygen to use dot graphs.")
+		set(DOX_HAVE_DOT YES)
+		set(DOX_DOT_PATH DOT)
+	endif()
+	
+	# generate the Doxygen configuration file
+	configure_file(
+		"${DOCS_ROOT_DIR}/Doxyfile.in"
+		"${DOCS_ROOT_DIR}/Doxyfile"
+	)
+	
+	# create custom command to generate documentation dependent on source files
+	add_custom_command(
+		OUTPUT
+			${DOCS_HTML_DIR}/index.html
+		COMMAND
+			${DOXYGEN}
+		VERBATIM
+		WORKING_DIRECTORY
+			${DOCS_ROOT_DIR}
+		DEPENDS
+			${DOCUMENTED_FILES}
+	)
+	
+	# create documentation target
+	add_custom_target(docs DEPENDS ${DOCS_HTML_DIR}/index.html)
+endif()
