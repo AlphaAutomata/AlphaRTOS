@@ -45,6 +45,9 @@ else()
 	set(CMAKE_MAKE_PROGRAM "${XSDK_ROOT_DIR}/gnuwin/bin/make.exe" CACHE PATH "" FORCE)
 endif()
 
+# set the target architecture variable for use by the generator script
+set(ARCH ARMCA9 CACHE PATH "" FORCE)
+
 # toolchain binary path and toolchain exacutable prefix
 set(CROSS_COMPILE arm-none-eabi-)
 

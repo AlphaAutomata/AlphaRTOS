@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
+set(AlphaRTOS_K_VERSION_PATCH 0)
 
 get_filename_component(ARTOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(ARTOS_PARENT_DIR ${ARTOS_ROOT_DIR} DIRECTORY)
@@ -18,10 +19,12 @@ set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
 set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
 set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
 
-set(CMSIS_ROOT_DIR ${ARTOS_PARENT_DIR}/AlphaCMSIS)
-set(CMSIS_RTOS2_DIR ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
+set(CMSIS_ROOT_DIR       ${ARTOS_PARENT_DIR}/AlphaCMSIS)
+set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
+set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
+set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
 
-set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/include)
+set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
 
 project(AlphaRTOS)
@@ -94,9 +97,19 @@ set(
 )
 
 set(
+	CMSIS_Core_A_INC_FILES
+		${CMSIS_Core_A_INC_DIR}/core_ca.h
+)
+set(
 	CMSIS_RTOS2_INC_FILES
 		${CMSIS_RTOS2_INC_DIR}/cmsis_os2.h
 		${CMSIS_RTOS2_INC_DIR}/os_tick.h
+)
+set(
+	CMSIS_DEVICE_INC_FILES
+		${CMSIS_DEVICE_INC_DIR}/${ARCH}.h
+		${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h
+		${CMSIS_DEVICE_INC_DIR}/system_${ARCH}.h
 )
 
 add_library(
@@ -107,7 +120,9 @@ add_library(
 		${K_ASM_FILES}
 		${HAL_INC_FILES}
 		${HAL_SRC_FILES}
+		${CMSIS_Core_A_INC_FILES}
 		${CMSIS_RTOS2_INC_FILES}
+		${CMSIS_DEVICE_INC_FILES}
 )
 target_include_directories(
 	artos
@@ -116,7 +131,9 @@ target_include_directories(
 	PRIVATE
 		${KERNEL_INC_DIR}
 		${HAL_RTOS_INC_DIR}
+		${CMSIS_Core_A_INC_DIR}
 		${CMSIS_RTOS2_INC_DIR}
+		${CMSIS_DEVICE_INC_DIR}
 )
 set_target_properties(
 	artos PROPERTIES
