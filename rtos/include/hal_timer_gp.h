@@ -41,12 +41,13 @@ typedef enum hal_timerGp_rpt_ {
  * \brief Timer configuration information.
  */
 typedef struct hal_timerGp_info_ {
-    int            loadValue;         //!< The value to load the timer with, in timer clock ticks.
-    int            tripValue;         //!< The value the timer should trip at.
+    int                loadValue;         //!< The value to load the timer with, in timer clock
+                                          //!< ticks.
+    int                tripValue;         //!< The value the timer should trip at.
     hal_timerGp_cntDir cntDir;            //!< The timer count direction.
     hal_timerGp_rpt    rpt;               //!< The timer automatic reload configuration.
-    bool           start_immediately; //!< Flag to start the timer immediately when configuration
-                                      //!< completes.
+    bool               start_immediately; //!< Flag to start the timer immediately when
+                                          //!< configuration completes.
 } hal_timerGp_info;
 
 /**
