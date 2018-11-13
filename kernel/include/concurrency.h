@@ -90,7 +90,7 @@
 
 #else // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
 
-    #error Concurrency currently requires C11 standard atomics.
+    #error "Concurrency currently requires C11 standard atomics."
 
 #endif // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
 
