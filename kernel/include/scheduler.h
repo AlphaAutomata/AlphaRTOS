@@ -4,17 +4,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "arm_types.h"
-
-#include "cmsis_os2.h"
+#include "hal_core.h"
 
 #include "AlphaRTOS_types.h"
 
 // number of clock cycles between SysTick interrupts. For LaunchPad at 50MHz,
 // this sets the SysTick interval to 1ms. 
 #define SYSTICK_INTERVAL 50000
-
-#define NUM_UNITS NUM_FRAMES
 
 #ifdef __cplusplus
 extern "C" {
@@ -189,10 +185,6 @@ void addUnit(int cpu, tcb_t* unit);
  * \param [in] cpu The ID of the CPU to run the scheduler for.
  */
 void schedule(int cpu);
-
-regframe_t* getKernelContext(void);
-
-regframe_t* getMyContext(void);
 
 #ifdef __cplusplus
 }

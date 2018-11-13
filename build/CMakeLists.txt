@@ -1,9 +1,9 @@
-# This minimum version ensures that we can enforce C99 standards in a cross-platform way
-cmake_minimum_required(VERSION 3.1)
+# from 3.3 onwards, detecting whether a string exists in a list has a new syntax using if()
+cmake_minimum_required(VERSION 3.3)
 
-###########################
-# Set Project and Version #
-###########################
+####################################
+# Set Project, Version, and Target #
+####################################
 
 project(AlphaRTOS)
 
@@ -11,9 +11,12 @@ set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
 set(AlphaRTOS_K_VERSION_PATCH 0)
 
-# The toolchain script sets ARCH. If not cross compiling, we still need a value here.
+# The toolchain script sets these variables. If not cross compiling, we still need values here.
 if(NOT DEFINED ARCH)
 	set(ARCH ARMCA9)
+endif()
+if(NOT DEFINED ARTOS_TARGET_PLATFORM)
+	set(ARTOS_TARGET_PLATFORM NONE)
 endif()
 
 ######################
@@ -44,6 +47,7 @@ set(CMSIS_ROOT_DIR       ${ARTOS_PARENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
 set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
+set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
 
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
@@ -64,7 +68,10 @@ if(CMAKE_CROSSCOMPILING)
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Os -flto -nostartfiles")
 
 	# enable link-time optimization and set the linker script
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+	set(
+		CMAKE_EXE_LINKER_FLAGS
+			"${CMAKE_EXE_LINKER_FLAGS} -flto -T ${CMSIS_DEVICE_SRC_DIR}/${ARCH}.ld"
+	)
 else()
 	message(STATUS "Configuring for compilation targeting the host system.")
 	
@@ -122,6 +129,8 @@ set(
 # all HAL dependency files
 set(
 	HAL_INC_FILES
+		${HAL_RTOS_INC_DIR}/hal_platform.h
+		${HAL_RTOS_INC_DIR}/hal_core.h
 		${HAL_RTOS_INC_DIR}/hal_systick.h
 		${HAL_RTOS_INC_DIR}/hal_timer_gp.h
 )
@@ -177,10 +186,18 @@ target_include_directories(
 		${CMSIS_RTOS2_INC_DIR}
 		${CMSIS_DEVICE_INC_DIR}
 )
-# use C99
+# define platform architecture constant
+target_compile_definitions(
+	artos
+	PUBLIC
+		-DHAL_PLATFORM=HAL_PLATFORM_${ARTOS_TARGET_PLATFORM}
+)
+# use C11 for standard atomics
 set_target_properties(
-	artos PROPERTIES
-	C_STANDARD_REQUIRED 99 # Enforce C99 minimum for all sorts of niceties
+	artos
+	PROPERTIES
+		C_STANDARD   11
+		CXX_STANDARD 11
 )
 
 ############################
@@ -235,11 +252,11 @@ else()
 			${DOCS_HTML_DIR}/index.html
 		COMMAND
 			${DOXYGEN}
-		VERBATIM
 		WORKING_DIRECTORY
 			${DOCS_ROOT_DIR}
 		DEPENDS
 			${DOCUMENTED_FILES}
+			${DOCS_ROOT_DIR}/Doxyfile
 	)
 	
 	# create documentation target
