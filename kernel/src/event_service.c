@@ -15,7 +15,7 @@ static pFn_serviceHandler handlers[ARTOS_NUM_EVENT_SERVICES];
 #endif // #if (ARTOS_CFG_USE_C_DYNAMIC_MEM == 1)
 
 bool isEventActive(ARTOS_Event* event) {
-
+    return false;
 }
 
 void activateEvent(ARTOS_Event* event) {
@@ -27,7 +27,7 @@ void deactivateEvent(ARTOS_Event* event) {
 }
 
 int registerEventHandler(ARTOS_Event* event, pFn_serviceHandler handler) {
-
+    return -1;
 }
 
 void unregisterEventHandler(int handlerID) {
@@ -35,9 +35,9 @@ void unregisterEventHandler(int handlerID) {
 }
 
 bool eventHandlerExists(int handlerID) {
-
+    return false;
 }
 
 bool eventHasHandler(ARTOS_Event* event) {
-
+    return false;
 }
