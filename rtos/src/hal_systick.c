@@ -1,3 +1,5 @@
+#include "hal_platform.h"
+
 #include "hal_systick.h"
 
 #if (HAL_PLATFORM == HAL_PLATFORM_XSCU)
