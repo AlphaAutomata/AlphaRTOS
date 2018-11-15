@@ -61,14 +61,34 @@ set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
 
-###########################
-# Generate Version Header #
-###########################
+#################
+# Miscellaneous #
+#################
 
 configure_file(
 	"${ARTOS_ROOT_DIR}/config/cmake_config.h.in"
 	"${ARTOS_PUBLIC_DIR}/cmake_config.h"
 )
+
+# use CMSIS linker script
+if(CMAKE_CROSSCOMPILING)
+	set(
+		CMAKE_EXE_LINKER_FLAGS
+			"${CMAKE_EXE_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+	)
+	set(
+		CMAKE_MODULE_LINKER_FLAGS
+			"${CMAKE_MODULE_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+	)
+	set(
+		CMAKE_SHARED_LINKER_FLAGS
+			"${CMAKE_SHARED_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+	)
+	set(
+		CMAKE_STATIC_LINKER_FLAGS
+			"${CMAKE_STATIC_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+	)
+endif()
 
 #########################
 # Gather Target Sources #
@@ -219,14 +239,6 @@ set_target_properties(
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
 )
-# use CMSIS linker script
-if(CMAKE_CROSSCOMPILING)
-	set_directory_properties(
-		artos
-		PROPERTIES
-			LINK_DEPENDS ${CMSIS_DEVICE_SRC_DIR}/${ARCH}.ld
-	)
-endif()
 
 ############################
 # Configure Doxygen Target #
