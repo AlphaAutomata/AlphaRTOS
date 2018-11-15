@@ -1,11 +1,15 @@
-# from 3.3 onwards, detecting whether a string exists in a list has a new syntax using if()
-cmake_minimum_required(VERSION 3.3)
+# version required for consistent inter-procedural optimization behavior
+cmake_minimum_required(VERSION 3.9)
 
 ####################################
-# Set Project, Version, and Target #
+# Set Project-Level Configurations #
 ####################################
 
 project(AlphaRTOS)
+
+# check for inter-procedural optimization support
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPO_SUPPORTED)
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
@@ -51,33 +55,6 @@ set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
 
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
-
-################################
-# Derive Cross-Compile Options #
-################################
-
-# include assembly and special optimizations only when cross compiling
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "Configuring cross-compile build system.")
-	
-	# get the assembly sources
-	set(K_ASM_FILES ${KERNEL_SRC_DIR}/arm_context.s)
-
-	# enable link-time optimization and optimize for size
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -flto -nostartfiles -fno-exceptions")
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Os -flto -nostartfiles")
-
-	# enable link-time optimization and set the linker script
-	set(
-		CMAKE_EXE_LINKER_FLAGS
-			"${CMAKE_EXE_LINKER_FLAGS} -flto -T ${CMSIS_DEVICE_SRC_DIR}/${ARCH}.ld"
-	)
-else()
-	message(STATUS "Configuring for compilation targeting the host system.")
-	
-	# set blank assembly sources
-	set(K_ASM_FILES "")
-endif()
 
 ###########################
 # Generate Version Header #
@@ -125,6 +102,16 @@ set(
 		${KERNEL_SRC_DIR}/event_service.c
 		${KERNEL_SRC_DIR}/scheduler.c
 )
+# include assembly and special optimizations only when cross compiling
+if(CMAKE_CROSSCOMPILING)
+	message(STATUS "Configuring cross-compile build system.")
+	# get the assembly sources
+	set(K_ASM_FILES ${KERNEL_SRC_DIR}/arm_context.s)
+else()
+	message(STATUS "Configuring for compilation targeting the host system.")
+	# set blank assembly sources
+	set(K_ASM_FILES "")
+endif()
 
 # all HAL dependency files
 set(
@@ -192,15 +179,24 @@ target_compile_definitions(
 	PUBLIC
 		-DHAL_PLATFORM=HAL_PLATFORM_${ARTOS_TARGET_PLATFORM}
 )
-# use C11 for standard atomics
+# use link-time optimization if available, and use C11 for standard atomics
 set_target_properties(
 	artos
 	PROPERTIES
+		INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED}
 		C_STANDARD   11
 		CXX_STANDARD 11
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
 )
+# use CMSIS linker script
+if(CMAKE_CROSSCOMPILING)
+	set_directory_properties(
+		artos
+		PROPERTIES
+			LINK_DEPENDS ${CMSIS_DEVICE_SRC_DIR}/${ARCH}.ld
+	)
+endif()
 
 ############################
 # Configure Doxygen Target #
