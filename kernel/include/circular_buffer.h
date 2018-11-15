@@ -11,7 +11,7 @@
  * \brief An atomic circular buffer.
  */
 typedef struct circularBuffer_t_ {
-	mutex_t      lock;     //!< Mutex controlling buffer access.
+	spinLock_t   lock;     //!< Mutex controlling buffer access.
 	size_t       itemSize; //!< Size of items held in buffer.
 	unsigned int numItems; //!< Number of items the buffer can hold.
 	unsigned int rdCnt;    //!< Buffer read count.
@@ -107,6 +107,10 @@ bool circularBufferRemoveItem(circularBuffer_t *buff, void *data);
  *
  * \return Returns the number of items removed.
  */
-unsigned int circularBufferRemoveMultiple(circularBuffer_t *buff, void *data, unsigned int numItems);
+unsigned int circularBufferRemoveMultiple(
+	circularBuffer_t* buff,
+	void*             data,
+	unsigned int      numItems
+);
 
 #endif // #ifndef CIRCULAR_BUFFER_H
