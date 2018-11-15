@@ -119,6 +119,7 @@ set(
 		${ARTOS_PUBLIC_DIR}/AlphaRTOS_config.h
 		${ARTOS_PUBLIC_DIR}/AlphaRTOS_types.h
 		${ARTOS_PUBLIC_DIR}/AlphaRTOS.h
+		${ARTOS_PUBLIC_DIR}/artos_compiler.h
 		${ARTOS_PUBLIC_DIR}/artos_event_data_types.h
 		${ARTOS_PUBLIC_DIR}/artos_event_types.h
 		${ARTOS_PUBLIC_DIR}/artos_gpio_types.h

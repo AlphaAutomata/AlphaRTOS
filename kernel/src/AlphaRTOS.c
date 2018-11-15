@@ -12,7 +12,7 @@ ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
-noreturn void ARTOS_start(void) {
+NORETURN void ARTOS_start(void) {
     while (1) {
         // spin
     }

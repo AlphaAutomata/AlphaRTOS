@@ -89,9 +89,22 @@
     #define spinLock_unlock(lock)  atomic_store(&(lock), 0)
     #define spinLock_destroy(lock) ()
 
-#else // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
+#elif defined (_MSC_VER) // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
 
-    #error "Concurrency currently requires C11 standard atomics."
+    #include <Windows.h>
+
+    #define spinLock_t LONG volatile
+
+    #define spinLock_init(lock)    InterlockedExchange(&(lock), 0)
+    #define spinLock_lock(lock)    while(InterlockedExchange(&(lock), 1))
+    #define spinLock_unlock(lock)  InterlockedExchange(&(lock), 0)
+    #define spinLock_destroy(lock) ()
+
+#else // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
+      // ...
+      // #elif defined (_MSC_VER)
+
+    #error "Required concurrency primatives not known for the current compiler."
 
 #endif // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
 

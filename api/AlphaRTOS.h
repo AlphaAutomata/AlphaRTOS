@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
+
+#include "artos_compiler.h"
 
 #include "AlphaRTOS_types.h"
 
@@ -30,7 +31,7 @@ ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime);
 /**
  * \brief Start the RTOS.
  */
-noreturn void ARTOS_start(void);
+NORETURN void ARTOS_start(void);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// Timer-Based Services API /////////////////////////////////////
