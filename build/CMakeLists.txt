@@ -107,16 +107,6 @@ set(
 		${KERNEL_SRC_DIR}/event_service.c
 		${KERNEL_SRC_DIR}/scheduler.c
 )
-# include assembly and special optimizations only when cross compiling
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "Configuring cross-compile build system.")
-	# get the assembly sources
-	set(K_ASM_FILES ${KERNEL_SRC_DIR}/arm_context.s)
-else()
-	message(STATUS "Configuring for compilation targeting the host system.")
-	# set blank assembly sources
-	set(K_ASM_FILES "")
-endif()
 
 # all test files
 set(
@@ -142,6 +132,16 @@ set(
 		${HAL_RTOS_SRC_DIR}/hal_systick.c
 		${HAL_RTOS_SRC_DIR}/hal_timer_gp.c
 )
+# include assembly only when cross compiling
+if(CMAKE_CROSSCOMPILING)
+	message(STATUS "Configuring cross-compile build system.")
+	# get the assembly sources
+	set(HAL_ASM_FILES ${HAL_RTOS_SRC_DIR}/arm_context.s)
+else()
+	message(STATUS "Configuring for compilation targeting the host system.")
+	# set blank assembly sources
+	set(HAL_ASM_FILES "")
+endif()
 
 # all CMSIS dependency files
 set(
@@ -170,9 +170,9 @@ add_library(
 		${ARTOS_API_HEADERS}
 		${K_INC_FILES}
 		${K_SRC_FILES}
-		${K_ASM_FILES}
 		${HAL_INC_FILES}
 		${HAL_SRC_FILES}
+		${HAL_ASM_FILES}
 		${CMSIS_Core_A_INC_FILES}
 		${CMSIS_RTOS2_INC_FILES}
 		${CMSIS_DEVICE_INC_FILES}
