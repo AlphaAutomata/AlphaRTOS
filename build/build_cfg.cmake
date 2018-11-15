@@ -61,6 +61,10 @@ if(ARTOS_TARGET_PLATFORM IN_LIST XSCU_PLATFORMS)
 			message(FATAL_ERROR "No Xilinx SDK install location specified. Set XSDK_INSTALL_PATH.")
 		endif()
 		
+		# generate Makefile and Xilinx SDK projects
+		set(CMAKE_GENERATOR       "Unix Makefiles" CACHE INTERNAL "" FORCE)
+		set(CMAKE_EXTRA_GENERATOR "Eclipse CDT4"   CACHE INTERNAL "" FORCE)
+
 		# set expected Eclipse version based on the Xilinx SDK version
 		if(XSDK_VERSION STREQUAL "2018.2")
 			set(CMAKE_ECLIPSE_VERSION 4.6.1 CACHE PATH "" FORCE)
