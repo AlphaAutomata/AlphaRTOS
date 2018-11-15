@@ -35,8 +35,8 @@
  * \brief A table of schedulable unit entities.
  */
 typedef struct schedTable_ {
-	mutex_t mutex;
-	tcb_t*  units[MAX_THREADS_PER_CPU];
+	spinLock_t lock;
+	tcb_t*     units[MAX_THREADS_PER_CPU];
 } schedTable_t;
 
 static volatile uint64_t uptime;
@@ -91,11 +91,11 @@ void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* 
 			threadVector[i].stack        = (void*)(HAL_STACK_BASE + (i+1)*HAL_STACK_SIZE);
 			threadVector[i].priority     = ARTOS_thread_pri_NORMAL;
 			threadVector[i].state        = thread_state_UNINITIALIZED;
-			threadVector[i].context.SP   = (uint32_t)(threadVector[i].stack);
-			threadVector[i].context.LR   = (uint32_t)taskMain;
 			threadVector[i].parent       = NULL;
 			threadVector[i].schedGroup   = NULL;
 			threadVector[i].entryFn.task = taskMain;
+
+			assignStackToRegframe(&(threadVector[i].context), threadVector[i].stack, taskMain);
 
 			*tcbIndex = i;
 
@@ -108,9 +108,9 @@ void task_register(intptr_t* tcbIndex, ARTOS_pFn_taskMain taskMain, const char* 
 
 void task_exec(intptr_t tcbIndex, int argc, char** argv) {
 	// Pass initial arguments to the task entry point using ARM ABI.
-	threadVector[tcbIndex].context.R0 = argc;
-	threadVector[tcbIndex].context.R1 = (uint32_t)argv;
-	threadVector[tcbIndex].state      = thread_state_READY;
+	assignParams2(&(threadVector[tcbIndex].context), argc, (int)((intptr_t)argv));
+
+	threadVector[tcbIndex].state = thread_state_READY;
 }
 
 void task_kill(intptr_t tcbIndex) {
@@ -157,11 +157,11 @@ void thread_create(
 			threadVector[i].stack          = (void*)(HAL_STACK_BASE + (i+1)*HAL_STACK_SIZE);
 			threadVector[i].priority       = attributes->priority;
 			threadVector[i].state          = thread_state_UNINITIALIZED;
-			threadVector[i].context.SP     = (uint32_t)(threadVector[i].stack);
-			threadVector[i].context.LR     = (uint32_t)threadEntry;
 			threadVector[i].parent         = &(ACTIVE_TCB(coreID));
 			threadVector[i].schedGroup     = NULL;
 			threadVector[i].entryFn.thread = threadEntry;
+
+			assignStackToRegframe(&(threadVector[i].context), threadVector[i].stack, threadEntry);
 
 			*handle = i;
 
@@ -233,7 +233,7 @@ void initScheduler(int cpu) {
 
 	table = &(cpuThreadTables[cpu]);
 
-	mutex_init(table->mutex);
+	spinLock_init(table->lock);
 	memset(&(table->units), 0, sizeof(table->units));
 
 	// Set up a General Purpose Timer which will be used to ensure each task only runs for a limited
