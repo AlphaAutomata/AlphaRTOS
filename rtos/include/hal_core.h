@@ -67,18 +67,17 @@
 // if no platform is selected, assume we are targeting the host for off-device testing
 #if (HAL_PLATFORM == HAL_PLATFORM_NONE)
 
-    #define HAL_ARCH       HAL_ARCH_SIMULATED
-    #define HAL_NUM_CORES  4
+    #include "sim.h"
 
-    #warning "The definitions below will cause compilation errors."
+    #define HAL_ARCH       (HAL_ARCH_SIMULATED)
+    #define HAL_NUM_CORES  (SIM_NUM_CORES)
 
-    #define HAL_STACK_SIZE (0)    //!< \todo Implement proper simulation stack.
-    #define HAL_STACK_BASE (NULL) //!< \todo Implement proper simulation stack.
+    #define HAL_STACK_SIZE (SIM_STACK_SIZE)
+    #define HAL_STACK_BASE (SIM_STACK_BASE)
 
     typedef void* regframe_t;
 
-    //! \todo Implement proper simulation mechanism for getting the current core index.
-    #define hal_getCurrentCPU() (0)
+    #define hal_getCurrentCPU() sim_getCurrentCPU()
 
 #else
 
@@ -88,8 +87,8 @@
 
         #include "mem_ARMCA9.h"
 
-        #define HAL_ARCH       HAL_ARCH_ARMCA9
-        #define HAL_NUM_CORES  2
+        #define HAL_ARCH       (HAL_ARCH_ARMCA9)
+        #define HAL_NUM_CORES  (2)
 
         #define HAL_STACK_SIZE (__STACK_SIZE)
         #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
@@ -101,37 +100,19 @@
 
         #include "mem_ARMCA9.h"
 
-        #define HAL_ARCH       HAL_ARCH_ARMCA9
-        #define HAL_NUM_CORES  1
+        #define HAL_ARCH       (HAL_ARCH_ARMCA9)
+        #define HAL_NUM_CORES  (1)
 
         #define HAL_STACK_SIZE (__STACK_SIZE)
         #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
 
     #else // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
 
-        #error Unsupported target platform.
+        #error "Unsupported target platform."
 
     #endif // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
 
-    typedef struct {
-        uint32_t R0;   //!< ARM general purpose register 0.
-        uint32_t R1;   //!< ARM general purpose register 1.
-        uint32_t R2;   //!< ARM general purpose register 2.
-        uint32_t R3;   //!< ARM general purpose register 3.
-        uint32_t R4;   //!< ARM general purpose register 4.
-        uint32_t R5;   //!< ARM general purpose register 5.
-        uint32_t R6;   //!< ARM general purpose register 6.
-        uint32_t R7;   //!< ARM general purpose register 7.
-        uint32_t R8;   //!< ARM general purpose register 8.
-        uint32_t R9;   //!< ARM general purpose register 9.
-        uint32_t R10;  //!< ARM general purpose register 10.
-        uint32_t R11;  //!< ARM general purpose register 11.
-        uint32_t R12;  //!< ARM general purpose register 12.
-        uint32_t SP;   //!< ARM stack pointer register.
-        uint32_t LR;   //!< ARM link register.
-        uint32_t PC;   //!< ARM program counter.
-        uint32_t xPSR; //!< ARM program status register.
-    } regframe_t;
+    typedef void* regframe_t;
 
     #define hal_getCurrentCPU __get_MPIDR
 
@@ -149,6 +130,25 @@
  * \param [in] oldframe The data structure to save the calling thread's register
  *                      frame into.
  */
-void switchContext(regframe_t *newframe, regframe_t *oldframe);
+void switchContext(regframe_t* newframe, regframe_t* oldframe);
+
+/**
+ * \brief Initialize the appropriate register values in a register frame to assign a stack to it.
+ * 
+ * \param [in] freeFrame       The register frame to assign a stack to.
+ * \param [in] stackBase       Pointer to the very bottom of the stack.
+ * \param [in] finalReturnAddr The address to jump to when the last function in the newly-assigned
+ *                             stack returns.
+ */
+void assignStackToRegframe(regframe_t* freeFrame, void* stackBase, void* finalReturnAddr);
+
+/**
+ * \brief Populate the register frame with two parameters, conforming to the architecture ABI.
+ * 
+ * \param [in] frame  The register frame to populate with parameters.
+ * \param [in] param1 The first parameter to populate the register frame with.
+ * \param [in] param2 The second parameter to populate the register frame with.
+ */
+void assignParams2(regframe_t* frame, int param1, int param2);
 
 #endif // #ifndef HAL_CORE_H
