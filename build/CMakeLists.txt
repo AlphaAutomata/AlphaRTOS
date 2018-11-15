@@ -1,5 +1,5 @@
-# version required for consistent inter-procedural optimization behavior
-cmake_minimum_required(VERSION 3.9)
+# from 3.3 onwards, detecting whether a string exists in a list has a new syntax using if()
+cmake_minimum_required(VERSION 3.3)
 
 ####################################
 # Set Project-Level Configurations #
@@ -7,9 +7,28 @@ cmake_minimum_required(VERSION 3.9)
 
 project(AlphaRTOS)
 
+# set the policy to enable inter-procedural optimization if available
+if(POLICY CMP0069)
+	cmake_policy(SET CMP0069 NEW)
+endif()
 # check for inter-procedural optimization support
-include(CheckIPOSupported)
-check_ipo_supported(RESULT IPO_SUPPORTED)
+include(CheckIPOSupported OPTIONAL RESULT_VARIABLE HAS_CHECK_IPO)
+if(HAS_CHECK_IPO)
+	message(STATUS "Determining inter-procedural optimization support.")
+	
+	check_ipo_supported(RESULT IPO_SUPPORTED)
+	
+	if(IPO_SUPPORTED)
+		message(STATUS "Inter-procedural optimization enabled.")
+	else()
+		message(STATUS "Inter-procedural optimization disabled.")
+	endif()
+else()
+	message(STATUS "Cannot determine inter-procedural optimization support.")
+	message(STATUS "Inter-procedural optimization is disabled.")
+	
+	set(IPO_SUPPORTED FALSE)
+endif()
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
 set(AlphaRTOS_K_VERSION_MINOR 0)
