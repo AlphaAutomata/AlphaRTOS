@@ -2,76 +2,77 @@
 #define CONCURRENCY_H
 
 /**
- * \def mutex_t
+ * \def spinLock_t
  *
  * \hideinitializer
  *
- * Simple, non-recursive mutex.
+ * Simple, non-recursive spin lock. This lock 
  *
- * A ::mutex_t must be initialized by ::mutex_init() before it can be used. After initialization, it
- * can be acquired by a single owner using ::mutex_lock(), and released using ::mutex_unlock(). When
- * there is no owner, a ::mutex_t can be de-initialized using ::mutex_destroy().
+ * A ::spinLock_t must be initialized by ::spinLock_init() before it can be used. After
+ * initialization, it can be acquired by a single owner using ::spinLock_lock(), and released using
+ * ::spinLock_unlock(). When there is no owner, a ::spinLock_t can be de-initialized using
+ * ::spinLock_destroy().
  */
 
 /**
- * \def mutex_init
+ * \def spinLock_init
  *
  * \hideinitializer
  *
- * Initialize a ::mutex_t.
+ * Initialize a ::spinLock_t.
  *
- * All ::mutex_t variables must be initialized before use.
+ * All ::spinLock_t variables must be initialized before use.
  *
- * \param mutex An uninitialized ::mutex_t.
+ * \param lock An uninitialized ::spinLock_t.
  *
  * \retval None
  */
 
 /**
- * \def mutex_lock
+ * \def spinLock_lock
  *
  * \hideinitializer
  *
- * Acquire ownership of an initialized ::mutex_t.
+ * Acquire ownership of an initialized ::spinLock_t.
  *
- * If \a mutex is owned by another thread, the calling thread blocks until that ownership is
+ * If \a lock is owned by another thread, the calling thread blocks until that ownership is
  * relinquished. When the ownership is relinquished, it transfers to exactly one thread currently
  * attempting to acquire ownership.
  *
- * \warning ::mutex_t \a mutex is not recursive. The thread that owns \a mutex trying to acquire
- *          \a mutex again results in deadlock.
+ * \warning ::spinLock_t \a lock is not recursive. The thread that owns \a lock trying to acquire
+ *          \a lock again results in deadlock.
  *
- * \param mutex An initialized ::mutex_t to acquire ownership of.
+ * \param lock An initialized ::spinLock_t to acquire ownership of.
  *
  * \retval None
  *
- * \return Returns only when the calling thread owns \a mutex.
+ * \return Returns only when the calling thread owns \a lock.
  */
 
 /**
- * \def mutex_unlock
+ * \def spinLock_unlock
  *
  * \hideinitializer
  *
- * Relinquish ownership of a ::mutex_t this thread already owns.
+ * Relinquish ownership of a ::spinLock_t this thread already owns.
  *
- * \warning Behavior is undefined if the calling thread does not own \a mutex.
+ * \warning Behavior is undefined if the calling thread does not own \a lock.
  *
- * \param mutex A ::mutex_t this thread already owns.
+ * \param lock A ::spinLock_t this thread already owns.
  *
  * \retval None
  */
 
 /**
- * \def mutex_destroy
+ * \def spinLock_destroy
  *
  * \hideinitializer
  *
- * De-initialize an initialized and owner-less ::mutex_t.
+ * De-initialize an initialized and owner-less ::spinLock_t.
  *
- * \warning Behavior is undefined if \a mutex is locked or uninitialized.
+ * \warning Behavior is undefined if \a lock is locked or uninitialized.
  *
- * \param mutex A ::mutex_t that's initialized but has no owner.
+ * \param lock A ::spinLock_t that's initialized but has no owner.
  *
  * \retval None
  */
@@ -81,12 +82,12 @@
 
     #include <stdatomic.h>
 
-    #define mutex_t atomic_bool
+    #define spinLock_t atomic_bool
 
-    #define mutex_init(mutex) atomic_init(&(mutex), 0)
-    #define mutex_lock(mutex) while(atomic_exchange(&(mutex), 1))
-    #define mutex_unlock(mutex) atomic_store(&(mutex), 0)
-    #define mutex_destroy(mutex)
+    #define spinLock_init(lock)    atomic_init(&(lock), 0)
+    #define spinLock_lock(lock)    while(atomic_exchange(&(lock), 1))
+    #define spinLock_unlock(lock)  atomic_store(&(lock), 0)
+    #define spinLock_destroy(lock) ()
 
 #else // #if (__STDC_VERSION__ >= 201112L) && (!defined __STDC_NO_ATOMICS__)
 

@@ -198,6 +198,8 @@ set_target_properties(
 	PROPERTIES
 		C_STANDARD   11
 		CXX_STANDARD 11
+		C_STANDARD_REQUIRED   TRUE
+		CXX_STANDARD_REQUIRED TRUE
 )
 
 ############################
