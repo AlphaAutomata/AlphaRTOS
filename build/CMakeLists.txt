@@ -7,27 +7,31 @@ cmake_minimum_required(VERSION 3.3)
 
 project(AlphaRTOS)
 
-# set the policy to enable inter-procedural optimization if available
-if(POLICY CMP0069)
-	cmake_policy(SET CMP0069 NEW)
-endif()
-# check for inter-procedural optimization support
-include(CheckIPOSupported OPTIONAL RESULT_VARIABLE HAS_CHECK_IPO)
-if(HAS_CHECK_IPO)
-	message(STATUS "Determining inter-procedural optimization support.")
-	
-	check_ipo_supported(RESULT IPO_SUPPORTED)
-	
-	if(IPO_SUPPORTED)
-		message(STATUS "Inter-procedural optimization enabled.")
-	else()
-		message(STATUS "Inter-procedural optimization disabled.")
+if(NOT DEFINED IPO_SUPPORTED)
+	# set the policy to enable inter-procedural optimization if available
+	if(POLICY CMP0069)
+		cmake_policy(SET CMP0069 NEW)
 	endif()
-else()
-	message(STATUS "Cannot determine inter-procedural optimization support.")
-	message(STATUS "Inter-procedural optimization is disabled.")
+	# check for inter-procedural optimization support
+	include(CheckIPOSupported OPTIONAL RESULT_VARIABLE HAS_CHECK_IPO)
+	if(HAS_CHECK_IPO)
+		message(STATUS "Determining inter-procedural optimization support.")
+		
+		check_ipo_supported(RESULT IPO_SUPPORTED)
+		
+		if(IPO_SUPPORTED)
+			message(STATUS "Inter-procedural optimization enabled.")
+		else()
+			message(STATUS "Inter-procedural optimization disabled.")
+		endif()
+	else()
+		message(STATUS "Cannot determine inter-procedural optimization support.")
+		message(STATUS "Inter-procedural optimization is disabled.")
+		
+		set(IPO_SUPPORTED FALSE)
+	endif()
 	
-	set(IPO_SUPPORTED FALSE)
+	set(IPO_SUPPORTED "IPO_SUPPORTED" CACHE STRING "Inter-procedural optimzation support.")
 endif()
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
@@ -60,15 +64,9 @@ set(ARTOS_TEST_DIR   ${ARTOS_ROOT_DIR}/test)
 set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include)
 set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src)
 
-# get directories containing test code
-set(TEST_INC_DIR ${ARTOS_TEST_DIR}/include)
-set(TEST_SRC_DIR ${ARTOS_TEST_DIR}/src)
-
 # get HAL dependency directories
 set(HAL_ROOT_DIR ${ARTOS_PARENT_DIR}/hal)
 set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
-set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
-set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
 
 # get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${ARTOS_PARENT_DIR}/AlphaCMSIS)
@@ -148,41 +146,6 @@ set(
 		${KERNEL_SRC_DIR}/scheduler.c
 )
 
-# all test files
-set(
-	TEST_INC_FILES
-		${TEST_INC_DIR}/sim.h
-)
-set(
-	TEST_SRC_FILES
-		""
-)
-
-# all HAL dependency files
-set(
-	HAL_INC_FILES
-		${HAL_RTOS_INC_DIR}/hal_platform.h
-		${HAL_RTOS_INC_DIR}/hal_core.h
-		${HAL_RTOS_INC_DIR}/hal_systick.h
-		${HAL_RTOS_INC_DIR}/hal_timer_gp.h
-)
-set(
-	HAL_SRC_FILES
-		${HAL_RTOS_SRC_DIR}/hal_core.c
-		${HAL_RTOS_SRC_DIR}/hal_systick.c
-		${HAL_RTOS_SRC_DIR}/hal_timer_gp.c
-)
-# include assembly only when cross compiling
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "Configuring cross-compile build system.")
-	# get the assembly sources
-	set(HAL_ASM_FILES ${HAL_RTOS_SRC_DIR}/arm_context.s)
-else()
-	message(STATUS "Configuring for compilation targeting the host system.")
-	# set blank assembly sources
-	set(HAL_ASM_FILES "")
-endif()
-
 # all CMSIS dependency files
 set(
 	CMSIS_Core_A_INC_FILES
@@ -206,13 +169,11 @@ set(
 
 # compile RTOS kernel as static library
 add_library(
-	artos STATIC
+	artos
+	STATIC
 		${ARTOS_API_HEADERS}
 		${K_INC_FILES}
 		${K_SRC_FILES}
-		${HAL_INC_FILES}
-		${HAL_SRC_FILES}
-		${HAL_ASM_FILES}
 		${CMSIS_Core_A_INC_FILES}
 		${CMSIS_RTOS2_INC_FILES}
 		${CMSIS_DEVICE_INC_FILES}
@@ -229,26 +190,6 @@ target_include_directories(
 		${CMSIS_RTOS2_INC_DIR}
 		${CMSIS_DEVICE_INC_DIR}
 )
-# add simulation files when compiling for host
-if(NOT CMAKE_CROSSCOMPILING)
-	target_sources(
-		artos
-		PRIVATE
-			${TEST_INC_FILES}
-			${TEST_SRC_FILES}
-	)
-	target_include_directories(
-		artos
-		PRIVATE
-			${TEST_INC_DIR}
-	)
-endif()
-# define platform architecture constant
-target_compile_definitions(
-	artos
-	PUBLIC
-		-DHAL_PLATFORM=HAL_PLATFORM_${ARTOS_TARGET_PLATFORM}
-)
 # use link-time optimization if available, and use C11 for standard atomics
 set_target_properties(
 	artos
@@ -259,6 +200,10 @@ set_target_properties(
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
 )
+
+# link against HAL library
+add_subdirectory(${HAL_RTOS_DIR}/build hal_rtos)
+target_link_libraries(artos hal_rtos)
 
 ############################
 # Configure Doxygen Target #
