@@ -7,7 +7,7 @@
 #ifndef _FEATURE_OS_PORT_H_
 #define _FEATURE_OS_PORT_H_
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 #include <Windows.h>
 
