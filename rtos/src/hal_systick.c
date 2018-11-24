@@ -2,7 +2,7 @@
 
 #include "hal_systick.h"
 
-#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) && 0
 
 #include "xscutimer.h"
 #include "xscugic.h"
@@ -13,7 +13,7 @@ XScuGic   intCtrl;
 #endif
 
 void hal_systick_init(void* sysTickHandler, int sysTickInterval) {
-#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) && 0
 	XScuTimer_Config* scu_config;
 	XScuGic_Config*   intCtrl_config;
 
