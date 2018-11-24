@@ -1,42 +1,6 @@
 # from 3.3 onwards, detecting whether a string exists in a list has a new syntax using if()
 cmake_minimum_required(VERSION 3.3)
 
-####################################
-# Set Project-Level Configurations #
-####################################
-
-# test target existence
-set(HAL_RTOS_TEST FALSE CACHE BOOL "")
-# hardware platform flag
-set(ARTOS_TARGET_PLATFORM "NONE" CACHE STRING "")
-
-# set the policy to enable inter-procedural optimization if available
-if(POLICY CMP0069)
-	cmake_policy(SET CMP0069 NEW)
-endif()
-if(NOT DEFINED IPO_SUPPORTED)
-	# check for inter-procedural optimization support
-	include(CheckIPOSupported OPTIONAL RESULT_VARIABLE HAS_CHECK_IPO)
-	if(HAS_CHECK_IPO)
-		message(STATUS "Determining inter-procedural optimization support.")
-		
-		check_ipo_supported(RESULT IPO)
-		
-		if(IPO)
-			message(STATUS "Inter-procedural optimization enabled.")
-		else()
-			message(STATUS "Inter-procedural optimization disabled.")
-		endif()
-	else()
-		message(STATUS "Cannot determine inter-procedural optimization support.")
-		message(STATUS "Inter-procedural optimization is disabled.")
-		
-		set(IPO FALSE)
-	endif()
-	
-	set(IPO_SUPPORTED ${IPO} CACHE STRING "Inter-procedural optimzation support.")
-endif()
-
 ######################
 # Derive Directories #
 ######################
@@ -205,11 +169,10 @@ if(NOT CMAKE_CROSSCOMPILING)
 			${SIM_INC_DIR}
 	)
 endif()
-# use link-time optimization if available, and use C11 for standard atomics
+# use C11 for standard atomics
 set_target_properties(
 	hal_rtos
 	PROPERTIES
-		INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED}
 		C_STANDARD   11
 		CXX_STANDARD 11
 		C_STANDARD_REQUIRED   TRUE
