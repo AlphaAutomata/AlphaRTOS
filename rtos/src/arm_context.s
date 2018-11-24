@@ -1,3 +1,21 @@
+.equ OFF_R0  ,	0
+.equ OFF_R1  ,	4
+.equ OFF_R2  ,	8
+.equ OFF_R3  ,	12
+.equ OFF_R4  ,	16
+.equ OFF_R5  ,	20
+.equ OFF_R6  ,	24
+.equ OFF_R7  ,	28
+.equ OFF_R8  ,	32
+.equ OFF_R9  ,	36
+.equ OFF_R10 ,	40
+.equ OFF_R11 ,	44
+.equ OFF_R12 ,	48
+.equ OFF_SP  ,	52
+.equ OFF_LR  ,	56
+.equ OFF_PC  ,	60
+.equ OFF_xPSR,	64
+
 .macro mov32, reg, val
 	movw	\reg, #:lower16:\val
 	movt	\reg, #:upper16:\val
