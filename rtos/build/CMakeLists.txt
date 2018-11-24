@@ -34,7 +34,7 @@ if(NOT DEFINED IPO_SUPPORTED)
 		set(IPO FALSE)
 	endif()
 	
-	set(IPO_SUPPORTED FALSE CACHE STRING "Inter-procedural optimzation support.")
+	set(IPO_SUPPORTED ${IPO} CACHE STRING "Inter-procedural optimzation support.")
 endif()
 
 ######################
