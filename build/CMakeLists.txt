@@ -5,21 +5,21 @@ cmake_minimum_required(VERSION 3.3)
 # Set Project-Level Configurations #
 ####################################
 
-project(AlphaRTOS)
+project(AlphaRTOS C ASM)
 
+# set the policy to enable inter-procedural optimization if available
+if(POLICY CMP0069)
+	cmake_policy(SET CMP0069 NEW)
+endif()
 if(NOT DEFINED IPO_SUPPORTED)
-	# set the policy to enable inter-procedural optimization if available
-	if(POLICY CMP0069)
-		cmake_policy(SET CMP0069 NEW)
-	endif()
 	# check for inter-procedural optimization support
 	include(CheckIPOSupported OPTIONAL RESULT_VARIABLE HAS_CHECK_IPO)
 	if(HAS_CHECK_IPO)
 		message(STATUS "Determining inter-procedural optimization support.")
 		
-		check_ipo_supported(RESULT IPO_SUPPORTED)
+		check_ipo_supported(RESULT IPO)
 		
-		if(IPO_SUPPORTED)
+		if(IPO)
 			message(STATUS "Inter-procedural optimization enabled.")
 		else()
 			message(STATUS "Inter-procedural optimization disabled.")
@@ -28,10 +28,10 @@ if(NOT DEFINED IPO_SUPPORTED)
 		message(STATUS "Cannot determine inter-procedural optimization support.")
 		message(STATUS "Inter-procedural optimization is disabled.")
 		
-		set(IPO_SUPPORTED FALSE)
+		set(IPO FALSE)
 	endif()
 	
-	set(IPO_SUPPORTED "IPO_SUPPORTED" CACHE STRING "Inter-procedural optimzation support.")
+	set(IPO_SUPPORTED ${IPO} CACHE STRING "Inter-procedural optimzation support.")
 endif()
 
 set(AlphaRTOS_K_VERSION_MAJOR 0)
@@ -53,7 +53,7 @@ endif()
 # get the Alpha RTOS repsitory root directory
 get_filename_component(ARTOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get the directory this repository, and all related repositories, reside in
-get_filename_component(ARTOS_PARENT_DIR ${ARTOS_ROOT_DIR} DIRECTORY)
+get_filename_component(REPO_PRENT_DIR ${ARTOS_ROOT_DIR} DIRECTORY)
 
 # get top level directories containing code
 set(ARTOS_PUBLIC_DIR ${ARTOS_ROOT_DIR}/api)
@@ -64,12 +64,16 @@ set(ARTOS_TEST_DIR   ${ARTOS_ROOT_DIR}/test)
 set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include)
 set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src)
 
+# get directories containing test code
+set(TEST_INC_DIR ${ARTOS_TEST_DIR}/include)
+set(TEST_SRC_DIR ${ARTOS_TEST_DIR}/src)
+
 # get HAL dependency directories
-set(HAL_ROOT_DIR ${ARTOS_PARENT_DIR}/hal)
+set(HAL_ROOT_DIR ${REPO_PRENT_DIR}/hal)
 set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
 
 # get CMSIS dependency directories
-set(CMSIS_ROOT_DIR       ${ARTOS_PARENT_DIR}/AlphaCMSIS)
+set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
 set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
@@ -87,23 +91,32 @@ configure_file(
 	"${ARTOS_PUBLIC_DIR}/cmake_config.h"
 )
 
-# use CMSIS linker script
+###################################
+# Pre-Process CMSIS Linker Script #
+###################################
+
+# linker script provided with CMSIS
+set(CMSIS_LINKER_RAW       ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld)
+# processed linker script output
+set(CMSIS_LINKER_PROCESSED ${KERNEL_SRC_DIR}/${ARCH}.ld)
+
+# use processed CMSIS linker script
 if(CMAKE_CROSSCOMPILING)
 	set(
 		CMAKE_EXE_LINKER_FLAGS
-			"${CMAKE_EXE_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+			"${CMAKE_EXE_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
 	)
 	set(
 		CMAKE_MODULE_LINKER_FLAGS
-			"${CMAKE_MODULE_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+			"${CMAKE_MODULE_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
 	)
 	set(
 		CMAKE_SHARED_LINKER_FLAGS
-			"${CMAKE_SHARED_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+			"${CMAKE_SHARED_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
 	)
 	set(
 		CMAKE_STATIC_LINKER_FLAGS
-			"${CMAKE_STATIC_LINKER_FLAGS} -T ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld"
+			"${CMAKE_STATIC_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
 	)
 endif()
 
@@ -146,26 +159,19 @@ set(
 		${KERNEL_SRC_DIR}/scheduler.c
 )
 
-# all CMSIS dependency files
+# all test files
 set(
-	CMSIS_Core_A_INC_FILES
-		${CMSIS_Core_A_INC_DIR}/core_ca.h
+	TEST_INC_FILES
+		""
 )
 set(
-	CMSIS_RTOS2_INC_FILES
-		${CMSIS_RTOS2_INC_DIR}/cmsis_os2.h
-		${CMSIS_RTOS2_INC_DIR}/os_tick.h
-)
-set(
-	CMSIS_DEVICE_INC_FILES
-		${CMSIS_DEVICE_INC_DIR}/${ARCH}.h
-		${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h
-		${CMSIS_DEVICE_INC_DIR}/system_${ARCH}.h
+	TEST_SRC_FILES
+		${TEST_SRC_DIR}/kernel_test.c
 )
 
-####################
-# Configure Target #
-####################
+###################################
+# Configure Kernel Library Target #
+###################################
 
 # compile RTOS kernel as static library
 add_library(
@@ -174,9 +180,18 @@ add_library(
 		${ARTOS_API_HEADERS}
 		${K_INC_FILES}
 		${K_SRC_FILES}
-		${CMSIS_Core_A_INC_FILES}
-		${CMSIS_RTOS2_INC_FILES}
-		${CMSIS_DEVICE_INC_FILES}
+)
+# custom command to pre-process the CMSIS linker script
+add_custom_command(
+	TARGET artos PRE_LINK
+	COMMAND
+		${CMAKE_C_PREPROCESSOR}
+			${CMSIS_LINKER_RAW}
+			-P
+			-o ${CMSIS_LINKER_PROCESSED}
+			-I ${CMSIS_DEVICE_INC_DIR}
+	DEPENDS
+		${CMSIS_LINKER_RAW}
 )
 # set include directories, making only the public API header directory public
 target_include_directories(
@@ -186,9 +201,12 @@ target_include_directories(
 	PRIVATE
 		${KERNEL_INC_DIR}
 		${HAL_RTOS_INC_DIR}
-		${CMSIS_Core_A_INC_DIR}
-		${CMSIS_RTOS2_INC_DIR}
-		${CMSIS_DEVICE_INC_DIR}
+)
+# define platform architecture constant
+target_compile_definitions(
+	artos
+	PUBLIC
+		HAL_PLATFORM=HAL_PLATFORM_${ARTOS_TARGET_PLATFORM}
 )
 # use link-time optimization if available, and use C11 for standard atomics
 set_target_properties(
@@ -199,11 +217,48 @@ set_target_properties(
 		CXX_STANDARD 11
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
+		LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
 )
 
 # link against HAL library
 add_subdirectory(${HAL_RTOS_DIR}/build hal_rtos)
 target_link_libraries(artos hal_rtos)
+
+####################################
+# Configure Test Executable Target #
+####################################
+
+# compile executable operating system
+add_executable(
+	artos_os
+		${TEST_INC_FILES}
+		${TEST_SRC_FILES}
+)
+# custom command to pre-process the CMSIS linker script
+add_custom_command(
+	TARGET artos_os PRE_LINK
+	COMMAND
+		${CMAKE_C_PREPROCESSOR}
+			${CMSIS_LINKER_RAW}
+			-P
+			-o ${CMSIS_LINKER_PROCESSED}
+			-I ${CMSIS_DEVICE_INC_DIR}
+	DEPENDS
+		${CMSIS_LINKER_RAW}
+)
+# use link-time optimization if available, and use C11 for standard atomics
+set_target_properties(
+	artos
+	PROPERTIES
+		INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED}
+		C_STANDARD   11
+		CXX_STANDARD 11
+		C_STANDARD_REQUIRED   TRUE
+		CXX_STANDARD_REQUIRED TRUE
+		LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
+)
+# link against RTOS kernel library and the HAL
+target_link_libraries(artos_os artos)
 
 ############################
 # Configure Doxygen Target #

@@ -9,12 +9,12 @@ set(CMAKE_SYSTEM_PROCESSOR arm)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=cortex-a9")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfloat-abi=hard")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpu=neon-fp16")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mtune=cortex-a9")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a")
 
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=cortex-a9")
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mfloat-abi=hard")
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon-fp16")
-set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mtune=cortex-a9")
+set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a")
 
 # cache the flags
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}"   CACHE STRING "CFLAGS")
@@ -28,12 +28,14 @@ set(ARCH ARMCA9 CACHE STRING "Target CPU architecture." FORCE)
 set(CROSS_COMPILE arm-none-eabi-)
 
 # set compilers, linker, and archiver
-set(CMAKE_ASM_COMPILER "${TC_PATH}${CROSS_COMPILE}as${EXTENSION}"         CACHE PATH "" FORCE)
-set(CMAKE_C_COMPILER   "${TC_PATH}${CROSS_COMPILE}gcc${EXTENSION}"        CACHE PATH "" FORCE)
-set(CMAKE_CXX_COMPILER "${TC_PATH}${CROSS_COMPILE}g++${EXTENSION}"        CACHE PATH "" FORCE)
-set(CMAKE_LINKER       "${TC_PATH}${CROSS_COMPILE}ld${EXTENSION}"         CACHE PATH "" FORCE)
-set(CMAKE_AR           "${TC_PATH}${CROSS_COMPILE}gcc-ar${EXTENSION}"     CACHE FILEPATH "Archiver")
-set(CMAKE_RANLIB       "${TC_PATH}${CROSS_COMPILE}gcc-ranlib${EXTENSION}" CACHE FILEPATH "Archiver")
+set(CMAKE_ASM_COMPILER   "${TC_PATH}${CROSS_COMPILE}as${EXTENSION}"         CACHE PATH "" FORCE)
+set(CMAKE_C_COMPILER     "${TC_PATH}${CROSS_COMPILE}gcc${EXTENSION}"        CACHE PATH "" FORCE)
+set(CMAKE_C_PREPROCESSOR "${TC_PATH}${CROSS_COMPILE}cpp${EXTENSION}"        CACHE PATH "" FORCE)
+set(CMAKE_CXX_COMPILER   "${TC_PATH}${CROSS_COMPILE}g++${EXTENSION}"        CACHE PATH "" FORCE)
+set(CMAKE_LINKER         "${TC_PATH}${CROSS_COMPILE}ld${EXTENSION}"         CACHE PATH "" FORCE)
+set(CMAKE_AR             "${TC_PATH}${CROSS_COMPILE}gcc-ar${EXTENSION}"     CACHE FILEPATH "" FORCE)
+set(CMAKE_RANLIB         "${TC_PATH}${CROSS_COMPILE}gcc-ranlib${EXTENSION}" CACHE FILEPATH "" FORCE)
+set(CMAKE_NM             "${TC_PATH}${CROSS_COMPILE}gcc-nm${EXTENSION}"     CACHE FILEPATH "" FORCE)
 
 # force convert .elf executables into .bin raw binary maps
 set(

@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.3)
 # Configuration Options #
 #########################
 
+set(ARTOS_TEST_TARGET "TRUE" CACHE BOOL "Flag to create a test target.")
+
 set(ARTOS_TARGET_PLATFORM "NONE" CACHE STRING "Target SoC platform."          FORCE)
 set(XSDK_VERSION          "NONE" CACHE STRING "Xilinx SDK version."           FORCE)
 set(XSDK_INSTALL_PATH     "NONE" CACHE STRING "Xilinx SDK installation path." FORCE)
