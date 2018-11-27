@@ -1,6 +1,8 @@
 #ifndef HAL_CORE_H
 #define HAL_CORE_H
 
+#include <stdnoreturn.h>
+
 #include "hal_platform.h"
 
 #define HAL_ARCH_SIMULATED   0
@@ -48,75 +50,50 @@
  * \brief The base address of the memory region dedicated to the stack.
  */
 
-/**
- * \typedef regframe_t
- * 
- * \brief Data structure used to store a register frame in memory.
- */
+#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+
+    #include "core_ca.h"
+
+    #include "mem_ARMCA9.h"
+
+    #define HAL_ARCH       (HAL_ARCH_ARMCA9)
+    #define HAL_NUM_CORES  (2)
+
+    #define HAL_STACK_SIZE (__STACK_SIZE)
+    #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
+
+#elif (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS)
+// #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+
+    #include "core_ca.h"
+
+    #include "mem_ARMCA9.h"
+
+    #define HAL_ARCH       (HAL_ARCH_ARMCA9)
+    #define HAL_NUM_CORES  (1)
+
+    #define HAL_STACK_SIZE (__STACK_SIZE)
+    #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
+
+#else // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+
+    #error "Unsupported target platform."
+
+#endif // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
 
 /**
- * \def hal_getCurrentCPU
- * 
+ * \brief Data structure used to store a register frame in memory.
+ */
+typedef void* regframe_t;
+
+/**
  * \hideinitializer
  * 
  * \brief Get the index of the CPU core the calling thread is running on.
  * 
  * \return Returns the index of the CPU core the calling thread is running on.
  */
-
-// if no platform is selected, assume we are targeting the host for off-device testing
-#if (HAL_PLATFORM == HAL_PLATFORM_NONE)
-
-    #include "sim.h"
-
-    #define HAL_ARCH       (HAL_ARCH_SIMULATED)
-    #define HAL_NUM_CORES  (SIM_NUM_CORES)
-
-    #define HAL_STACK_SIZE (SIM_STACK_SIZE)
-    #define HAL_STACK_BASE (SIM_STACK_BASE)
-
-    typedef void* regframe_t;
-
-    #define hal_getCurrentCPU() sim_getCurrentCPU()
-
-#else
-
-    #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
-
-        #include "core_ca.h"
-
-        #include "mem_ARMCA9.h"
-
-        #define HAL_ARCH       (HAL_ARCH_ARMCA9)
-        #define HAL_NUM_CORES  (2)
-
-        #define HAL_STACK_SIZE (__STACK_SIZE)
-        #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
-
-    #elif (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS)
-    // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
-
-        #include "core_ca.h"
-
-        #include "mem_ARMCA9.h"
-
-        #define HAL_ARCH       (HAL_ARCH_ARMCA9)
-        #define HAL_NUM_CORES  (1)
-
-        #define HAL_STACK_SIZE (__STACK_SIZE)
-        #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
-
-    #else // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
-
-        #error "Unsupported target platform."
-
-    #endif // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
-
-    typedef void* regframe_t;
-
-    #define hal_getCurrentCPU __get_MPIDR
-
-#endif
+#define hal_getCurrentCPU __get_MPIDR
 
 /**
  * \brief Perform a context switch.
@@ -150,5 +127,10 @@ void assignStackToRegframe(regframe_t* freeFrame, void* stackBase, void* finalRe
  * \param [in] param2 The second parameter to populate the register frame with.
  */
 void assignParams2(regframe_t* frame, int param1, int param2);
+
+/**
+ * \brief Post-startup entry point.
+ */
+noreturn void _start(void);
 
 #endif // #ifndef HAL_CORE_H
