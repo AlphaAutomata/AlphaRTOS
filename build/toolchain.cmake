@@ -36,18 +36,13 @@ set(CMAKE_LINKER         "${TC_PATH}${CROSS_COMPILE}ld${EXTENSION}"         CACH
 set(CMAKE_AR             "${TC_PATH}${CROSS_COMPILE}gcc-ar${EXTENSION}"     CACHE FILEPATH "" FORCE)
 set(CMAKE_RANLIB         "${TC_PATH}${CROSS_COMPILE}gcc-ranlib${EXTENSION}" CACHE FILEPATH "" FORCE)
 set(CMAKE_NM             "${TC_PATH}${CROSS_COMPILE}gcc-nm${EXTENSION}"     CACHE FILEPATH "" FORCE)
-
-# force convert .elf executables into .bin raw binary maps
-set(
-	CMAKE_OBJCOPY "${TC_PATH}${CROSS_COMPILE}objcopy${EXTENSION}"
-	CACHE FILEPATH "The toolchain command objcopy command." FORCE
-)
+set(CMAKE_OBJCOPY        "${TC_PATH}${CROSS_COMPILE}objcopy${EXTENSION}"    CACHE FILEPATH "" FORCE)
 
 # force compile test library instead of a test executable to avoid testing for startup code, etc.
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # disable various system calls
-set(CMAKE_EXE_LINKER_FLAGS "--specs=nosys.specs" CACHE INTERNAL "")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostartfiles" CACHE INTERNAL "")
 
 # do not search for binaries on compile host
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
