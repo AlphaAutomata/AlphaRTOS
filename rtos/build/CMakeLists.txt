@@ -15,11 +15,6 @@ get_filename_component(REPO_PRENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
 # get HAL dependency directories
 set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
 set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
-set(HAL_RTOS_SIM_DIR ${HAL_RTOS_DIR}/sim)
-
-# get directories containing on-host simulation code
-set(SIM_INC_DIR ${HAL_RTOS_SIM_DIR})
-set(SIM_SRC_DIR ${HAL_RTOS_SIM_DIR})
 
 # get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
@@ -97,16 +92,6 @@ set(
 		${CMSIS_DEVICE_SRC_DIR}/GCC/startup_${ARCH}.c
 )
 
-# all on-host simulation files
-set(
-	SIM_INC_FILES
-		${SIM_INC_DIR}/sim.h
-)
-set(
-	SIM_SRC_FILES
-		""
-)
-
 ####################
 # Configure Target #
 ####################
@@ -154,21 +139,6 @@ target_include_directories(
 	PRIVATE
 		${CMSIS_RTOS2_INC_DIR}
 )
-# add simulation files when compiling for host
-if(NOT CMAKE_CROSSCOMPILING)
-	target_sources(
-		hal_rtos
-		PUBLIC
-			${SIM_INC_FILES}
-		PRIVATE
-			${SIM_SRC_FILES}
-	)
-	target_include_directories(
-		hal_rtos
-		PUBLIC
-			${SIM_INC_DIR}
-	)
-endif()
 # use C11 for standard atomics
 set_target_properties(
 	hal_rtos

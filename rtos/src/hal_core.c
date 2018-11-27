@@ -1,4 +1,8 @@
+#include <stddef.h>
+
 #include "hal_core.h"
+
+extern int main(int argc, char* argv[]);
 
 typedef struct {
     uint32_t R0;   //!< ARM general purpose register 0.
@@ -34,4 +38,9 @@ void assignParams2(regframe_t* frame, int param1, int param2) {
 
     actualFrame->R0 = (uint32_t)param1;
     actualFrame->R1 = (uint32_t)param2;
+}
+
+noreturn void _start(void) {
+    main(0, NULL);
+    __builtin_unreachable();
 }
