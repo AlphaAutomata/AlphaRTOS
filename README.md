@@ -105,19 +105,21 @@ cmake_minimum_required(VERSION 3.3)
 
 Alpha RTOS depends on two other libraries.
 
-- [CMSIS 5](https://github.com/ARM-software/CMSIS_5) - a thin hardware abstraction layer for ARM
-  cores.
-- [hal](https://github.com/AlphaAutomata/hal) - a general hardware abstraction utility library.
+- [CMSIS 5] - a thin hardware abstraction layer for ARM cores.
+- [hal] - a general hardware abstraction utility library.
 
-The [Alpha Automata](https://dev.to/zhu48/alphaautomata---2018-10-03-471f) project keeps a copy of a
-compatible version of CMSIS at [AlphaCMSIS](https://github.com/AlphaAutomata/AlphaCMSIS).
+The [Alpha Automata] project keeps a copy of a compatible version of CMSIS at [AlphaCMSIS].
 
 AlphaRTOS and its dependencies must be cloned into the same directory before running CMake to
 generate the build system.
 
 # Alpha Automata
 
-Alpha RTOS is part of a larger
-[Alpha Automata](https://dev.to/zhu48/alphaautomata---2018-10-03-471f) project. Alpha Automata seeks
-to stand up a framework for building hardware control applications using a embedded controllers and
-programmable logic.
+Alpha RTOS is part of a larger [Alpha Automata] project. Alpha Automata seeks to stand up a
+framework for building hardware control applications using a embedded controllers and programmable
+logic.
+
+[Alpha Automata]: https://dev.to/zhu48/alphaautomata---2018-10-03-471f
+[CMSIS 5]:        https://github.com/ARM-software/CMSIS_5
+[hal]:            https://github.com/AlphaAutomata/hal
+[AlphaCMSIS]:     https://github.com/AlphaAutomata/AlphaCMSIS
