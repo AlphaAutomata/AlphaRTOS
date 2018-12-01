@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.3)
 # Configuration Options #
 #########################
 
-set(ARTOS_TARGET_PLATFORM "NONE" CACHE STRING "Target SoC platform."          FORCE)
-set(XSDK_VERSION          "NONE" CACHE STRING "Xilinx SDK version."           FORCE)
-set(XSDK_INSTALL_PATH     "NONE" CACHE STRING "Xilinx SDK installation path." FORCE)
+set(ARTOS_TARGET_PLATFORM "XSCU_Z7xxx"    CACHE STRING "Target SoC platform."          FORCE)
+set(XSDK_VERSION          "2018.2"        CACHE STRING "Xilinx SDK version."           FORCE)
+set(XSDK_INSTALL_PATH     "C:/Xilinx/SDK" CACHE STRING "Xilinx SDK installation path." FORCE)
 
 set(CMSIS_LINKER_SCRIPT "FALSE" CACHE BOOL "Flag to use the CMSIS linker script.")
 
