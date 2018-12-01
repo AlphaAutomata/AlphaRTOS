@@ -118,17 +118,19 @@ add_library(
 		${CMSIS_DEVICE_SRC_FILES}
 )
 # custom command to pre-process the CMSIS linker script
-add_custom_command(
-	TARGET hal_rtos PRE_LINK
-	COMMAND
-		${CMAKE_C_PREPROCESSOR}
+if(CMSIS_LINKER_SCRIPT)
+	add_custom_command(
+		TARGET hal_rtos PRE_LINK
+		COMMAND
+			${CMAKE_C_PREPROCESSOR}
+				${CMSIS_LINKER_RAW}
+				-P
+				-o ${CMSIS_LINKER_PROCESSED}
+				-I ${CMSIS_DEVICE_INC_DIR}
+		DEPENDS
 			${CMSIS_LINKER_RAW}
-			-P
-			-o ${CMSIS_LINKER_PROCESSED}
-			-I ${CMSIS_DEVICE_INC_DIR}
-	DEPENDS
-		${CMSIS_LINKER_RAW}
-)
+	)
+endif()
 # set include directories
 target_include_directories(
 	hal_rtos
