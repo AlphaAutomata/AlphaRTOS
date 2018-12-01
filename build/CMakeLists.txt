@@ -95,13 +95,13 @@ configure_file(
 # Pre-Process CMSIS Linker Script #
 ###################################
 
-# linker script provided with CMSIS
-set(CMSIS_LINKER_RAW       ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld)
-# processed linker script output
-set(CMSIS_LINKER_PROCESSED ${KERNEL_SRC_DIR}/${ARCH}.ld)
+if(CMSIS_LINKER_SCRIPT)
+	# linker script provided with CMSIS
+	set(CMSIS_LINKER_RAW       ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld)
+	# processed linker script output
+	set(CMSIS_LINKER_PROCESSED ${KERNEL_SRC_DIR}/${ARCH}.ld)
 
-# use processed CMSIS linker script
-if(CMAKE_CROSSCOMPILING)
+	# use processed CMSIS linker script
 	set(
 		CMAKE_EXE_LINKER_FLAGS
 			"${CMAKE_EXE_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
@@ -181,18 +181,6 @@ add_library(
 		${K_INC_FILES}
 		${K_SRC_FILES}
 )
-# custom command to pre-process the CMSIS linker script
-add_custom_command(
-	TARGET artos PRE_LINK
-	COMMAND
-		${CMAKE_C_PREPROCESSOR}
-			${CMSIS_LINKER_RAW}
-			-P
-			-o ${CMSIS_LINKER_PROCESSED}
-			-I ${CMSIS_DEVICE_INC_DIR}
-	DEPENDS
-		${CMSIS_LINKER_RAW}
-)
 # set include directories, making only the public API header directory public
 target_include_directories(
 	artos
@@ -217,8 +205,26 @@ set_target_properties(
 		CXX_STANDARD 11
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
-		LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
 )
+if(CMSIS_LINKER_SCRIPT)
+	# custom command to pre-process the CMSIS linker script
+	add_custom_command(
+		TARGET artos PRE_LINK
+		COMMAND
+			${CMAKE_C_PREPROCESSOR}
+				${CMSIS_LINKER_RAW}
+				-P
+				-o ${CMSIS_LINKER_PROCESSED}
+				-I ${CMSIS_DEVICE_INC_DIR}
+		DEPENDS
+			${CMSIS_LINKER_RAW}
+	)
+	set_target_properties(
+		artos
+		PROPERTIES
+			LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
+	)
+endif()
 
 # link against HAL library
 add_subdirectory(${HAL_RTOS_DIR}/build hal_rtos)
@@ -228,37 +234,49 @@ target_link_libraries(artos hal_rtos)
 # Configure Test Executable Target #
 ####################################
 
-# compile executable operating system
-add_executable(
-	artos_os
-		${TEST_INC_FILES}
-		${TEST_SRC_FILES}
-)
-# custom command to pre-process the CMSIS linker script
-add_custom_command(
-	TARGET artos_os PRE_LINK
-	COMMAND
-		${CMAKE_C_PREPROCESSOR}
-			${CMSIS_LINKER_RAW}
-			-P
-			-o ${CMSIS_LINKER_PROCESSED}
-			-I ${CMSIS_DEVICE_INC_DIR}
-	DEPENDS
-		${CMSIS_LINKER_RAW}
-)
-# use link-time optimization if available, and use C11 for standard atomics
-set_target_properties(
-	artos
-	PROPERTIES
-		INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED}
-		C_STANDARD   11
-		CXX_STANDARD 11
-		C_STANDARD_REQUIRED   TRUE
-		CXX_STANDARD_REQUIRED TRUE
-		LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
-)
-# link against RTOS kernel library and the HAL
-target_link_libraries(artos_os artos)
+if(ARTOS_TEST_TARGET)
+	message(STATUS "Creating test executable target.")
+	
+	# compile executable operating system
+	add_executable(
+		artos_os
+			${TEST_INC_FILES}
+			${TEST_SRC_FILES}
+	)
+	# use link-time optimization if available, and use C11 for standard atomics
+	set_target_properties(
+		artos
+		PROPERTIES
+			INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED}
+			C_STANDARD   11
+			CXX_STANDARD 11
+			C_STANDARD_REQUIRED   TRUE
+			CXX_STANDARD_REQUIRED TRUE
+	)
+	if(CMSIS_LINKER_SCRIPT)
+		# custom command to pre-process the CMSIS linker script
+		add_custom_command(
+			TARGET artos_os PRE_LINK
+			COMMAND
+				${CMAKE_C_PREPROCESSOR}
+					${CMSIS_LINKER_RAW}
+					-P
+					-o ${CMSIS_LINKER_PROCESSED}
+					-I ${CMSIS_DEVICE_INC_DIR}
+			DEPENDS
+				${CMSIS_LINKER_RAW}
+		)
+		set_target_properties(
+			artos
+			PROPERTIES
+				LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
+		)
+	endif()
+	# link against RTOS kernel library and the HAL
+	target_link_libraries(artos_os artos)
+else()
+	message(STATUS "Test executable target not selected.")
+endif()
 
 ############################
 # Configure Doxygen Target #
