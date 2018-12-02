@@ -6,18 +6,18 @@ cmake_minimum_required(VERSION 3.3)
 ######################
 
 # get bare-metal HAL root directory
-get_filename_component(HAL_RTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+get_filename_component(HAL_BAREMETAL_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get HAL root directory
-get_filename_component(HAL_ROOT_DIR ${HAL_RTOS_DIR} DIRECTORY)
+get_filename_component(HAL_ROOT_DIR ${HAL_BAREMETAL_DIR} DIRECTORY)
 # get repository parent directory
-get_filename_component(REPO_PRENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
+get_filename_component(REPO_PARENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
 
 # get HAL dependency directories
-set(HAL_RTOS_INC_DIR ${HAL_RTOS_DIR}/include)
-set(HAL_RTOS_SRC_DIR ${HAL_RTOS_DIR}/src)
+set(HAL_BAREMETAL_INC_DIR ${HAL_BAREMETAL_DIR}/include)
+set(HAL_BAREMETAL_SRC_DIR ${HAL_BAREMETAL_DIR}/src)
 
 # get CMSIS dependency directories
-set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
+set(CMSIS_ROOT_DIR       ${REPO_PARENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_Core_A_SRC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Source)
 set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
@@ -46,8 +46,8 @@ endif()
 #####################################
 
 configure_file(
-	"${HAL_RTOS_DIR}/config/RTE_Components.h.in"
-	"${HAL_RTOS_INC_DIR}/RTE_Components.h"
+	"${HAL_BAREMETAL_DIR}/config/RTE_Components.h.in"
+	"${HAL_BAREMETAL_INC_DIR}/RTE_Components.h"
 )
 
 #########################
@@ -57,22 +57,22 @@ configure_file(
 # all HAL dependency files
 set(
 	HAL_INC_FILES
-		${HAL_RTOS_INC_DIR}/hal_platform.h
-		${HAL_RTOS_INC_DIR}/hal_core.h
-		${HAL_RTOS_INC_DIR}/hal_systick.h
-		${HAL_RTOS_INC_DIR}/hal_timer_gp.h
+		${HAL_BAREMETAL_INC_DIR}/hal_platform.h
+		${HAL_BAREMETAL_INC_DIR}/hal_core.h
+		${HAL_BAREMETAL_INC_DIR}/hal_systick.h
+		${HAL_BAREMETAL_INC_DIR}/hal_timer_gp.h
 )
 set(
 	HAL_SRC_FILES
-		${HAL_RTOS_SRC_DIR}/hal_core.c
-		${HAL_RTOS_SRC_DIR}/hal_systick.c
-		${HAL_RTOS_SRC_DIR}/hal_timer_gp.c
+		${HAL_BAREMETAL_SRC_DIR}/hal_core.c
+		${HAL_BAREMETAL_SRC_DIR}/hal_systick.c
+		${HAL_BAREMETAL_SRC_DIR}/hal_timer_gp.c
 )
 # include assembly only when cross compiling
 if(CMAKE_CROSSCOMPILING)
 	message(STATUS "Configuring cross-compile build system.")
 	# get the assembly sources
-	set(HAL_ASM_FILES ${HAL_RTOS_SRC_DIR}/arm_context.s)
+	set(HAL_ASM_FILES ${HAL_BAREMETAL_SRC_DIR}/arm_context.s)
 else()
 	message(STATUS "Configuring for compilation targeting the host system.")
 	# set blank assembly sources
@@ -128,7 +128,7 @@ set_source_files_properties(
 )
 # compile bare-metal HAL as a static library
 add_library(
-	hal_rtos
+	hal_baremetal
 	STATIC
 		${HAL_INC_FILES}
 		${HAL_SRC_FILES}
@@ -142,7 +142,7 @@ add_library(
 # custom command to pre-process the CMSIS linker script
 if(CMSIS_LINKER_SCRIPT)
 	add_custom_command(
-		TARGET hal_rtos PRE_LINK
+		TARGET hal_baremetal PRE_LINK
 		COMMAND
 			${CMAKE_C_PREPROCESSOR}
 				${CMSIS_LINKER_RAW}
@@ -155,9 +155,9 @@ if(CMSIS_LINKER_SCRIPT)
 endif()
 # set include directories
 target_include_directories(
-	hal_rtos
+	hal_baremetal
 	PUBLIC
-		${HAL_RTOS_INC_DIR}
+		${HAL_BAREMETAL_INC_DIR}
 		${CMSIS_Core_A_INC_DIR}
 		${CMSIS_DEVICE_INC_DIR}
 	PRIVATE
@@ -165,7 +165,7 @@ target_include_directories(
 )
 # use C11 for standard atomics
 set_target_properties(
-	hal_rtos
+	hal_baremetal
 	PROPERTIES
 		C_STANDARD   11
 		CXX_STANDARD 11
@@ -175,20 +175,20 @@ set_target_properties(
 # link to Xilinx BSP
 if(NOT XSDK_VERSION STREQUAL "NONE")
 	target_include_directories(
-		hal_rtos
+		hal_baremetal
 		PRIVATE
 			${BSP_CPU0_INC_DIR}
 	)
-	target_link_libraries(hal_rtos libxil)
+	target_link_libraries(hal_baremetal libxil)
 endif()
 
 # configure optional test application target
-if(HAL_RTOS_TEST)
-	set(HAL_TEST_DIR ${HAL_RTOS_DIR}/test)
+if(HAL_BAREMETAL_TEST)
+	set(HAL_BAREMETAL_TEST_DIR ${HAL_BAREMETAL_DIR}/test)
 	
 	add_executable(
-		hal_rtos_test
-			${HAL_TEST_DIR}/main.c
+		hal_baremetal_test
+			${HAL_BAREMETAL_TEST_DIR}/main.c
 	)
-	target_link_libraries(hal_rtos_test hal_rtos)
+	target_link_libraries(hal_baremetal_test hal_baremetal)
 endif()
