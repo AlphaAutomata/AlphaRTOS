@@ -70,7 +70,7 @@ set(TEST_SRC_DIR ${ARTOS_TEST_DIR}/src)
 
 # get HAL dependency directories
 set(HAL_ROOT_DIR ${REPO_PRENT_DIR}/hal)
-set(HAL_RTOS_DIR ${HAL_ROOT_DIR}/rtos)
+set(HAL_BAREMETAL_DIR ${HAL_ROOT_DIR}/baremetal)
 
 # get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
@@ -227,8 +227,8 @@ if(CMSIS_LINKER_SCRIPT)
 endif()
 
 # link against HAL library
-add_subdirectory(${HAL_RTOS_DIR}/build hal_rtos)
-target_link_libraries(artos hal_rtos)
+add_subdirectory(${HAL_BAREMETAL_DIR}/build hal_baremetal)
+target_link_libraries(artos hal_baremetal)
 
 ####################################
 # Configure Test Executable Target #
