@@ -8,18 +8,19 @@ set(CMAKE_SYSTEM_PROCESSOR arm)
 # specify core and FPU architectures
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=cortex-a9")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfloat-abi=hard")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpu=neon-fp16")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpu=vfpv3")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a")
 
-set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=cortex-a9")
-set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mfloat-abi=hard")
-set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon-fp16")
-set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a")
+set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -nostartfiles" CACHE STRING "CFLAGS")
 
-# cache the flags
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}"   CACHE STRING "CFLAGS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=cortex-a9")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfloat-abi=hard")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=vfpv3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostartfiles")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" CACHE STRING "CXXFLAGS")
-set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}"   CACHE STRING "")
 
 # set the target architecture variable for use by the generator script
 set(ARCH ARMCA9 CACHE STRING "Target CPU architecture." FORCE)
@@ -42,7 +43,7 @@ set(CMAKE_OBJCOPY        "${TC_PATH}${CROSS_COMPILE}objcopy${EXTENSION}"    CACH
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # disable various system calls
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostartfiles" CACHE INTERNAL "")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostartfiles")
 
 # do not search for binaries on compile host
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
