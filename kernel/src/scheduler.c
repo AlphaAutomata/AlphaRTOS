@@ -41,9 +41,24 @@ typedef struct schedTable_ {
 
 static volatile uint64_t uptime;
 
+/**
+ * \brief A table of each CPU's assigned threads.
+ */
 static schedTable_t cpuThreadTables[HAL_NUM_CORES];
+
+/**
+ * \brief A table of each CPU's kernel frame.
+ */
 static regframe_t   cpuKernelFrames[HAL_NUM_CORES];
+
+/**
+ * \brief A table of indices of each CPU's active user thread.
+ */
 static intptr_t     cpuActiveThread[HAL_NUM_CORES];
+
+/**
+ * \brief Master thread table.
+ */
 static tcb_t        threadVector[NUM_THREADS];
 
 static regframe_t* getKernelContext(void) {
@@ -133,6 +148,13 @@ bool task_handleValid(intptr_t handle) {
 			(threadVector[handle].state == thread_state_RUNNING) ||
 			(threadVector[handle].state == thread_state_BLOCKED)
 		)
+	);
+}
+
+bool task_handleEmbryo(intptr_t handle) {
+	return (
+		(threadVector[handle].stack != NULL                      ) &&
+		(threadVector[handle].state == thread_state_UNINITIALIZED)
 	);
 }
 
@@ -271,11 +293,16 @@ void schedule(int cpu) {
 		hal_timerGp_arm(hal_timerGp_inst_00);
 		
 		// For each task, determine action based on its status
-		if (table->units[i]->state == thread_state_READY) {
-			table->units[i]->state = thread_state_RUNNING;
-			// perform context switch and run the task
-			switchContext(&(table->units[i]->context), getKernelContext());
-			table->units[i]->state = thread_state_READY;
+		//if (table->units[i]->state == thread_state_READY) {
+		//	table->units[i]->state = thread_state_RUNNING;
+		//	// perform context switch and run the task
+		//	switchContext(&(table->units[i]->context), getKernelContext());
+		//	table->units[i]->state = thread_state_READY;
+		//}
+		if (threadVector[i].state == thread_state_READY) {
+			threadVector[i].state = thread_state_RUNNING;
+			switchContext(&(threadVector[i].context), getKernelContext());
+			threadVector[i].state = thread_state_READY;
 		}
 	}
 	

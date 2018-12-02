@@ -97,14 +97,24 @@ void task_kill(intptr_t tcbIndex);
 void task_getHandle(intptr_t* tcbIndex);
 
 /**
- * \brief Check if a given task handle is valid.
+ * \brief Check if a given task handle is a valid handle to an active task.
  * 
  * \param handle The handle to check.
  *
- * \retval true  The given handle belongs to an extant task.
- * \retval false The given handle does not belong to an extant task.
+ * \retval true  The given handle belongs to an active task.
+ * \retval false The given handle does not belong to an active task.
  */
 bool task_handleValid(intptr_t handle);
+
+/**
+ * \brief Check if a given task handle is a valid handle to an uninitialized task.
+ * 
+ * \param handle The handle to check.
+ * 
+ * \retval true  The given handle belongs to an uninitialized task.
+ * \retval false The given handle does not belong to an uninitialized task.
+ */
+bool task_handleEmbryo(intptr_t handle);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// Unchecked Thread API ///////////////////////////////////////

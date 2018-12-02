@@ -12,9 +12,13 @@ ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime) {
     return ARTOS_eStatus_UNSUPPORTED;
 }
 
+void ARTOS_init(void) {
+    initScheduler(0);
+}
+
 NORETURN void ARTOS_start(void) {
-    while (1) {
-        // spin
+    while(1) {
+        schedule(0);
     }
 }
 
@@ -89,7 +93,7 @@ ARTOS_eStatus ARTOS_task_register(
 ARTOS_eStatus ARTOS_task_exec(ARTOS_hTask_t handle, int argc, char** argv) {
     intptr_t frame;
 
-    CONTRACT_VERIFY(task_handleValid((intptr_t)handle));
+    CONTRACT_VERIFY(task_handleEmbryo((intptr_t)handle));
 
     frame = (intptr_t)handle;
     task_exec(frame, argc, argv);

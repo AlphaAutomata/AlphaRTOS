@@ -29,6 +29,11 @@ extern "C" {
 ARTOS_eStatus ARTOS_getUptime(unsigned int* uptime);
 
 /**
+ * \brief Initialize system resources.
+ */
+void ARTOS_init(void);
+
+/**
  * \brief Start the RTOS.
  */
 NORETURN void ARTOS_start(void);

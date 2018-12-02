@@ -23,6 +23,8 @@ int main(int argc, char const *argv[]) {
         "Test Task 0"
     );
 
+    ARTOS_task_exec(testTasks[0], 0, NULL);
+
     ARTOS_start();
 
     return 0;
