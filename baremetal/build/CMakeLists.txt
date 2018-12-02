@@ -12,9 +12,13 @@ get_filename_component(HAL_ROOT_DIR ${HAL_BAREMETAL_DIR} DIRECTORY)
 # get repository parent directory
 get_filename_component(REPO_PARENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
 
-# get HAL dependency directories
-set(HAL_BAREMETAL_INC_DIR ${HAL_BAREMETAL_DIR}/include)
-set(HAL_BAREMETAL_SRC_DIR ${HAL_BAREMETAL_DIR}/src)
+# get source directories
+set(HAL_BAREMETAL_API_DIR ${HAL_BAREMETAL_DIR}/api)
+
+set(HAL_BAREMETAL_IMPL_DIR ${HAL_BAREMETAL_DIR}/impl)
+
+set(HAL_BAREMETAL_INC_DIR ${HAL_BAREMETAL_IMPL_DIR}/include)
+set(HAL_BAREMETAL_SRC_DIR ${HAL_BAREMETAL_IMPL_DIR}/src)
 
 # get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${REPO_PARENT_DIR}/AlphaCMSIS)
@@ -56,11 +60,15 @@ configure_file(
 
 # all HAL dependency files
 set(
+	HAL_API_FILES
+		${HAL_BAREMETAL_API_DIR}/hal_platform.h
+		${HAL_BAREMETAL_API_DIR}/hal_core.h
+		${HAL_BAREMETAL_API_DIR}/hal_systick.h
+		${HAL_BAREMETAL_API_DIR}/hal_timer_gp.h
+)
+set(
 	HAL_INC_FILES
-		${HAL_BAREMETAL_INC_DIR}/hal_platform.h
-		${HAL_BAREMETAL_INC_DIR}/hal_core.h
-		${HAL_BAREMETAL_INC_DIR}/hal_systick.h
-		${HAL_BAREMETAL_INC_DIR}/hal_timer_gp.h
+		${HAL_BAREMETAL_INC_DIR}/RTE_Components.h
 )
 set(
 	HAL_SRC_FILES
@@ -120,6 +128,7 @@ endif()
 
 # add the platform constant to HAL files only
 set_source_files_properties(
+	${HAL_API_FILES}
 	${HAL_INC_FILES}
 	${HAL_SRC_FILES}
 	PROPERTIES
@@ -130,6 +139,7 @@ set_source_files_properties(
 add_library(
 	hal_baremetal
 	STATIC
+		${HAL_API_FILES}
 		${HAL_INC_FILES}
 		${HAL_SRC_FILES}
 		${HAL_ASM_FILES}
@@ -157,10 +167,11 @@ endif()
 target_include_directories(
 	hal_baremetal
 	PUBLIC
-		${HAL_BAREMETAL_INC_DIR}
+		${HAL_BAREMETAL_API_DIR}
 		${CMSIS_Core_A_INC_DIR}
 		${CMSIS_DEVICE_INC_DIR}
 	PRIVATE
+		${HAL_BAREMETAL_INC_DIR}
 		${CMSIS_RTOS2_INC_DIR}
 )
 # use C11 for standard atomics
