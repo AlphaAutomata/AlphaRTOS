@@ -14,7 +14,7 @@ set(ARTOS_TEST_TARGET     "TRUE" CACHE BOOL   "Flag to create a test target." FO
 
 set(XSDK_VERSION      "NONE" CACHE STRING "Xilinx SDK version."           FORCE)
 set(XSDK_INSTALL_PATH "NONE" CACHE PATH   "Xilinx SDK installation path." FORCE)
-set(XSDK_WORKSPACE    "NONE "CACHE PATH   "Xilinx SDK workspace path."    FORCE)
+set(XSDK_WORKSPACE    "NONE" CACHE PATH   "Xilinx SDK workspace path."    FORCE)
 set(XSDK_BSP          "NONE" CACHE STRING "Target board support package." FORCE)
 
 ##############################
