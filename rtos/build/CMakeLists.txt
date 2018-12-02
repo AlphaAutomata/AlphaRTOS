@@ -27,6 +27,20 @@ set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
 
+# get BSP include and lib paths
+if(NOT XSDK_VERSION STREQUAL "NONE")
+	set(BSP_ROOT_DIR ${XSDK_WORKSPACE}/${XSDK_BSP})
+	
+	set(BSP_CPU0_DIR ${BSP_ROOT_DIR}/ps7_cortexa9_0)
+	set(BSP_CPU1_DIR ${BSP_ROOT_DIR}/ps7_cortexa9_1)
+	
+	set(BSP_CPU0_INC_DIR ${BSP_CPU0_DIR}/include)
+	set(BSP_CPU0_LIB_DIR ${BSP_CPU0_DIR}/lib)
+	
+	set(BSP_CPU1_INC_DIR ${BSP_CPU1_DIR}/include)
+	set(BSP_CPU1_LIB_DIR ${BSP_CPU1_DIR}/lib)
+endif()
+
 #####################################
 # Generate CMSIS Environment Header #
 #####################################
@@ -68,7 +82,9 @@ endif()
 # all CMSIS dependency files
 set(
 	CMSIS_Core_A_INC_FILES
+		${CMSIS_Core_A_INC_DIR}/cmsis_compiler.h
 		${CMSIS_Core_A_INC_DIR}/core_ca.h
+		${CMSIS_Core_A_INC_DIR}/irq_ctrl.h
 )
 set(
 	CMSIS_CORE_A_SRC_FILES
@@ -91,6 +107,12 @@ set(
 		${CMSIS_DEVICE_SRC_DIR}/system_${ARCH}.c
 		${CMSIS_DEVICE_SRC_DIR}/GCC/startup_${ARCH}.c
 )
+
+# Xilinx BSP archive
+if(NOT XSDK_VERSION STREQUAL NONE)
+	add_library(libxil STATIC IMPORTED)
+	set_target_properties(libxil PROPERTIES IMPORTED_LOCATION ${BSP_CPU0_LIB_DIR}/libxil.a)
+endif()
 
 ####################
 # Configure Target #
@@ -150,6 +172,15 @@ set_target_properties(
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
 )
+# link to Xilinx BSP
+if(NOT XSDK_VERSION STREQUAL "NONE")
+	target_include_directories(
+		hal_rtos
+		PRIVATE
+			${BSP_CPU0_INC_DIR}
+	)
+	target_link_libraries(hal_rtos libxil)
+endif()
 
 # configure optional test application target
 if(HAL_RTOS_TEST)
