@@ -52,9 +52,8 @@
 
 #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
 
-    #include "core_ca.h"
-
-    #include "mem_ARMCA9.h"
+    #include "ARMCA9.h"
+	#include "mem_ARMCA9.h"
 
     #define HAL_ARCH       (HAL_ARCH_ARMCA9)
     #define HAL_NUM_CORES  (2)
@@ -65,9 +64,8 @@
 #elif (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS)
 // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
 
-    #include "core_ca.h"
-
-    #include "mem_ARMCA9.h"
+    #include "ARMCA9.h"
+	#include "mem_ARMCA9.h"
 
     #define HAL_ARCH       (HAL_ARCH_ARMCA9)
     #define HAL_NUM_CORES  (1)
@@ -84,7 +82,25 @@
 /**
  * \brief Data structure used to store a register frame in memory.
  */
-typedef void* regframe_t;
+typedef struct {
+	uint32_t R0;
+	uint32_t R1;
+	uint32_t R2;
+	uint32_t R3;
+	uint32_t R4;
+	uint32_t R5;
+	uint32_t R6;
+	uint32_t R7;
+	uint32_t R8;
+	uint32_t R9;
+	uint32_t R10;
+	uint32_t R11;
+	uint32_t R12;
+	uint32_t SP;
+	uint32_t LR;
+	uint32_t PC;
+	uint32_t xPCR;
+} regframe_t;
 
 /**
  * \hideinitializer
