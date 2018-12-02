@@ -47,7 +47,6 @@ void hal_timerGp_init(hal_timerGp_inst instance, void* gpTimerHandler, hal_timer
 #if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
     u16 dev_id;
     XScuTimer* timer_inst;
-
     switch (instance) {
 #if (XPAR_XSCUTIMER_NUM_INSTANCES > 0)
         case hal_timerGp_inst_00:
@@ -111,17 +110,27 @@ void hal_timerGp_init(hal_timerGp_inst instance, void* gpTimerHandler, hal_timer
 
     XScuTimer_Config* xscu_cfg = XScuTimer_LookupConfig(dev_id);
 
-    s32 xret = XScuTimer_CfgInitialize(timer_inst, xscu_cfg, xscu_cfg->BaseAddr);
-    if (xret != XST_SUCCESS) {
-        return;
+    XScuTimer_CfgInitialize(timer_inst, xscu_cfg, xscu_cfg->BaseAddr);
+    XScuTimer_LoadTimer(timer_inst, info->loadValue);
+    switch (info->rpt) {
+        case hal_timerGp_rpt_ONESHOT:
+            XScuTimer_DisableAutoReload(timer_inst);
+            break;
+
+        case hal_timerGp_rpt_REPEATED:
+            XScuTimer_EnableAutoReload(timer_inst);
+            break;
+
+        default:
+            return;
     }
 
-    int32_t ret = IRQ_Enable(XPAR_SCUTIMER_INTR);
-    if (ret != 0) {
-        return;
-    }
+    IRQ_Enable(XPAR_SCUTIMER_INTR);
+    IRQ_SetHandler(XPAR_SCUTIMER_INTR, gpTimerHandler);
 
-    ret = IRQ_SetHandler(XPAR_SCUTIMER_INTR, gpTimerHandler);
+    if (info->start_immediately) {
+        XScuTimer_Start(timer_inst);
+    }
 #endif
 // #if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
 }
