@@ -50,12 +50,14 @@ set(ARTOS_TARGET_PLATFORM "SOME_ARCH" CACHE STRING "Target SoC platform." FORCE)
         set(ARTOS_TARGET_PLATFORM "XSCU_Z7xxx" CACHE STRING "Target SoC platform." FORCE)
         ```
     
-    - If using Xilinx SDK, set the SDK version and install path. Currently, only Xilinx SDK 2018.2
-      is supported.
+    - If using Xilinx SDK, set the SDK and BSP information. Currently, only Xilinx SDK 2018.2 is
+      supported.
 
         ```cmake
-        set(XSDK_VERSION      "2018.2"        CACHE STRING "Xilinx SDK version."           FORCE)
-        set(XSDK_INSTALL_PATH "C:/Xilinx/SDK" CACHE STRING "Xilinx SDK installation path." FORCE)
+        set(XSDK_VERSION      "2018.2"           CACHE STRING "Xilinx SDK version."           FORCE)
+        set(XSDK_INSTALL_PATH "C:/Xilinx/SDK"    CACHE PATH "Xilinx SDK installation path."   FORCE)
+        set(XSDK_WORKSPACE    "C:/workspace"     CACHE PATH "Xilinx SDK workspace path."      FORCE)
+        set(XSDK_BSP          "standalone_bsp_0" CACHE STRING "Target board support package." FORCE)
         ```
 
 3. Navigate to the AlphaRTOS build directory.
