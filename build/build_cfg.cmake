@@ -5,15 +5,17 @@ cmake_minimum_required(VERSION 3.3)
 # Configuration Options #
 #########################
 
-set(ARTOS_TARGET_PLATFORM "XSCU_Z7xxx"    CACHE STRING "Target SoC platform."          FORCE)
-set(XSDK_VERSION          "2018.2"        CACHE STRING "Xilinx SDK version."           FORCE)
-set(XSDK_INSTALL_PATH     "C:/Xilinx/SDK" CACHE STRING "Xilinx SDK installation path." FORCE)
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 
-set(CMSIS_LINKER_SCRIPT "FALSE" CACHE BOOL "Flag to use the CMSIS linker script.")
+set(CMSIS_LINKER_SCRIPT "FALSE" CACHE BOOL "Flag to use the CMSIS linker script." FORCE)
 
-set(ARTOS_TEST_TARGET "TRUE" CACHE BOOL "Flag to create a test target.")
+set(ARTOS_TARGET_PLATFORM "NONE" CACHE STRING "Target SoC platform."          FORCE)
+set(ARTOS_TEST_TARGET     "TRUE" CACHE BOOL   "Flag to create a test target." FORCE)
 
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "" INTERNAL)
+set(XSDK_VERSION      "NONE" CACHE STRING "Xilinx SDK version."           FORCE)
+set(XSDK_INSTALL_PATH "NONE" CACHE PATH   "Xilinx SDK installation path." FORCE)
+set(XSDK_WORKSPACE    "NONE "CACHE PATH   "Xilinx SDK workspace path."    FORCE)
+set(XSDK_BSP          "NONE" CACHE STRING "Target board support package." FORCE)
 
 ##############################
 # Valid Configuration Values #
@@ -57,9 +59,6 @@ if(ARTOS_TARGET_PLATFORM IN_LIST XSCU_PLATFORMS)
 	if(XSDK_VERSION STREQUAL "NONE")
 		# inform the user that they are cross-compiling without Xilinx SDK
 		message(STATUS "Configuring build system using a default or user-specified toolchain.")
-		
-		# use non-eclipse Make
-		set(CMAKE_MAKE_PROGRAM "make" CACHE PATH "" FORCE)
 	else()
 		# check if an installation path is specified
 		if(XSDK_INSTALL_PATH STREQUAL "NONE")
