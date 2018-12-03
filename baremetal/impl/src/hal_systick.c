@@ -1,8 +1,8 @@
-#include "hal_platform.h"
+#include "hal_core.h"
 
 #include "hal_systick.h"
 
-#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) && 0
+#if (HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx) && 0
 
 #include "xscutimer.h"
 #include "xscugic.h"
@@ -13,7 +13,7 @@ XScuGic   intCtrl;
 #endif
 
 void hal_systick_init(hal_timer_isr_t sysTickHandler, int sysTickInterval) {
-#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) && 0
+#if (0)
 	XScuTimer_Config* scu_config;
 	XScuGic_Config*   intCtrl_config;
 
@@ -45,5 +45,5 @@ void hal_systick_init(hal_timer_isr_t sysTickHandler, int sysTickInterval) {
 
 	// Enable processor interrupts
 	Xil_ExceptionEnable();
-#endif
+#endif // #if ((HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx) || (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS))
 }

@@ -9,11 +9,8 @@
 
 //! @name Xilinx Zynq
 //! @{
-#define HAL_PLATFORM_XSCU_Z7xxx  1 //!< Target Zynq-7000 SoC.
-#define HAL_PLATFORM_XSCU_Z7xxxS 2 //!< Target Zynq-7000S SoC.
-#define HAL_PLATFORM_XSCU_ZUxCG  3 //!< Target Zynq UltraScale+ CG MPSoC.
-#define HAL_PLATFORM_XSCU_ZUxEG  4 //!< Target Zynq UltraScale+ EG MPSoC.
-#define HAL_PLATFORM_XSCU_ZUxEV  5 //!< Target Zynq UltraScale+ EV MPSoC.
+#define HAL_PLATFORM_XC7Zxxx  1 //!< Target Zynq-7000 SoC.
+#define HAL_PLATFORM_XC7ZxxxS 2 //!< Target Zynq-7000S SoC.
 //! @} @name Xilinx Zynq
 
 #ifndef HAL_PLATFORM
