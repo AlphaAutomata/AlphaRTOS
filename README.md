@@ -45,11 +45,11 @@ set(ARTOS_TARGET_PLATFORM "SOME_ARCH" CACHE STRING "Target SoC platform." FORCE)
 3. Configure build options in `AlphaRTOS/build/build_cfg.cmake`.
 
     - Set the target architecture. Currently supported architectures are Xilinx Zynq-7000
-      (`XSCU_Z7xxx`) and Zynq-7000S (`XSCU_Z7xxxS`) SoCs.
+      (`XC7Zxxx`) and Zynq-7000S (`XC7ZxxxS`) SoCs.
 
         ```cmake
         # target platform; options enumerated as ARTOS_TARGET_PLATFORM_OPTS
-        set(ARTOS_TARGET_PLATFORM "XSCU_Z7xxx" CACHE STRING "Target SoC platform." FORCE)
+        set(ARTOS_TARGET_PLATFORM "XC7Zxxx" CACHE STRING "Target SoC platform." FORCE)
         ```
     
     - If using Xilinx SDK, set the SDK and BSP information. Currently, only Xilinx SDK 2018.2 is

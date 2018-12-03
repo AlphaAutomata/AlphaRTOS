@@ -22,16 +22,16 @@ set(XSDK_BSP          "NONE" CACHE STRING "Target board support package." FORCE)
 ##############################
 
 set(
-	XSCU_PLATFORMS
-		"XSCU_Z7xxx"  # Zynq-7000 SoC
-		"XSCU_Z7xxxS" # Zynq-7000S SoC
+	XC7Z_PLATFORMS
+		"XC7Zxxx"  # Zynq-7000 SoC
+		"XC7ZxxxS" # Zynq-7000S SoC
 	CACHE STRING
 		"Supported Xilinx target SoC platforms."
 	FORCE
 )
 set(
 	ARTOS_TARGET_PLATFORM_OPTS
-		${XSCU_PLATFORMS} # target Xilinx Zynq device
+		${XC7Z_PLATFORMS} # target Xilinx Zynq device
 	CACHE STRING
 		"All supported target SoC platforms."
 	FORCE
@@ -51,7 +51,7 @@ set(
 ################################
 
 # platform-specific configurations
-if(ARTOS_TARGET_PLATFORM IN_LIST XSCU_PLATFORMS)
+if(ARTOS_TARGET_PLATFORM IN_LIST XC7Z_PLATFORMS)
 	# use the ARM toolchain script
 	set(CMAKE_TOOLCHAIN_FILE "toolchain.cmake" CACHE PATH "" FORCE)
 	
