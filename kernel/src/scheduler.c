@@ -264,11 +264,11 @@ void initScheduler(int cpu) {
 	hal_timerGp_info info = {
 		.loadValue         = SYSTICK_INTERVAL,
 		.tripValue         = 0,
-		.cntDir            = hal_timerGp_cntDir_DOWN,
-		.rpt               = hal_timerGp_rpt_ONESHOT,
+		.cntDir            = hal_timer_cntDir_DOWN,
+		.rpt               = hal_timer_rpt_ONESHOT,
 		.start_immediately = false
 	};
-	hal_timerGp_init(hal_timerGp_inst_00, schedWatchdog_handler, &info);
+	hal_timerGp_init(hal_timer_inst_00, schedWatchdog_handler, &info);
 }
 
 void schedule(int cpu) {
@@ -282,15 +282,15 @@ void schedule(int cpu) {
 	hal_timerGp_info info = {
 		.loadValue         = SYSTICK_INTERVAL / MAX_THREADS_PER_CPU,
 		.tripValue         = 0,
-		.cntDir            = hal_timerGp_cntDir_DOWN,
-		.rpt               = hal_timerGp_rpt_ONESHOT,
+		.cntDir            = hal_timer_cntDir_DOWN,
+		.rpt               = hal_timer_rpt_ONESHOT,
 		.start_immediately = false
 	};
-	hal_timerGp_cfg_info(hal_timerGp_inst_00, &info);
+	hal_timerGp_cfg_info(hal_timer_inst_00, &info);
 	
 	for (i=0; i<MAX_THREADS_PER_CPU; i++) {
 		// Reload the timer at the start of each task.
-		hal_timerGp_arm(hal_timerGp_inst_00);
+		hal_timerGp_arm(hal_timer_inst_00);
 		
 		// For each task, determine action based on its status
 		//if (table->units[i]->state == thread_state_READY) {
@@ -307,5 +307,5 @@ void schedule(int cpu) {
 	}
 	
 	// Disable the timer interrupt when done scheduling to avoid unnecessary CPU load from ISRs
-	hal_timerGp_disarm(hal_timerGp_inst_00);
+	hal_timerGp_disarm(hal_timer_inst_00);
 }
