@@ -1,3 +1,11 @@
+###########
+# Project #
+###########
+
+ARMCA9.ld
+cmake_config.h
+artos_os
+
 #########
 # C/C++ #
 #########
