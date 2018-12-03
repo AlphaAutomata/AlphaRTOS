@@ -1,6 +1,8 @@
 #ifndef HAL_SYSTICK_H
 #define HAL_SYSTICK_H
 
+#include "hal_timer_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // #ifdef __cplusplus
@@ -11,7 +13,7 @@ extern "C" {
  * \param [in] sysTickHandler  Pointer to the System Tick interrupt handler.
  * \param [in] sysTickInterval System tick interval.
  */
-void hal_systick_init(void* sysTickHandler, int sysTickInterval);
+void hal_systick_init(hal_timer_isr_t sysTickHandler, int sysTickInterval);
 
 #ifdef __cplusplus
 }

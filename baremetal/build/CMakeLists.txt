@@ -65,6 +65,8 @@ set(
 		${HAL_BAREMETAL_API_DIR}/hal_core.h
 		${HAL_BAREMETAL_API_DIR}/hal_systick.h
 		${HAL_BAREMETAL_API_DIR}/hal_timer_gp.h
+		${HAL_BAREMETAL_API_DIR}/hal_timer_priv.h
+		${HAL_BAREMETAL_API_DIR}/hal_timer_types.h
 )
 set(
 	HAL_INC_FILES
