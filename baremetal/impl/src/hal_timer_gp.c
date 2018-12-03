@@ -3,7 +3,7 @@
 #include "hal_platform.h"
 #include "hal_timer_gp.h"
 
-#if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
+#if ((HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx) || (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS))
 
 #include "xparameters.h"
 #include "xscutimer.h"
@@ -40,11 +40,10 @@ static XScuTimer xscu_timer_06;
 static XScuTimer xscu_timer_07;
 #endif // #if (XPAR_XSCUTIMER_NUM_INSTANCES > 7)
 
-#endif
-// #if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx ) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
+#endif // #if ((HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx ) || (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS))
 
 void hal_timerGp_init(hal_timer_inst_t inst, hal_timer_isr_t handler, hal_timerGp_info* info) {
-#if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
+#if ((HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx) || (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS))
     u16 dev_id;
     XScuTimer* x_timer_inst;
     switch (inst) {
@@ -131,8 +130,7 @@ void hal_timerGp_init(hal_timer_inst_t inst, hal_timer_isr_t handler, hal_timerG
     if (info->start_immediately) {
         XScuTimer_Start(x_timer_inst);
     }
-#endif
-// #if ((HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx) || (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS))
+#endif // #if ((HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx) || (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS))
 }
 
 void hal_timerGp_cfg(hal_timer_inst_t inst, hal_timer_isr_t handler, hal_timerGp_info* info) {

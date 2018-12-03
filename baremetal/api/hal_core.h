@@ -50,7 +50,7 @@
  * \brief The base address of the memory region dedicated to the stack.
  */
 
-#if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#if (HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx)
 
     #include "ARMCA9.h"
 	#include "mem_ARMCA9.h"
@@ -61,8 +61,7 @@
     #define HAL_STACK_SIZE (__STACK_SIZE)
     #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
 
-#elif (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxxS)
-// #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#elif (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS) // #if (HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx)
 
     #include "ARMCA9.h"
 	#include "mem_ARMCA9.h"
@@ -73,11 +72,13 @@
     #define HAL_STACK_SIZE (__STACK_SIZE)
     #define HAL_STACK_BASE (__RAM_BASE+__RAM_SIZE)
 
-#else // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#else // #if (HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx)
+      // ...
+	  // #elif (HAL_PLATFORM == HAL_PLATFORM_XC7ZxxxS)
 
     #error "Unsupported target platform."
 
-#endif // #if (HAL_PLATFORM == HAL_PLATFORM_XSCU_Z7xxx)
+#endif // #if (HAL_PLATFORM == HAL_PLATFORM_XC7Zxxx)
 
 /**
  * \brief Data structure used to store a register frame in memory.
