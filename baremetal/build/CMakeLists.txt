@@ -45,13 +45,17 @@ if(NOT XSDK_VERSION STREQUAL "NONE")
 	set(BSP_CPU1_LIB_DIR ${BSP_CPU1_DIR}/lib)
 endif()
 
-#####################################
-# Generate CMSIS Environment Header #
-#####################################
+####################
+# Generate Sources #
+####################
 
 configure_file(
 	"${HAL_BAREMETAL_DIR}/config/RTE_Components.h.in"
 	"${HAL_BAREMETAL_INC_DIR}/RTE_Components.h"
+)
+configure_file(
+	"${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h.in"
+	"${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h"
 )
 
 #########################
