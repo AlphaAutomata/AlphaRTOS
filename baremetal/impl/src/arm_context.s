@@ -39,7 +39,7 @@ switchContext:
 										    // on loading R1 to use it for the xPSR
 		LDMIA	R0, {R2-R12,SP,LR}		    // load registers 2-12, SP, and LR from *newframe
 		LDR		R1, [R0,#(OFF_xPSR-OFF_R2)]	// load the xPSR into R1
-		MSR		CPSR, R1			        // write the PSR
+		MSR		SPSR_cxsf, R1			        // write the PSR
 		SUB		R0, #OFF_R2				    // go back to the beginning of struct to load R0 and R1
 		LDMIA	R0, {R0-R1}				    // load R0 and R1 from struct
 
