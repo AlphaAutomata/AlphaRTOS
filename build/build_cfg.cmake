@@ -7,15 +7,19 @@ cmake_minimum_required(VERSION 3.3)
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 
-set(CMSIS_LINKER_SCRIPT "FALSE" CACHE BOOL "Flag to use the CMSIS linker script." FORCE)
+set(ARTOS_TARGET_PLATFORM "XC7Zxxx" CACHE STRING "Target SoC platform."          FORCE)
+set(ARTOS_TEST_TARGET     "TRUE"    CACHE BOOL   "Flag to create a test target." FORCE)
 
-set(ARTOS_TARGET_PLATFORM "NONE" CACHE STRING "Target SoC platform."          FORCE)
-set(ARTOS_TEST_TARGET     "TRUE" CACHE BOOL   "Flag to create a test target." FORCE)
-
-set(XSDK_VERSION      "NONE" CACHE STRING "Xilinx SDK version."           FORCE)
-set(XSDK_INSTALL_PATH "NONE" CACHE PATH   "Xilinx SDK installation path." FORCE)
-set(XSDK_WORKSPACE    "NONE" CACHE PATH   "Xilinx SDK workspace path."    FORCE)
-set(XSDK_BSP          "NONE" CACHE STRING "Target board support package." FORCE)
+set(XSDK_VERSION      "2018.2"        CACHE STRING "Xilinx SDK version."         FORCE)
+set(XSDK_INSTALL_PATH "C:/Xilinx/SDK" CACHE PATH   "Xilinx SDK installation path." FORCE)
+set(
+	XSDK_WORKSPACE
+		"C:/VivadoProjects/ZynqberryTinkering/ZynqberryTinkering.sdk"
+	CACHE PATH
+		"Xilinx SDK workspace path."
+	FORCE
+)
+set(XSDK_BSP "standalone_bsp_0" CACHE STRING "Target board support package." FORCE)
 
 ##############################
 # Valid Configuration Values #
