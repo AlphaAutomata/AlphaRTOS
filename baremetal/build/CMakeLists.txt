@@ -24,12 +24,6 @@ set(HAL_BAREMETAL_SRC_DIR ${HAL_BAREMETAL_IMPL_DIR}/src)
 set(CMSIS_ROOT_DIR       ${REPO_PARENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_Core_A_SRC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Source)
-set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
-set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
-set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
-
-set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
-set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
 
 # get BSP include and lib paths
 if(NOT XSDK_VERSION STREQUAL "NONE")
@@ -44,19 +38,6 @@ if(NOT XSDK_VERSION STREQUAL "NONE")
 	set(BSP_CPU1_INC_DIR ${BSP_CPU1_DIR}/include)
 	set(BSP_CPU1_LIB_DIR ${BSP_CPU1_DIR}/lib)
 endif()
-
-####################
-# Generate Sources #
-####################
-
-configure_file(
-	"${HAL_BAREMETAL_DIR}/config/RTE_Components.h.in"
-	"${HAL_BAREMETAL_INC_DIR}/RTE_Components.h"
-)
-configure_file(
-	"${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h.in"
-	"${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h"
-)
 
 #########################
 # Gather Target Sources #
@@ -74,7 +55,6 @@ set(
 )
 set(
 	HAL_INC_FILES
-		${HAL_BAREMETAL_INC_DIR}/RTE_Components.h
 )
 set(
 	HAL_SRC_FILES
@@ -102,24 +82,6 @@ set(
 )
 set(
 	CMSIS_CORE_A_SRC_FILES
-		${CMSIS_Core_A_SRC_DIR}/irq_ctrl_gic.c
-)
-set(
-	CMSIS_RTOS2_INC_FILES
-		${CMSIS_RTOS2_INC_DIR}/cmsis_os2.h
-		${CMSIS_RTOS2_INC_DIR}/os_tick.h
-)
-set(
-	CMSIS_DEVICE_INC_FILES
-		${CMSIS_DEVICE_INC_DIR}/${ARCH}.h
-		${CMSIS_DEVICE_INC_DIR}/mem_${ARCH}.h
-		${CMSIS_DEVICE_INC_DIR}/system_${ARCH}.h
-)
-set(
-	CMSIS_DEVICE_SRC_FILES
-		${CMSIS_DEVICE_SRC_DIR}/mmu_${ARCH}.c
-		${CMSIS_DEVICE_SRC_DIR}/system_${ARCH}.c
-		${CMSIS_DEVICE_SRC_DIR}/GCC/startup_${ARCH}.c
 )
 
 # Xilinx BSP archive
@@ -151,34 +113,15 @@ add_library(
 		${HAL_ASM_FILES}
 		${CMSIS_Core_A_INC_FILES}
 		${CMSIS_CORE_A_SRC_FILES}
-		${CMSIS_RTOS2_INC_FILES}
-		${CMSIS_DEVICE_INC_FILES}
-		${CMSIS_DEVICE_SRC_FILES}
 )
-# custom command to pre-process the CMSIS linker script
-if(CMSIS_LINKER_SCRIPT)
-	add_custom_command(
-		TARGET hal_baremetal PRE_LINK
-		COMMAND
-			${CMAKE_C_PREPROCESSOR}
-				${CMSIS_LINKER_RAW}
-				-P
-				-o ${CMSIS_LINKER_PROCESSED}
-				-I ${CMSIS_DEVICE_INC_DIR}
-		DEPENDS
-			${CMSIS_LINKER_RAW}
-	)
-endif()
 # set include directories
 target_include_directories(
 	hal_baremetal
 	PUBLIC
 		${HAL_BAREMETAL_API_DIR}
 		${CMSIS_Core_A_INC_DIR}
-		${CMSIS_DEVICE_INC_DIR}
 	PRIVATE
 		${HAL_BAREMETAL_INC_DIR}
-		${CMSIS_RTOS2_INC_DIR}
 )
 # use C11 for standard atomics
 set_target_properties(
