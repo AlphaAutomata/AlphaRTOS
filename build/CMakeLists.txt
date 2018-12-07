@@ -76,8 +76,6 @@ set(HAL_BAREMETAL_DIR ${HAL_ROOT_DIR}/baremetal)
 set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_RTOS2_DIR      ${CMSIS_ROOT_DIR}/CMSIS/RTOS2)
-set(CMSIS_DEVICE_INC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Include)
-set(CMSIS_DEVICE_SRC_DIR ${CMSIS_ROOT_DIR}/Device/ARM/${ARCH}/Source)
 
 set(CMSIS_RTOS2_INC_DIR ${CMSIS_RTOS2_DIR}/Include)
 set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
@@ -90,35 +88,6 @@ configure_file(
 	"${ARTOS_ROOT_DIR}/config/cmake_config.h.in"
 	"${ARTOS_PUBLIC_DIR}/cmake_config.h"
 )
-
-###################################
-# Pre-Process CMSIS Linker Script #
-###################################
-
-if(CMSIS_LINKER_SCRIPT)
-	# linker script provided with CMSIS
-	set(CMSIS_LINKER_RAW       ${CMSIS_DEVICE_SRC_DIR}/GCC/${ARCH}.ld)
-	# processed linker script output
-	set(CMSIS_LINKER_PROCESSED ${KERNEL_SRC_DIR}/${ARCH}.ld)
-
-	# use processed CMSIS linker script
-	set(
-		CMAKE_EXE_LINKER_FLAGS
-			"${CMAKE_EXE_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
-	)
-	set(
-		CMAKE_MODULE_LINKER_FLAGS
-			"${CMAKE_MODULE_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
-	)
-	set(
-		CMAKE_SHARED_LINKER_FLAGS
-			"${CMAKE_SHARED_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
-	)
-	set(
-		CMAKE_STATIC_LINKER_FLAGS
-			"${CMAKE_STATIC_LINKER_FLAGS} -T ${CMSIS_LINKER_PROCESSED}"
-	)
-endif()
 
 #########################
 # Gather Target Sources #
@@ -206,25 +175,6 @@ set_target_properties(
 		C_STANDARD_REQUIRED   TRUE
 		CXX_STANDARD_REQUIRED TRUE
 )
-if(CMSIS_LINKER_SCRIPT)
-	# custom command to pre-process the CMSIS linker script
-	add_custom_command(
-		TARGET artos PRE_LINK
-		COMMAND
-			${CMAKE_C_PREPROCESSOR}
-				${CMSIS_LINKER_RAW}
-				-P
-				-o ${CMSIS_LINKER_PROCESSED}
-				-I ${CMSIS_DEVICE_INC_DIR}
-		DEPENDS
-			${CMSIS_LINKER_RAW}
-	)
-	set_target_properties(
-		artos
-		PROPERTIES
-			LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
-	)
-endif()
 
 # link against HAL library
 add_subdirectory(${HAL_BAREMETAL_DIR}/build hal_baremetal)
@@ -253,25 +203,6 @@ if(ARTOS_TEST_TARGET)
 			C_STANDARD_REQUIRED   TRUE
 			CXX_STANDARD_REQUIRED TRUE
 	)
-	if(CMSIS_LINKER_SCRIPT)
-		# custom command to pre-process the CMSIS linker script
-		add_custom_command(
-			TARGET artos_os PRE_LINK
-			COMMAND
-				${CMAKE_C_PREPROCESSOR}
-					${CMSIS_LINKER_RAW}
-					-P
-					-o ${CMSIS_LINKER_PROCESSED}
-					-I ${CMSIS_DEVICE_INC_DIR}
-			DEPENDS
-				${CMSIS_LINKER_RAW}
-		)
-		set_target_properties(
-			artos
-			PROPERTIES
-				LINK_DEPENDS ${CMSIS_LINKER_PROCESSED}
-		)
-	endif()
 	# link against RTOS kernel library and the HAL
 	target_link_libraries(artos_os artos)
 else()
