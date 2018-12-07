@@ -79,6 +79,7 @@ dkms.conf
 Listings/
 Objects/
 RTE/
+RTE_Components.h
 
 #######
 # Git #
