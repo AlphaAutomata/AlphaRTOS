@@ -51,18 +51,18 @@ endif()
 ######################
 
 # get the Alpha RTOS repsitory root directory
-get_filename_component(ARTOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+get_filename_component(ARTOS_KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get the directory this repository, and all related repositories, reside in
-get_filename_component(REPO_PRENT_DIR ${ARTOS_ROOT_DIR} DIRECTORY)
+get_filename_component(REPO_PRENT_DIR ${ARTOS_KERNEL_DIR} DIRECTORY)
 
 # get top level directories containing code
-set(ARTOS_PUBLIC_DIR ${ARTOS_ROOT_DIR}/api)
-set(ARTOS_KERNEL_DIR ${ARTOS_ROOT_DIR}/kernel)
-set(ARTOS_TEST_DIR   ${ARTOS_ROOT_DIR}/test)
+set(ARTOS_PUBLIC_DIR ${ARTOS_KERNEL_DIR}/api)
+set(ARTOS_IMPL_DIR   ${ARTOS_KERNEL_DIR}/impl)
+set(ARTOS_TEST_DIR   ${ARTOS_KERNEL_DIR}/test)
 
 # get directories containing internal code
-set(KERNEL_INC_DIR ${ARTOS_KERNEL_DIR}/include)
-set(KERNEL_SRC_DIR ${ARTOS_KERNEL_DIR}/src)
+set(KERNEL_INC_DIR ${ARTOS_IMPL_DIR}/include)
+set(KERNEL_SRC_DIR ${ARTOS_IMPL_DIR}/src)
 
 # get directories containing test code
 set(TEST_INC_DIR ${ARTOS_TEST_DIR}/include)
@@ -70,7 +70,6 @@ set(TEST_SRC_DIR ${ARTOS_TEST_DIR}/src)
 
 # get HAL dependency directories
 set(HAL_ROOT_DIR ${REPO_PRENT_DIR}/hal)
-set(HAL_BAREMETAL_DIR ${HAL_ROOT_DIR}/baremetal)
 
 # get CMSIS dependency directories
 set(CMSIS_ROOT_DIR       ${REPO_PRENT_DIR}/AlphaCMSIS)
@@ -85,7 +84,7 @@ set(CMSIS_RTOS2_SRC_DIR ${CMSIS_RTOS2_DIR}/Source)
 #################
 
 configure_file(
-	"${ARTOS_ROOT_DIR}/config/cmake_config.h.in"
+	"${ARTOS_KERNEL_DIR}/config/cmake_config.h.in"
 	"${ARTOS_PUBLIC_DIR}/cmake_config.h"
 )
 
@@ -177,8 +176,8 @@ set_target_properties(
 )
 
 # link against HAL library
-add_subdirectory(${HAL_BAREMETAL_DIR}/build hal_baremetal)
-target_link_libraries(artos hal_baremetal)
+add_subdirectory(${HAL_ROOT_DIR}/build hal)
+target_link_libraries(artos hal)
 
 ####################################
 # Configure Test Executable Target #
@@ -223,7 +222,7 @@ else()
 	message(STATUS "Doxygen installation found. A documentation target will be created.")
 	
 	# get documentation directory
-	set(DOCS_ROOT_DIR ${ARTOS_ROOT_DIR}/docs)
+	set(DOCS_ROOT_DIR ${ARTOS_KERNEL_DIR}/docs)
 	set(DOCS_HTML_DIR ${DOCS_ROOT_DIR}/html)
 	
 	# set files to generated documentation from

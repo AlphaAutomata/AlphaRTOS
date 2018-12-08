@@ -105,7 +105,7 @@ set_source_files_properties(
 )
 # compile bare-metal HAL as a static library
 add_library(
-	hal_baremetal
+	hal
 	STATIC
 		${HAL_API_FILES}
 		${HAL_INC_FILES}
@@ -116,7 +116,7 @@ add_library(
 )
 # set include directories
 target_include_directories(
-	hal_baremetal
+	hal
 	PUBLIC
 		${HAL_BAREMETAL_API_DIR}
 		${CMSIS_Core_A_INC_DIR}
@@ -125,7 +125,7 @@ target_include_directories(
 )
 # use C11 for standard atomics
 set_target_properties(
-	hal_baremetal
+	hal
 	PROPERTIES
 		C_STANDARD   11
 		CXX_STANDARD 11
@@ -135,11 +135,11 @@ set_target_properties(
 # link to Xilinx BSP
 if(NOT XSDK_VERSION STREQUAL "NONE")
 	target_include_directories(
-		hal_baremetal
+		hal
 		PRIVATE
 			${BSP_CPU0_INC_DIR}
 	)
-	target_link_libraries(hal_baremetal libxil)
+	target_link_libraries(hal libxil)
 endif()
 
 # configure optional test application target
@@ -147,8 +147,8 @@ if(HAL_BAREMETAL_TEST)
 	set(HAL_BAREMETAL_TEST_DIR ${HAL_BAREMETAL_DIR}/test)
 	
 	add_executable(
-		hal_baremetal_test
+		hal_test
 			${HAL_BAREMETAL_TEST_DIR}/main.c
 	)
-	target_link_libraries(hal_baremetal_test hal_baremetal)
+	target_link_libraries(hal_test hal)
 endif()
