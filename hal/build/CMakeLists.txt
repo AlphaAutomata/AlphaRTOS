@@ -5,23 +5,21 @@ cmake_minimum_required(VERSION 3.3)
 # Derive Directories #
 ######################
 
-# get bare-metal HAL root directory
-get_filename_component(HAL_BAREMETAL_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get HAL root directory
-get_filename_component(HAL_ROOT_DIR ${HAL_BAREMETAL_DIR} DIRECTORY)
+get_filename_component(HAL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get repository parent directory
-get_filename_component(REPO_PARENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
+get_filename_component(HAL_PARENT_DIR ${HAL_ROOT_DIR} DIRECTORY)
 
 # get source directories
-set(HAL_BAREMETAL_API_DIR ${HAL_BAREMETAL_DIR}/api)
+set(HAL_API_DIR ${HAL_ROOT_DIR}/api)
 
-set(HAL_BAREMETAL_IMPL_DIR ${HAL_BAREMETAL_DIR}/impl)
+set(HAL_IMPL_DIR ${HAL_ROOT_DIR}/impl)
 
-set(HAL_BAREMETAL_INC_DIR ${HAL_BAREMETAL_IMPL_DIR}/include)
-set(HAL_BAREMETAL_SRC_DIR ${HAL_BAREMETAL_IMPL_DIR}/src)
+set(HAL_INC_DIR ${HAL_IMPL_DIR}/include)
+set(HAL_SRC_DIR ${HAL_IMPL_DIR}/src)
 
 # get CMSIS dependency directories
-set(CMSIS_ROOT_DIR       ${REPO_PARENT_DIR}/AlphaCMSIS)
+set(CMSIS_ROOT_DIR       ${HAL_PARENT_DIR}/CMSIS_5)
 set(CMSIS_Core_A_INC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Include)
 set(CMSIS_Core_A_SRC_DIR ${CMSIS_ROOT_DIR}/CMSIS/Core_A/Source)
 
@@ -46,27 +44,27 @@ endif()
 # all HAL dependency files
 set(
 	HAL_API_FILES
-		${HAL_BAREMETAL_API_DIR}/hal_platform.h
-		${HAL_BAREMETAL_API_DIR}/hal_core.h
-		${HAL_BAREMETAL_API_DIR}/hal_systick.h
-		${HAL_BAREMETAL_API_DIR}/hal_timer_gp.h
-		${HAL_BAREMETAL_API_DIR}/hal_timer_priv.h
-		${HAL_BAREMETAL_API_DIR}/hal_timer_types.h
+		${HAL_API_DIR}/hal_platform.h
+		${HAL_API_DIR}/hal_core.h
+		${HAL_API_DIR}/hal_systick.h
+		${HAL_API_DIR}/hal_timer_gp.h
+		${HAL_API_DIR}/hal_timer_priv.h
+		${HAL_API_DIR}/hal_timer_types.h
 )
 set(
 	HAL_INC_FILES
 )
 set(
 	HAL_SRC_FILES
-		${HAL_BAREMETAL_SRC_DIR}/hal_core.c
-		${HAL_BAREMETAL_SRC_DIR}/hal_systick.c
-		${HAL_BAREMETAL_SRC_DIR}/hal_timer_gp.c
+		${HAL_SRC_DIR}/hal_core.c
+		${HAL_SRC_DIR}/hal_systick.c
+		${HAL_SRC_DIR}/hal_timer_gp.c
 )
 # include assembly only when cross compiling
 if(CMAKE_CROSSCOMPILING)
 	message(STATUS "Configuring cross-compile build system.")
 	# get the assembly sources
-	set(HAL_ASM_FILES ${HAL_BAREMETAL_SRC_DIR}/arm_context.s)
+	set(HAL_ASM_FILES ${HAL_SRC_DIR}/arm_context.s)
 else()
 	message(STATUS "Configuring for compilation targeting the host system.")
 	# set blank assembly sources
@@ -118,10 +116,10 @@ add_library(
 target_include_directories(
 	hal
 	PUBLIC
-		${HAL_BAREMETAL_API_DIR}
+		${HAL_API_DIR}
 		${CMSIS_Core_A_INC_DIR}
 	PRIVATE
-		${HAL_BAREMETAL_INC_DIR}
+		${HAL_INC_DIR}
 )
 # use C11 for standard atomics
 set_target_properties(
@@ -144,11 +142,11 @@ endif()
 
 # configure optional test application target
 if(HAL_BAREMETAL_TEST)
-	set(HAL_BAREMETAL_TEST_DIR ${HAL_BAREMETAL_DIR}/test)
+	set(HAL_TEST_DIR ${HAL_ROOT_DIR}/test)
 	
 	add_executable(
 		hal_test
-			${HAL_BAREMETAL_TEST_DIR}/main.c
+			${HAL_TEST_DIR}/main.c
 	)
 	target_link_libraries(hal_test hal)
 endif()
