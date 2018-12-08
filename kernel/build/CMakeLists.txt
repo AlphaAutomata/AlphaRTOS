@@ -50,7 +50,7 @@ endif()
 # Derive Directories #
 ######################
 
-# get the Alpha RTOS repsitory root directory
+# get the Alpha RTOS repository root directory
 get_filename_component(ARTOS_KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 # get the directory this repository, and all related repositories, reside in
 get_filename_component(REPO_PRENT_DIR ${ARTOS_KERNEL_DIR} DIRECTORY)
